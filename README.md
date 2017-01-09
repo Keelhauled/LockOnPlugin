@@ -3,7 +3,8 @@
 ## Description
 This plugin allows you to lock the camera target to specific bones on the target character.
 The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.
-Video of the mod in action
+
+[Video of the mod in action](https://my.mixtape.moe/rgkydu.m4v)
 
 ## Installation
 1. Install Illusion Plugin Architecture (IPA)

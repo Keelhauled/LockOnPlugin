@@ -1,7 +1,7 @@
 # LockOnPlugin for Honey Select
 
 ## Description
-This plugin allows you to lock the camera target to specific bones on the target character.
+This plugin allows you to keep the camera target on specific parts of the target character.  
 The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.
 
 [Video of the mod in action](https://my.mixtape.moe/rgkydu.m4v)
@@ -12,8 +12,8 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 3. Default hotkey is M, unlock by holding the same button for a bit
 
 ## Everything else
-- press M to lock the camera target to specific bones on the target character
-- press M while locked on to switch between target bones
+- press M to lock the camera target to specific parts of the target character
+- press M while locked on to switch between different parts
 - hold M while locked on to unlock
 - press N to keep the camera angle the same relative to the target character (this means you can, for example, keep looking at their face even if they are spinning)
 - change the list of bones you can switch between

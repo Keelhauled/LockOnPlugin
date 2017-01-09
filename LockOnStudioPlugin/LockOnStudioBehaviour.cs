@@ -34,8 +34,8 @@ namespace LockOnStudioPlugin
             
             defaultCameraMoveSpeed = camera.moveSpeed;
             
-            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnKey", "M", true).ToLower(), 0.5f);
-            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationLockKey", "L", true).ToLower(), 0.5f);
+            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true).ToLower(), 0.5f);
+            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "N", true).ToLower(), 0.5f);
             lockedFov = ModPrefs.GetFloat("LockOnPlugin", "LockedFOV", 50.0f, true);
             lockedZoomSpeed = ModPrefs.GetFloat("LockOnPlugin", "LockedZoomSpeed", 3.0f, true);
             lockedMinDistance = ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.2f, true);

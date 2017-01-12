@@ -11,19 +11,22 @@ namespace LockOnPlugin
     {
         Hotkey lockOnHotkey;
         Hotkey rotationHotkey;
-        float lockedFov;
         float lockedZoomSpeed;
         float lockedMinDistance;
-        float lockedTrackingSpeed;
+        float lockedTrackingSpeed1;
+        float lockedTrackingSpeed2;
         string[] boneList;
 
         HSceneManager instance;
         CameraControl_Ver2 camera;
         GameObject cameraTarget;
         float defaultCameraMoveSpeed;
+        float normalCameraMoveSpeed;
         Vector3? lastBonePos = null;
         bool lockRotation = false;
         Vector3? lastTargetAngle = null;
+        float guiTimerFov = 0.0f;
+        float guiTimerAngle = 0.0f;
 
         void Start()
         {
@@ -36,10 +39,9 @@ namespace LockOnPlugin
 
             lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true).ToLower(), 0.5f);
             rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "N", true).ToLower(), 0.5f);
-            lockedFov = ModPrefs.GetFloat("LockOnPlugin", "LockedFOV", 50.0f, true);
-            lockedZoomSpeed = ModPrefs.GetFloat("LockOnPlugin", "LockedZoomSpeed", 3.0f, true);
+            lockedZoomSpeed = ModPrefs.GetFloat("LockOnPlugin", "LockedZoomSpeed", 5.0f, true);
             lockedMinDistance = ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.2f, true);
-            lockedTrackingSpeed = ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true);
+            lockedTrackingSpeed1 = lockedTrackingSpeed2 = ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true);
             boneList = ModPrefs.GetString("LockOnPlugin", "BoneList", "J_Head|J_Mune00|J_Spine01|J_Kokan", true).Split('|');
             camera.isOutsideTargetTex = !Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "HideCameraTarget", "True", true));
         }
@@ -56,8 +58,12 @@ namespace LockOnPlugin
                     lastTargetAngle = null;
                     cameraTarget = null;
                     lastBonePos = null;
-                    if(camera.moveSpeed <= 0.0f)
+
+                    if(camera.moveSpeed <= 0.0f && normalCameraMoveSpeed > 0.0f)
+                        camera.moveSpeed = normalCameraMoveSpeed;
+                    else if(camera.moveSpeed <= 0.0f)
                         camera.moveSpeed = defaultCameraMoveSpeed;
+
                     Console.WriteLine("Camera unlocked");
                 }
             }
@@ -81,7 +87,7 @@ namespace LockOnPlugin
                             {
                                 if(cameraTarget.name == prefix + boneList[i])
                                 {
-                                    string boneName = boneList.ElementAtOrDefault(i + 1) != null ? prefix + boneList[i + 1] : prefix + boneList[0];
+                                    string boneName = boneList.ElementAtOrDefault(i+1) != null ? prefix + boneList[i+1] : prefix + boneList[0];
                                     cameraTarget = body.objBone.transform.FindLoop(boneName);
                                     break;
                                 }
@@ -89,6 +95,7 @@ namespace LockOnPlugin
                         }
 
                         if(lastBonePos == null) lastBonePos = camera.transBase.InverseTransformPoint(cameraTarget.transform.position);
+                        normalCameraMoveSpeed = camera.moveSpeed;
                         camera.moveSpeed = 0.0f;
 
                         Console.WriteLine("Camera locked to \"{0}\"", cameraTarget.name);
@@ -115,35 +122,92 @@ namespace LockOnPlugin
                 }
             }
 
-            if(cameraTarget)
+            if(lockRotation && !cameraTarget)
             {
-                camera.CameraFov = lockedFov;
-
-                float distance = Vector3.Distance(camera.TargetPos, (Vector3)lastBonePos);
-                camera.TargetPos = Vector3.MoveTowards(camera.TargetPos, camera.transBase.InverseTransformPoint(cameraTarget.transform.position), distance * lockedTrackingSpeed);
-                lastBonePos = camera.transBase.InverseTransformPoint(cameraTarget.transform.position);
-
-                if(Input.GetMouseButton(1))
-                {
-                    // prevent default camera movement and handle zooming manually
-                    float x = Input.GetAxis("Mouse X");
-                    float newDir = camera.CameraDir.z + camera.CameraDir.z * x * Time.deltaTime * lockedZoomSpeed;
-                    if(newDir >= -lockedMinDistance) newDir = -lockedMinDistance;
-                    camera.CameraDir = new Vector3(0.0f, 0.0f, newDir);
-                }
+                lockRotation = false;
+                lastTargetAngle = null;
             }
 
             if(lockRotation)
             {
+                if(lockedTrackingSpeed1 < 0.2f)
+                    lockedTrackingSpeed1 = 0.2f;
+
                 Vector3 targetAngle = cameraTarget.transform.eulerAngles;
-                camera.CameraAngle += new Vector3(-(targetAngle.x - lastTargetAngle.Value.x), (targetAngle.y - lastTargetAngle.Value.y), -(targetAngle.z - lastTargetAngle.Value.z));
-                lastTargetAngle = cameraTarget.transform.eulerAngles;
+                Vector3 difference = targetAngle - lastTargetAngle.Value;
+                camera.CameraAngle += new Vector3(-difference.x, difference.y, -difference.z);
+                lastTargetAngle = targetAngle;
+            }
+            else
+            {
+                lockedTrackingSpeed1 = lockedTrackingSpeed2;
+            }
+
+            if(cameraTarget)
+            {
+                float distance = Vector3.Distance(camera.TargetPos, lastBonePos.Value);
+                camera.TargetPos = Vector3.MoveTowards(camera.TargetPos, camera.transBase.InverseTransformPoint(cameraTarget.transform.position), distance * lockedTrackingSpeed1);
+                lastBonePos = camera.transBase.InverseTransformPoint(cameraTarget.transform.position);
+
+                if(Input.GetMouseButton(1))
+                {
+                    if(Input.GetKey("left ctrl"))
+                    {
+                        //camera tilt adjustment
+                        float x = Input.GetAxis("Mouse X");
+                        float newAngle = camera.CameraAngle.z - x * Time.deltaTime * 50.0f;
+                        newAngle = Mathf.Repeat(newAngle, 360.0f);
+                        camera.CameraAngle = new Vector3(camera.CameraAngle.x, camera.CameraAngle.y, newAngle);
+                        guiTimerAngle = 0.1f;
+                    }
+                    else if(Input.GetKey("left shift"))
+                    {
+                        //fov adjustment
+                        float x = Input.GetAxis("Mouse X");
+                        float newFov = camera.CameraFov + x * Time.deltaTime * 15.0f;
+                        newFov = Mathf.Clamp(newFov, 10.0f, 100.0f);
+                        camera.CameraFov = newFov;
+                        guiTimerFov = 0.1f;
+                    }
+                    else
+                    {
+                        // prevent default camera movement and handle zooming manually
+                        float x = Input.GetAxis("Mouse X");
+                        float newDir = camera.CameraDir.z - x * Time.deltaTime * lockedZoomSpeed;
+                        if(newDir >= -lockedMinDistance) newDir = -lockedMinDistance;
+                        camera.CameraDir = new Vector3(0.0f, 0.0f, newDir);
+                    }
+                }
             }
 
             if(Input.GetMouseButton(0) || Input.GetMouseButton(1))
                 Cursor.visible = false;
             else
                 Cursor.visible = true;
+        }
+
+        void OnGUI()
+        {
+            if(guiTimerAngle > 0.0f)
+            {
+                DebugGUI(0.5f, 0.5f, 100f, 50f, "Camera tilt\n" + camera.CameraAngle.z.ToString("0.0"));
+                guiTimerAngle -= Time.deltaTime;
+            }
+
+            if(guiTimerFov > 0.0f)
+            {
+                DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + camera.CameraFov.ToString("0.0"));
+                guiTimerFov -= Time.deltaTime;
+            }
+        }
+        
+        bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
+        {
+            float xpos = Screen.width * screenWidthMult - width / 2.0f;
+            float ypos = Screen.height * screenHeightMult - height / 2.0f;
+            xpos = Mathf.Clamp(xpos, width / 2.0f, Screen.width - width);
+            ypos = Mathf.Clamp(ypos, height / 2.0f, Screen.height - height);
+            return GUI.Button(new Rect(xpos, ypos, width, height), msg);
         }
 
         void OnDestroy()

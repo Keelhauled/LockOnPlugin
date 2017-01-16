@@ -19,6 +19,7 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 (this means you can, for example, keep looking at their face even if they are spinning)
 - option to change the list of parts you can switch between
 - if you don't want to hide the camera target indicator change HideCameraTarget to False
+- if you don't want to hide the cursor change ManageCursorVisibility to False
 - lots of other settings including keybindings in the modprefs.ini file
 - the rotation locking feature is still a bit wonky
 
@@ -30,3 +31,4 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 - LockedTrackingSpeed = any positive number
 - BoneList = a list split by "|"
 - HideCameraTarget = true or false
+- ManageCursorVisibility = true or false

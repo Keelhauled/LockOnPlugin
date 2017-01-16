@@ -16,6 +16,7 @@ namespace LockOnStudioPlugin
         float lockedTrackingSpeed1;
         float lockedTrackingSpeed2;
         string[] boneList;
+        bool manageCursorVisibility;
 
         Studio instance;
         CameraControl camera;
@@ -37,13 +38,14 @@ namespace LockOnStudioPlugin
             
             defaultCameraMoveSpeed = camera.moveSpeed;
 
-            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true).ToLower(), 0.5f);
-            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "N", true).ToLower(), 0.5f);
+            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true).ToLower()[0].ToString(), 0.5f);
+            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "N", true).ToLower()[0].ToString(), 0.5f);
             lockedZoomSpeed = ModPrefs.GetFloat("LockOnPlugin", "LockedZoomSpeed", 5.0f, true);
-            lockedMinDistance = ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.2f, true);
-            lockedTrackingSpeed1 = lockedTrackingSpeed2 = ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true);
+            lockedMinDistance = Math.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.2f, true));
+            lockedTrackingSpeed1 = lockedTrackingSpeed2 = Math.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true));
             boneList = ModPrefs.GetString("LockOnPlugin", "BoneList", "J_Head|J_Mune00|J_Spine01|J_Kokan", true).Split('|');
             camera.isOutsideTargetTex = !Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "HideCameraTarget", "True", true));
+            manageCursorVisibility = Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "ManageCursorVisibility", "True", true));
         }
 
         void Update()
@@ -127,8 +129,7 @@ namespace LockOnStudioPlugin
                 lockRotation = false;
                 lastTargetAngle = null;
             }
-
-            if(lockRotation)
+            else if(lockRotation)
             {
                 if(lockedTrackingSpeed1 < 0.2f)
                     lockedTrackingSpeed1 = 0.2f;
@@ -180,10 +181,13 @@ namespace LockOnStudioPlugin
                 }
             }
 
-            if(Input.GetMouseButton(0) || Input.GetMouseButton(1))
-                Cursor.visible = false;
-            else
-                Cursor.visible = true;
+            if(manageCursorVisibility)
+            {
+                if(Input.GetMouseButton(0) || Input.GetMouseButton(1))
+                    Cursor.visible = false;
+                else
+                    Cursor.visible = true;
+            }
         }
 
         void OnGUI()
@@ -199,9 +203,6 @@ namespace LockOnStudioPlugin
                 DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + camera.CameraFov.ToString("0.0"));
                 guiTimerFov -= Time.deltaTime;
             }
-
-            DebugGUI(0.95f, 0.90f, 100f, 50f, "lockRotation\n" + lockRotation.ToString());
-            DebugGUI(0.95f, 0.95f, 100f, 50f, "trackingspeed\n" + lockedTrackingSpeed1.ToString());
         }
         
         bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)

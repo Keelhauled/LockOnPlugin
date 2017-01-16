@@ -22,6 +22,7 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 - if you don't want to hide the cursor change ManageCursorVisibility to False
 - lots of other settings including keybindings in the modprefs.ini file
 - the rotation locking feature is still a bit wonky
+- to adjust fov or camera tilt hold left shift/ctrl and drag with right mouse button while locked on
 
 ## modprefs.ini
 - LockOnHotkey = a single letter, no modifier keys

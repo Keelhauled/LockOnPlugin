@@ -28,6 +28,7 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 ## modprefs.ini
 - LockOnHotkey = a single letter, no modifier keys
 - RotationHotkey = a single letter, no modifier keys
+- CharaSwitchHotkey = a single letter, no modifier keys
 - LockedZoomSpeed = any number, negative values invert the zooming direction
 - LockedMinDistance = any positive number
 - LockedTrackingSpeed = any positive number

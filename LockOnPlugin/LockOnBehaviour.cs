@@ -2,40 +2,42 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using Manager;
 using IllusionPlugin;
 
 namespace LockOnPlugin
 {
-    class LockOnBehaviour : MonoBehaviour
+    public class LockOnBehaviour : MonoBehaviour
     {
-        Hotkey lockOnHotkey;
-        Hotkey rotationHotkey;
-        float lockedZoomSpeed;
-        float lockedMinDistance;
-        float lockedTrackingSpeed1;
-        float lockedTrackingSpeed2;
-        string[] boneList;
-        bool manageCursorVisibility;
+        private Hotkey lockOnHotkey;
+        private Hotkey rotationHotkey;
+        private float lockedZoomSpeed;
+        private float lockedMinDistance;
+        private float lockedTrackingSpeed1;
+        private float lockedTrackingSpeed2;
+        private string[] boneList;
+        private bool manageCursorVisibility;
 
-        HSceneManager instance;
-        CameraControl_Ver2 camera;
-        GameObject cameraTarget;
-        float defaultCameraMoveSpeed;
-        float normalCameraMoveSpeed;
-        Vector3? lastBonePos = null;
-        bool lockRotation = false;
-        Vector3? lastTargetAngle = null;
-        float guiTimerFov = 0.0f;
-        float guiTimerAngle = 0.0f;
+        private HSceneManager instance;
+        private CameraControl_Ver2 camera;
+        private GameObject cameraTarget;
+        private float defaultCameraMoveSpeed;
+        private float normalCameraMoveSpeed;
+        private Vector3? lastBonePos = null;
+        private bool lockRotation = false;
+        private Vector3? lastTargetAngle = null;
 
-        void Start()
+        private float guiTimeAngle = 0.0f;
+        private float guiTimeFov = 0.0f;
+        private float guiTimeInfo = 0.0f;
+        private bool showInfoMsg = false;
+        private string infoMsg = "";
+
+        private void Start()
         {
-            Console.WriteLine("Script \"{0}\" started", GetType().Name);
-
             instance = Singleton<HSceneManager>.Instance;
             camera = FindObjectOfType<CameraControl_Ver2>();
-            
             defaultCameraMoveSpeed = camera.moveSpeed;
 
             lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true).ToLower()[0].ToString(), 0.5f);
@@ -48,80 +50,14 @@ namespace LockOnPlugin
             manageCursorVisibility = Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "ManageCursorVisibility", "True", true));
         }
 
-        void Update()
+        private void Update()
         {
-            if(Input.GetKey(lockOnHotkey.keyString))
+            lockOnHotkey.KeyUpAction(LockOn);
+
+            if(cameraTarget)
             {
-                lockOnHotkey.timeHeld += Time.deltaTime;
-                if(lockOnHotkey.timeHeld >= lockOnHotkey.procTime && cameraTarget && lockOnHotkey.released)
-                {
-                    lockOnHotkey.released = false;
-                    lockRotation = false;
-                    lastTargetAngle = null;
-                    cameraTarget = null;
-                    lastBonePos = null;
-
-                    if(camera.moveSpeed <= 0.0f && normalCameraMoveSpeed > 0.0f)
-                        camera.moveSpeed = normalCameraMoveSpeed;
-                    else if(camera.moveSpeed <= 0.0f)
-                        camera.moveSpeed = defaultCameraMoveSpeed;
-
-                    Console.WriteLine("Camera unlocked");
-                }
-            }
-
-            if(Input.GetKeyUp(lockOnHotkey.keyString))
-            {
-                if(lockOnHotkey.released)
-                {
-                    CharFemale character = instance.female;
-                    if(character != null)
-                    {
-                        CharBody body = character.chaBody;
-                        string prefix =  "cf_";
-                        if(!cameraTarget)
-                        {
-                            cameraTarget = body.objBone.transform.FindLoop(prefix + boneList[0]);
-                        }
-                        else
-                        {
-                            for(int i = 0; i < boneList.Length; i++)
-                            {
-                                if(cameraTarget.name == prefix + boneList[i])
-                                {
-                                    string boneName = boneList.ElementAtOrDefault(i+1) != null ? prefix + boneList[i+1] : prefix + boneList[0];
-                                    cameraTarget = body.objBone.transform.FindLoop(boneName);
-                                    break;
-                                }
-                            }
-                        }
-
-                        if(lastBonePos == null) lastBonePos = camera.transBase.InverseTransformPoint(cameraTarget.transform.position);
-                        normalCameraMoveSpeed = camera.moveSpeed;
-                        camera.moveSpeed = 0.0f;
-
-                        Console.WriteLine("Camera locked to \"{0}\"", cameraTarget.name);
-                    }
-                }
-
-                lockOnHotkey.timeHeld = 0.0f;
-                lockOnHotkey.released = true;
-            }
-
-            if(Input.GetKeyDown(rotationHotkey.keyString) && cameraTarget)
-            {
-                if(lockRotation)
-                {
-                    lockRotation = false;
-                    lastTargetAngle = null;
-                    Console.WriteLine("Camera rotation released");
-                }
-                else
-                {
-                    lockRotation = true;
-                    lastTargetAngle = cameraTarget.transform.eulerAngles;
-                    Console.WriteLine("Camera rotation locked");
-                }
+                lockOnHotkey.KeyHoldAction(LockOnRelease);
+                rotationHotkey.KeyDownAction(LockRotation);
             }
 
             if(lockRotation && !cameraTarget)
@@ -152,28 +88,26 @@ namespace LockOnPlugin
 
                 if(Input.GetMouseButton(1))
                 {
+                    float x = Input.GetAxis("Mouse X");
                     if(Input.GetKey("left ctrl"))
                     {
                         //camera tilt adjustment
-                        float x = Input.GetAxis("Mouse X");
                         float newAngle = camera.CameraAngle.z - x * Time.deltaTime * 50.0f;
                         newAngle = Mathf.Repeat(newAngle, 360.0f);
                         camera.CameraAngle = new Vector3(camera.CameraAngle.x, camera.CameraAngle.y, newAngle);
-                        guiTimerAngle = 0.1f;
+                        guiTimeAngle = 0.1f;
                     }
                     else if(Input.GetKey("left shift"))
                     {
                         //fov adjustment
-                        float x = Input.GetAxis("Mouse X");
                         float newFov = camera.CameraFov + x * Time.deltaTime * 15.0f;
                         newFov = Mathf.Clamp(newFov, 10.0f, 100.0f);
                         camera.CameraFov = newFov;
-                        guiTimerFov = 0.1f;
+                        guiTimeFov = 0.1f;
                     }
                     else
                     {
-                        // prevent default camera movement and handle zooming manually
-                        float x = Input.GetAxis("Mouse X");
+                        //prevent default camera movement and handle zooming manually
                         float newDir = camera.CameraDir.z - x * Time.deltaTime * lockedZoomSpeed;
                         if(newDir >= -lockedMinDistance) newDir = -lockedMinDistance;
                         camera.CameraDir = new Vector3(0.0f, 0.0f, newDir);
@@ -190,49 +124,165 @@ namespace LockOnPlugin
             }
         }
 
-        void OnGUI()
+        private void LockOn()
         {
-            if(guiTimerAngle > 0.0f)
+            CharFemale character = instance.female;
+            if(character != null)
             {
-                DebugGUI(0.5f, 0.5f, 100f, 50f, "Camera tilt\n" + camera.CameraAngle.z.ToString("0.0"));
-                guiTimerAngle -= Time.deltaTime;
-            }
+                CharBody body = character.chaBody;
+                string prefix = "cf_";
+                if(!cameraTarget)
+                {
+                    cameraTarget = body.objBone.transform.FindLoop(prefix + boneList[0]);
+                }
+                else
+                {
+                    for(int i = 0; i < boneList.Length; i++)
+                    {
+                        if(cameraTarget.name == prefix + boneList[i])
+                        {
+                            string boneName = boneList.ElementAtOrDefault(i + 1) != null ? prefix + boneList[i + 1] : prefix + boneList[0];
+                            cameraTarget = body.objBone.transform.FindLoop(boneName);
+                            break;
+                        }
+                    }
+                }
 
-            if(guiTimerFov > 0.0f)
-            {
-                DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + camera.CameraFov.ToString("0.0"));
-                guiTimerFov -= Time.deltaTime;
+                if(lastBonePos == null) lastBonePos = camera.transBase.InverseTransformPoint(cameraTarget.transform.position);
+                normalCameraMoveSpeed = camera.moveSpeed;
+                camera.moveSpeed = 0.0f;
+
+                CreateInfoMsg("Locked to \"" + cameraTarget.name + "\"");
             }
         }
-        
-        bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
+
+        private void LockOnRelease()
+        {
+            lockRotation = false;
+            lastTargetAngle = null;
+            cameraTarget = null;
+            lastBonePos = null;
+
+            if(camera.moveSpeed <= 0.0f && normalCameraMoveSpeed > 0.0f)
+                camera.moveSpeed = normalCameraMoveSpeed;
+            else if(camera.moveSpeed <= 0.0f)
+                camera.moveSpeed = defaultCameraMoveSpeed;
+
+            CreateInfoMsg("Camera unlocked");
+        }
+
+        private void LockRotation()
+        {
+            if(lockRotation)
+            {
+                lockRotation = false;
+                lastTargetAngle = null;
+                CreateInfoMsg("Camera rotation released");
+            }
+            else
+            {
+                lockRotation = true;
+                lastTargetAngle = cameraTarget.transform.eulerAngles;
+                CreateInfoMsg("Camera rotation locked");
+            }
+        }
+
+        private void OnGUI()
+        {
+            if(guiTimeAngle > 0.0f)
+            {
+                DebugGUI(0.5f, 0.5f, 100f, 50f, "Camera tilt\n" + camera.CameraAngle.z.ToString("0.0"));
+                guiTimeAngle -= Time.deltaTime;
+            }
+
+            if(guiTimeFov > 0.0f)
+            {
+                DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + camera.CameraFov.ToString("0.0"));
+                guiTimeFov -= Time.deltaTime;
+            }
+
+            if(showInfoMsg && guiTimeInfo > 0.0f)
+            {
+                DebugGUI(1.0f, 0.0f, 200f, 50f, infoMsg);
+                guiTimeInfo -= Time.deltaTime;
+            }
+        }
+
+        private void CreateInfoMsg(string msg, float time = 3.0f)
+        {
+            infoMsg = msg;
+            guiTimeInfo = time;
+        }
+
+        private static bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
         {
             float xpos = Screen.width * screenWidthMult - width / 2.0f;
             float ypos = Screen.height * screenHeightMult - height / 2.0f;
-            xpos = Mathf.Clamp(xpos, width / 2.0f, Screen.width - width);
-            ypos = Mathf.Clamp(ypos, height / 2.0f, Screen.height - height);
+            xpos = Mathf.Clamp(xpos, 0, Screen.width - width);
+            ypos = Mathf.Clamp(ypos, 0, Screen.height - height);
             return GUI.Button(new Rect(xpos, ypos, width, height), msg);
-        }
-
-        void OnDestroy()
-        {
-            Console.WriteLine("Script \"{0}\" destroyed", GetType().Name);
         }
     }
 
-    public class Hotkey
+    internal class Hotkey
     {
-        public string keyString;
-        public float procTime;
-        public float timeHeld;
-        public bool released;
+        private string key;
+        private float procTime;
+        private float timeHeld = 0.0f;
+        private bool released = true;
 
-        public Hotkey(string keyString, float procTime)
+        public Hotkey(string key, float procTime)
         {
-            this.keyString = keyString;
+            this.key = key;
             this.procTime = procTime;
-            this.timeHeld = 0.0f;
-            this.released = true;
+        }
+
+        private bool GetModifiers() => Input.GetKey("left shift") || Input.GetKey("left alt");
+        private bool GetKey() => Input.GetKey(key);
+        private bool GetKeyUp() => Input.GetKeyUp(key);
+        private bool GetKeyDown() => Input.GetKeyDown(key);
+        
+        private bool ShouldProc() => timeHeld >= procTime;
+        private void AddTime() => timeHeld += Time.deltaTime;
+        private void ResetTime() => timeHeld = 0.0f;
+
+        private bool Released() => released;
+        private void Released(bool val) => released = val;
+
+        public void KeyHoldAction(UnityAction action)
+        {
+            if(GetKey() && !GetModifiers())
+            {
+                AddTime();
+                if(ShouldProc() && Released())
+                {
+                    Released(false);
+                    action();
+                }
+            }
+        }
+
+        public void KeyUpAction(UnityAction action)
+        {
+            if(GetKeyUp() && !GetModifiers())
+            {
+                if(Released())
+                {
+                    action();
+                }
+
+                ResetTime();
+                Released(true);
+            }
+        }
+
+        public void KeyDownAction(UnityAction action)
+        {
+            if(GetKeyDown() && !GetModifiers())
+            {
+                action();
+                Released(false);
+            }
         }
     }
 }

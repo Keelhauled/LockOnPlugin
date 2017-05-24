@@ -1,22 +1,24 @@
 ﻿using IllusionUtility.GetUtility;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using Manager;
 using IllusionPlugin;
+using System.IO;
 
 namespace LockOnStudioPlugin
 {
     public class LockOnStudioBehaviour : MonoBehaviour
     {
         private Hotkey lockOnHotkey;
+        private Hotkey lockOnGuiHotkey;
         private Hotkey rotationHotkey;
         private Hotkey switchHotkey;
         private float lockedZoomSpeed;
         private float lockedMinDistance;
-        private float lockedTrackingSpeed1;
-        private float lockedTrackingSpeed2;
+        private float trackingSpeedNormal;
+        private float trackingSpeedRotate = 0.2f;
         private string[] boneList;
         private bool manageCursorVisibility;
 
@@ -29,67 +31,83 @@ namespace LockOnStudioPlugin
         private Vector3? lastBonePos = null;
         private bool lockRotation = false;
         private Vector3? lastTargetAngle = null;
-        private int characterHash;
+
+        private bool showLockOnTargets = false;
+        private StudioChara chara = null;
+        private List<GameObject> charaBones = null;
+        private List<IntersectionTarget> charaIntersections = null;
 
         private float guiTimeAngle = 0.0f;
         private float guiTimeFov = 0.0f;
         private float guiTimeInfo = 0.0f;
         private bool showInfoMsg = false;
         private string infoMsg = "";
+        private bool debugMode = false;
+
+        private List<string> boneListGui;
+        private List<string> boneListQuick;
+        private List<string[]> boneListIntersections;
 
         private void Start()
         {
             instance = Singleton<Studio>.Instance;
-            canvasObjects = GameObject.Find("CanvasObjects");
             camera = FindObjectOfType<CameraControl>();
             defaultCameraMoveSpeed = camera.moveSpeed;
+            canvasObjects = GameObject.Find("CanvasObjects");
 
-            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true).ToLower()[0].ToString(), 0.5f);
-            switchHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "CharaSwitchHotkey", "L", true).ToLower()[0].ToString(), 0.5f);
-            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "N", true).ToLower()[0].ToString(), 0.5f);
+            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true), 0.5f);
+            lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", "K", true));
+            switchHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "CharaSwitchHotkey", "L", true));
+            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "N", true));
             lockedZoomSpeed = ModPrefs.GetFloat("LockOnPlugin", "LockedZoomSpeed", 5.0f, true);
             lockedMinDistance = Math.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.2f, true));
-            lockedTrackingSpeed1 = lockedTrackingSpeed2 = Math.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true));
-            boneList = ModPrefs.GetString("LockOnPlugin", "BoneList", "J_Head|J_Mune00|J_Spine01|J_Kokan", true).Split('|');
+            trackingSpeedNormal = Math.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true));
+            if(trackingSpeedNormal > trackingSpeedRotate) trackingSpeedRotate = trackingSpeedNormal;
             camera.isOutsideTargetTex = !Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "HideCameraTarget", "True", true));
             manageCursorVisibility = Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "ManageCursorVisibility", "True", true));
+            showInfoMsg = Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "ShowInfoMsg", "False", true));
+            
+            boneListGui = ReadBoneFile("\\Plugins\\LockOnPlugin\\guibones.txt");
+            boneListQuick = ReadBoneFile("\\Plugins\\LockOnPlugin\\quickbones.txt");
+            boneList = boneListQuick.ToArray();
+            boneListIntersections = ReadIntersectionFile("\\Plugins\\LockOnPlugin\\intersections.txt");
         }
 
         private void Update()
         {
+            CharaHasBeenSwitched();
+
             lockOnHotkey.KeyUpAction(LockOn);
+            lockOnGuiHotkey.KeyDownAction(ToggleLockOnTargets);
             switchHotkey.KeyDownAction(CharaSwitch);
+
+            if(showLockOnTargets || cameraTarget)
+            {
+                UpdateIntersectionPositions();
+            }
 
             if(cameraTarget)
             {
                 lockOnHotkey.KeyHoldAction(LockOnRelease);
-                rotationHotkey.KeyDownAction(LockRotation);
+                rotationHotkey.KeyDownAction(ToggleRotationLock);
             }
 
             if(lockRotation && !cameraTarget)
             {
-                lockRotation = false;
-                lastTargetAngle = null;
+                ToggleRotationLock();
             }
             else if(lockRotation)
             {
-                if(lockedTrackingSpeed1 < 0.2f)
-                    lockedTrackingSpeed1 = 0.2f;
-
                 Vector3 targetAngle = cameraTarget.transform.eulerAngles;
                 Vector3 difference = targetAngle - lastTargetAngle.Value;
                 camera.CameraAngle += new Vector3(-difference.x, difference.y, -difference.z);
                 lastTargetAngle = targetAngle;
             }
-            else
-            {
-                lockedTrackingSpeed1 = lockedTrackingSpeed2;
-            }
 
             if(cameraTarget)
             {
                 float distance = Vector3.Distance(camera.TargetPos, lastBonePos.Value);
-                camera.TargetPos = Vector3.MoveTowards(camera.TargetPos, cameraTarget.transform.position, distance * lockedTrackingSpeed1);
+                if(distance > 0.00001) camera.TargetPos = Vector3.MoveTowards(camera.TargetPos, cameraTarget.transform.position, distance * (lockRotation ? trackingSpeedRotate : trackingSpeedNormal));
                 lastBonePos = cameraTarget.transform.position;
 
                 if(Input.GetMouseButton(1))
@@ -135,10 +153,7 @@ namespace LockOnStudioPlugin
             StudioChara character = instance.CurrentChara;
             if(character != null)
             {
-                int newHash = character.GetHashCode();
-                if(characterHash != newHash) cameraTarget = null;
-                characterHash = newHash;
-
+                chara = character;
                 CharBody body = character.body;
                 string prefix = character is StudioFemale ? "cf_" : "cm_";
                 if(!cameraTarget)
@@ -147,15 +162,23 @@ namespace LockOnStudioPlugin
                 }
                 else
                 {
+                    bool targetChanged = false;
+
                     for(int i = 0; i < boneList.Length; i++)
                     {
                         if(cameraTarget.name == prefix + boneList[i])
                         {
                             string boneName = boneList.ElementAtOrDefault(i + 1) != null ? prefix + boneList[i + 1] : prefix + boneList[0];
                             cameraTarget = body.objBone.transform.FindLoop(boneName);
+                            targetChanged = true;
                             break;
                         }
                     }
+
+                    if(!targetChanged)
+                    {
+                        cameraTarget = body.objBone.transform.FindLoop(prefix + boneList[0]);
+                    }
                 }
 
                 if(lastBonePos == null) lastBonePos = cameraTarget.transform.position;
@@ -166,17 +189,13 @@ namespace LockOnStudioPlugin
             }
         }
 
-        private void LockOn(int listItem)
+        private void LockOn(GameObject bone)
         {
             StudioChara character = instance.CurrentChara;
             if(character != null)
             {
-                characterHash = character.GetHashCode();
-
-                CharBody body = character.body;
-                string prefix = character is StudioFemale ? "cf_" : "cm_";
-
-                cameraTarget = body.objBone.transform.FindLoop(prefix + boneList[listItem]);
+                chara = character;
+                cameraTarget = bone;
 
                 if(lastBonePos == null) lastBonePos = cameraTarget.transform.position;
                 normalCameraMoveSpeed = camera.moveSpeed;
@@ -186,41 +205,143 @@ namespace LockOnStudioPlugin
             }
         }
 
-        private int GetLockOnTarget()
+        private void LockOnRelease()
         {
-            StudioChara character = instance.CurrentChara;
+            if(cameraTarget)
+            {
+                lockRotation = false;
+                lastTargetAngle = null;
+                cameraTarget = null;
+                lastBonePos = null;
+
+                if(camera.moveSpeed <= 0.0f && normalCameraMoveSpeed > 0.0f)
+                    camera.moveSpeed = normalCameraMoveSpeed;
+                else if(camera.moveSpeed <= 0.0f)
+                    camera.moveSpeed = defaultCameraMoveSpeed;
+
+                CreateInfoMsg("Camera unlocked");
+            }
+        }
+
+        private void CharaHasBeenSwitched()
+        {
+            StudioChara newChara = instance.CurrentChara;
+
+            if(chara != newChara)
+            {
+                LockOnRelease();
+
+                if(newChara == null)
+                {
+                    Console.WriteLine("Nothing important selected");
+                    chara = null;
+                    charaBones = null;
+                    charaIntersections = null;
+                    showLockOnTargets = false;
+                }
+                else if(newChara.sexType == 0)
+                {
+                    Console.WriteLine("Switched to male");
+                    chara = newChara;
+                    charaBones = null;
+                    charaIntersections = null;
+                    showLockOnTargets = false;
+                }
+                else if(newChara.sexType == 1)
+                {
+                    Console.WriteLine("Switched to female");
+                    chara = newChara;
+                    UpdateCharaBones(chara);
+                    UpdateCharaIntersections(chara);
+                }
+                else if(newChara.sexType == 2)
+                {
+                    Console.WriteLine("Switched to item");
+                    chara = null;
+                    charaBones = null;
+                    charaIntersections = null;
+                    showLockOnTargets = false;
+                }
+            }
+        }
+
+        private void UpdateCharaBones(StudioChara character)
+        {
+            charaBones = null;
+
             if(character != null)
             {
-                CharBody body = character.body;
                 string prefix = character is StudioFemale ? "cf_" : "cm_";
+                charaBones = new List<GameObject>();
 
-                for(int i = 0; i < boneList.Length; i++)
+                foreach(string boneName in boneListGui)
                 {
-                    if(cameraTarget.name == prefix + boneList[i])
+                    GameObject bone = character.body.objBone.transform.FindLoop(prefix + boneName);
+                    if(bone)
+                        charaBones.Add(bone);
+                }
+            }
+        }
+
+        private void UpdateCharaIntersections(StudioChara character)
+        {
+            charaIntersections = null;
+
+            if(character != null && character.sexType == 1)
+            {
+                string prefix = character is StudioFemale ? "cf_" : "cm_";
+                charaIntersections = new List<IntersectionTarget>();
+
+                foreach(string[] data in boneListIntersections)
+                {
+                    GameObject point1 = character.body.objBone.transform.FindLoop(prefix + data[1]);
+                    GameObject point2 = character.body.objBone.transform.FindLoop(prefix + data[2]);
+                    if(point1 && point2)
                     {
-                        return i;
+                        IntersectionTarget target = new IntersectionTarget(data[0], point1, point2);
+                        charaIntersections.Add(target);
+                        charaBones.Add(target.GetTarget());
                     }
                 }
             }
-            return -1;
+        }
+
+        private void UpdateIntersectionPositions()
+        {
+            if(charaIntersections != null)
+            {
+                foreach(IntersectionTarget intersection in charaIntersections)
+                {
+                    intersection.UpdateTargetPosition();
+                }
+            }
         }
 
         private void CharaSwitch()
         {
-            if(cameraTarget && cameraTarget)
+            if(cameraTarget)
             {
-                var females = instance.FemaleList;
+                Dictionary<uint, StudioFemale> females = instance.FemaleList;
                 int charaCount = instance.FemaleList.Count;
                 int currentChara = instance.CurrentCharNo;
                 int nextChara = currentChara + 1 > charaCount - 1 ? 0 : currentChara + 1;
-                int targetBone = GetLockOnTarget();
+                string targetBoneName = cameraTarget.name;
 
-                if(targetBone != -1)
+                StudioChara nextGirl = females.ElementAtOrDefault(nextChara).Value;
+                instance.SetCurrentCharaController(nextGirl);
+                UpdateCharaBones(nextGirl);
+                UpdateCharaIntersections(nextGirl);
+
+                foreach(GameObject bone in charaBones)
                 {
-                    instance.SetCurrentCharaController(females.ElementAtOrDefault(nextChara).Value);
-                    LockOn(targetBone);
-                    CreateInfoMsg("Locked to \"" + instance.CurrentChara.GetStudioFemale().female.customInfo.name + "\"");
+                    if(bone.name == targetBoneName)
+                    {
+                        LockOn(bone);
+                        break;
+                    }
                 }
+
+                CreateInfoMsg("Locked to \"" + instance.CurrentChara.GetStudioFemale().female.customInfo.name + "\"");
             }
             else
             {
@@ -228,22 +349,7 @@ namespace LockOnStudioPlugin
             }
         }
 
-        private void LockOnRelease()
-        {
-            lockRotation = false;
-            lastTargetAngle = null;
-            cameraTarget = null;
-            lastBonePos = null;
-
-            if(camera.moveSpeed <= 0.0f && normalCameraMoveSpeed > 0.0f)
-                camera.moveSpeed = normalCameraMoveSpeed;
-            else if(camera.moveSpeed <= 0.0f)
-                camera.moveSpeed = defaultCameraMoveSpeed;
-            
-            CreateInfoMsg("Camera unlocked");
-        }
-
-        private void LockRotation()
+        private void ToggleRotationLock()
         {
             if(lockRotation)
             {
@@ -273,14 +379,77 @@ namespace LockOnStudioPlugin
                 guiTimeFov -= Time.deltaTime;
             }
 
-            if(showInfoMsg && canvasObjects.activeInHierarchy)
+            if(showInfoMsg && guiTimeInfo > 0.0f && canvasObjects.activeInHierarchy)
             {
-                if(guiTimeInfo > 0.0f)
+                 DebugGUI(1.0f, 0.0f, 200f, 50f, infoMsg);
+                 guiTimeInfo -= Time.deltaTime;
+            }
+
+            if(showLockOnTargets && charaBones != null)
+            {
+                foreach(GameObject bone in charaBones)
                 {
-                    DebugGUI(1.0f, 0.0f, 200f, 50f, infoMsg);
-                    guiTimeInfo -= Time.deltaTime;
+                    float size = 25.0f;
+                    Vector3 pos = Camera.main.WorldToScreenPoint(bone.transform.position);
+                    if(GUI.Button(new Rect(pos.x - size / 2, Screen.height - pos.y - size / 2, size, size), "L"))
+                    {
+                        LockOn(bone);
+                    }
                 }
             }
+            
+            if(debugMode)
+            {
+                if(DebugGUI(0.60f, 0.0f, 100f, 50f, "guibones.txt"))
+                {
+                    foreach(var item in boneListGui)
+                        Console.WriteLine(item);
+                }
+
+                if(DebugGUI(0.65f, 0.0f, 100f, 50f, "quickbones.txt"))
+                {
+                    foreach(var item in boneListQuick)
+                        Console.WriteLine(item);
+                }
+
+                if(DebugGUI(0.70f, 0.0f, 100f, 50f, "intersections.txt"))
+                {
+                    foreach(var item in boneListIntersections)
+                        Console.WriteLine("{0}, {1}, {2}", item[0], item[1], item[2]);
+                }
+
+                if(DebugGUI(0.75f, 0.0f, 100f, 50f, "charaBones"))
+                {
+                    if(charaBones != null)
+                    {
+                        foreach(var item in charaBones)
+                            Console.WriteLine(item.name);
+                    }
+                    else
+                    {
+                        Console.WriteLine("null");
+                    }
+                }
+
+                if(DebugGUI(0.80f, 0.0f, 100f, 50f, "intersections"))
+                {
+                    if(charaIntersections != null)
+                    {
+                        foreach(var item in charaIntersections)
+                            Console.WriteLine(item.name);
+                    }
+                    else
+                    {
+                        Console.WriteLine("null");
+                    }
+                }
+            }
+        }
+
+        private void ToggleLockOnTargets()
+        {
+            if(instance.CurrentChara.sexType == 1)
+                showLockOnTargets = !showLockOnTargets;
         }
 
         private void CreateInfoMsg(string msg, float time = 3.0f)
@@ -297,67 +466,52 @@ namespace LockOnStudioPlugin
             ypos = Mathf.Clamp(ypos, 0, Screen.height - height);
             return GUI.Button(new Rect(xpos, ypos, width, height), msg);
         }
-    }
 
-    internal class Hotkey
-    {
-        private string key;
-        private float procTime;
-        private float timeHeld = 0.0f;
-        private bool released = true;
-
-        public Hotkey(string key, float procTime)
+        private static string StringUntil(string text, string stopAt)
         {
-            this.key = key;
-            this.procTime = procTime;
-        }
-
-        private bool GetModifiers() => Input.GetKey("left shift") || Input.GetKey("left alt");
-        private bool GetKey() => Input.GetKey(key);
-        private bool GetKeyUp() => Input.GetKeyUp(key);
-        private bool GetKeyDown() => Input.GetKeyDown(key);
-        
-        private bool ShouldProc() => timeHeld >= procTime;
-        private void AddTime() => timeHeld += Time.deltaTime;
-        private void ResetTime() => timeHeld = 0.0f;
-
-        private bool Released() => released;
-        private void Released(bool val) => released = val;
-
-        public void KeyHoldAction(UnityAction action)
-        {
-            if(GetKey() && !GetModifiers())
+            if(text != null)
             {
-                AddTime();
-                if(ShouldProc() && Released())
+                int charLocation = text.IndexOf(stopAt, StringComparison.Ordinal);
+
+                if(charLocation > 0)
                 {
-                    Released(false);
-                    action();
+                    return text.Substring(0, charLocation);
+                }
+                else if(charLocation == 0)
+                {
+                    return "";
                 }
             }
+
+            return text;
         }
 
-        public void KeyUpAction(UnityAction action)
+        private static List<string> ReadBoneFile(string filePath)
         {
-            if(GetKeyUp() && !GetModifiers())
+            List<string> list = new List<string>();
+            foreach(string item in File.ReadAllLines(Environment.CurrentDirectory + filePath))
             {
-                if(Released())
-                {
-                    action();
-                }
-
-                ResetTime();
-                Released(true);
+                string line = StringUntil(item, "//");
+                line = line.Replace(" ", "");
+                if(line != "")
+                    list.Add(line);
             }
+
+            return list;
         }
 
-        public void KeyDownAction(UnityAction action)
+        private static List<string[]> ReadIntersectionFile(string filePath)
         {
-            if(GetKeyDown() && !GetModifiers())
+            List<string[]> list = new List<string[]>();
+            foreach(string item in File.ReadAllLines(Environment.CurrentDirectory + filePath))
             {
-                action();
-                Released(false);
+                string line = StringUntil(item, "//");
+                line = line.Replace(" ", "");
+                if(line != "")
+                    list.Add(line.Split('|'));
             }
+
+            return list;
         }
     }
 }

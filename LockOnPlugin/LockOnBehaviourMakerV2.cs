@@ -6,10 +6,11 @@ using UnityEngine;
 using Manager;
 using IllusionPlugin;
 using System.IO;
+using UnityEngine.UI;
 
 namespace LockOnPlugin
 {
-    public class LockOnBehaviour : MonoBehaviour
+    class LockOnBehaviourMakerV2 : MonoBehaviour
     {
         private Hotkey lockOnHotkey;
         private Hotkey lockOnGuiHotkey;
@@ -20,11 +21,10 @@ namespace LockOnPlugin
         private float trackingSpeedRotate = 0.2f;
         private string[] boneList;
         private bool manageCursorVisibility;
-
-        private HSceneManager instance;
-        private CameraControl_Ver2 camera;
+        
+        private CameraControl camera;
+        CustomControl customControl;
         private GameObject cameraTarget;
-        private HSceneSprite sprite;
         private float defaultCameraMoveSpeed;
         private float normalCameraMoveSpeed;
         private Vector3? lastBonePos = null;
@@ -32,7 +32,6 @@ namespace LockOnPlugin
         private Vector3? lastTargetAngle = null;
 
         private bool showLockOnTargets = false;
-        private CharFemale chara = null;
         private List<GameObject> charaBones = null;
         private List<IntersectionTarget> charaIntersections = null;
 
@@ -49,10 +48,9 @@ namespace LockOnPlugin
 
         private void Start()
         {
-            instance = Singleton<HSceneManager>.Instance;
-            camera = FindObjectOfType<CameraControl_Ver2>();
+            camera = FindObjectOfType<CameraControl>();
             defaultCameraMoveSpeed = camera.moveSpeed;
-            sprite = Singleton<HScene>.Instance.sprite;
+            customControl = GameObject.FindObjectOfType<CustomControl>();
 
             lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "M", true), 0.5f);
             lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", "K", true));
@@ -64,17 +62,19 @@ namespace LockOnPlugin
             camera.isOutsideTargetTex = !Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "HideCameraTarget", "True", true));
             manageCursorVisibility = Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "ManageCursorVisibility", "True", true));
             showInfoMsg = Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "ShowInfoMsg", "False", true));
-            
+
             boneListGui = ReadBoneFile("\\Plugins\\LockOnPlugin\\guibones.txt");
             boneListQuick = ReadBoneFile("\\Plugins\\LockOnPlugin\\quickbones.txt");
             boneList = boneListQuick.ToArray();
             boneListIntersections = ReadIntersectionFile("\\Plugins\\LockOnPlugin\\intersections.txt");
+
+            CharFemale female = FindObjectsOfType<CharFemale>()[1];
+            UpdateCharaBones(female);
+            UpdateCharaIntersections(female);
         }
 
         private void Update()
         {
-            CharaHasBeenSwitched();
-
             lockOnHotkey.KeyUpAction(LockOn);
             lockOnGuiHotkey.KeyDownAction(ToggleLockOnTargets);
 
@@ -104,8 +104,8 @@ namespace LockOnPlugin
             if(cameraTarget)
             {
                 float distance = Vector3.Distance(camera.TargetPos, lastBonePos.Value);
-                if(distance > 0.00001) camera.TargetPos = Vector3.MoveTowards(camera.TargetPos, camera.transBase.InverseTransformPoint(cameraTarget.transform.position), distance * (lockRotation ? trackingSpeedRotate : trackingSpeedNormal));
-                lastBonePos = camera.transBase.InverseTransformPoint(cameraTarget.transform.position);
+                if(distance > 0.00001) camera.TargetPos = Vector3.MoveTowards(camera.TargetPos, cameraTarget.transform.position, distance * (lockRotation ? trackingSpeedRotate : trackingSpeedNormal));
+                lastBonePos = cameraTarget.transform.position;
 
                 if(Input.GetMouseButton(1))
                 {
@@ -143,14 +143,68 @@ namespace LockOnPlugin
                 else
                     Cursor.visible = true;
             }
+
+            CameraSpeedHack();
+        }
+
+        private void CameraSpeedHack()
+        {
+            if(cameraTarget)
+            {
+                customControl.modeOverScene = true;
+                bool enableCamKey = true;
+
+                foreach(InputField inputField in customControl.inputText)
+                {
+                    if(inputField.isFocused)
+                    {
+                        enableCamKey = false;
+                    }
+                }
+
+                if(Singleton<Scene>.Instance.AddSceneName == "" && !customControl.checkMode)
+                {
+                    if(Input.GetKeyDown(KeyCode.F1))
+                    {
+                        Singleton<Scene>.Instance.LoadReserv("Config", false, false, false, false, false);
+                    }
+                    else if(enableCamKey && Input.GetKeyDown(KeyCode.R))
+                    {
+                        if(customControl.modePhoto)
+                        {
+                            customControl.photoCtrlPanel.OnResetCamera();
+                        }
+                        else
+                        {
+                            customControl.ResetCamera(false);
+                        }
+                    }
+                    else if(Input.GetKeyDown(KeyCode.Escape))
+                    {
+                        customControl.EndGame();
+                    }
+                }
+
+                if(camera != null)
+                {
+                    camera.KeyCondition = (() => enableCamKey);
+                    float cameraSpeed = Manager.Config.EtcData.CameraSpeed;
+                    camera.xRotSpeed = Mathf.Lerp(0.5f, 4f, cameraSpeed);
+                    camera.yRotSpeed = Mathf.Lerp(0.5f, 4f, cameraSpeed);
+                    camera.moveSpeed = cameraTarget ? 0.0f : Mathf.Lerp(0.01f, 0.1f, cameraSpeed);
+                }
+            }
+            else
+            {
+                customControl.modeOverScene = false;
+            }
         }
 
         private void LockOn()
         {
-            CharFemale character = instance.female;
+            CharFemale character = FindObjectsOfType<CharFemale>()[1];
             if(character != null)
             {
-                chara = character;
                 CharBody body = character.chaBody;
                 string prefix = "cf_";
                 if(!cameraTarget)
@@ -178,7 +232,7 @@ namespace LockOnPlugin
                     }
                 }
 
-                if(lastBonePos == null) lastBonePos = camera.transBase.InverseTransformPoint(cameraTarget.transform.position);
+                if(lastBonePos == null) lastBonePos = cameraTarget.transform.position;
                 normalCameraMoveSpeed = camera.moveSpeed;
                 camera.moveSpeed = 0.0f;
 
@@ -188,10 +242,9 @@ namespace LockOnPlugin
 
         private void LockOn(GameObject bone)
         {
-            CharFemale character = instance.female;
+            CharFemale character = FindObjectsOfType<CharFemale>()[1];
             if(character != null)
             {
-                chara = character;
                 cameraTarget = bone;
 
                 if(lastBonePos == null) lastBonePos = cameraTarget.transform.position;
@@ -206,43 +259,17 @@ namespace LockOnPlugin
         {
             if(cameraTarget)
             {
-	            lockRotation = false;
-	            lastTargetAngle = null;
-	            cameraTarget = null;
-	            lastBonePos = null;
-	
-	            if(camera.moveSpeed <= 0.0f && normalCameraMoveSpeed > 0.0f)
-	                camera.moveSpeed = normalCameraMoveSpeed;
-	            else if(camera.moveSpeed <= 0.0f)
-	                camera.moveSpeed = defaultCameraMoveSpeed;
-	
-	            CreateInfoMsg("Camera unlocked");
-            }
-        }
+                lockRotation = false;
+                lastTargetAngle = null;
+                cameraTarget = null;
+                lastBonePos = null;
 
-        private void CharaHasBeenSwitched()
-        {
-            CharFemale newChara = instance.female;
+                if(camera.moveSpeed <= 0.0f && normalCameraMoveSpeed > 0.0f)
+                    camera.moveSpeed = normalCameraMoveSpeed;
+                else if(camera.moveSpeed <= 0.0f)
+                    camera.moveSpeed = defaultCameraMoveSpeed;
 
-            if(chara != newChara)
-            {
-                LockOnRelease();
-
-                if(newChara == null)
-                {
-                    Console.WriteLine("Nothing important selected");
-                    chara = null;
-                    charaBones = null;
-                    charaIntersections = null;
-                    showLockOnTargets = false;
-                }
-                else
-                {
-                    Console.WriteLine("Switched to female");
-                    chara = newChara;
-                    UpdateCharaBones(chara);
-                    UpdateCharaIntersections(chara);
-                }
+                CreateInfoMsg("Camera unlocked");
             }
         }
 
@@ -328,12 +355,12 @@ namespace LockOnPlugin
                 guiTimeFov -= Time.deltaTime;
             }
 
-            if(showInfoMsg && guiTimeInfo > 0.0f && sprite.categoryToggleOption.isActiveAndEnabled)
+            if(showInfoMsg && guiTimeInfo > 0.0f && customControl.cvsMainMenu.isActiveAndEnabled)
             {
                 DebugGUI(0.5f, 0.0f, 200f, 50f, infoMsg);
                 guiTimeInfo -= Time.deltaTime;
             }
-            
+
             if(showLockOnTargets && charaBones != null)
             {
                 foreach(GameObject bone in charaBones)
@@ -346,7 +373,7 @@ namespace LockOnPlugin
                     }
                 }
             }
-
+            
             if(debugMode)
             {
                 if(DebugGUI(0.50f, 0.0f, 100f, 50f, "guibones.txt"))
@@ -385,7 +412,7 @@ namespace LockOnPlugin
                     if(charaIntersections != null)
                     {
                         foreach(var item in charaIntersections)
-                            Console.WriteLine(item.name);
+                        Console.WriteLine(item.name);
                     }
                     else
                     {

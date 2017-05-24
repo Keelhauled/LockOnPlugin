@@ -1,12 +1,14 @@
 ﻿using IllusionPlugin;
 using UnityEngine;
+using System.IO;
+using System;
 
 namespace LockOnStudioPlugin
 {
-    public class LockOnStudioPlugin : IEnhancedPlugin
+    public class LockOnStudioPlugin : IEnhancedPlugin, IPlugin
     {
         public string Name => GetType().Name;
-        public string Version => "1.2.0";
+        public string Version => "1.3.0";
 
         public string[] Filter => new string[]
         {
@@ -16,8 +18,23 @@ namespace LockOnStudioPlugin
 
         public void OnLevelWasLoaded(int level)
         {
-            if(level == 1 && !GameObject.Find("LockOnStudioBehaviour"))
+            if(level == 1 && !GameObject.Find("LockOnStudioBehaviour") && BoneFilesExist())
                 new GameObject("LockOnStudioBehaviour").AddComponent<LockOnStudioBehaviour>();
+        }
+
+        private bool BoneFilesExist()
+        {
+            if(File.Exists("Plugins\\LockOnPlugin\\guibones.txt") ||
+            File.Exists("Plugins\\LockOnPlugin\\quickbones.txt") ||
+            File.Exists("Plugins\\LockOnPlugin\\intersections.txt"))
+            {
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Bone settings are missing");
+                return false;
+            }
         }
 
         public void OnUpdate(){}

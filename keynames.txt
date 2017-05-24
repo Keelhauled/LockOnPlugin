@@ -1,13 +1,9 @@
+// this is probably not complete, numpad keys missing etc
+
+
 numlock
 caps lock
 scroll lock
-right shift
-left shift
-right ctrl
-left ctrl
-right alt
-left alt
-
 backspace
 delete
 tab

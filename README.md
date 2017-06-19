@@ -43,7 +43,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 To adjust fov or camera tilt hold left shift/ctrl and drag with right mouse button while locked on.
 
 The hotkeys are intended to be used with the extra mouse buttons for maximum one handed action.  
-A little autohotkey script like this can make this mod a lot enjoyable to use.
+A little autohotkey script like this can make this mod a lot more enjoyable to use.
 ```
 #IfWinActive StudioNEO ahk_class UnityWndClass
   XButton2::n ; mouse extra button to lock on

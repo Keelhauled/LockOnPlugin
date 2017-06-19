@@ -8,32 +8,31 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 
 ## Installation
 1. Install Illusion Plugin Architecture (IPA)
-2. Throw the files into HoneySelect\Plugins folder
-3. Default hotkey is M, unlock by holding the same button for a bit
+2. Throw the files into "HoneySelect\Plugins" folder
+3. Default hotkey is N, unlock by holding the same button for a bit
 
-## Controls and everything else
-- press M to lock the camera target to specific parts of the target character (change parts in quickbones.txt)
-- press M while locked on to switch between different parts
-- hold M while locked on to unlock
-- press K to display lock on buttons for all parts that are specified in the guibones.txt and intersections.txt files
-- intersections.txt can be used to create new lock on points directly between two existing parts
-- press L to lock on to another character
-- press N to keep the camera angle the same relative to the target character
-(this means you can, for example, keep looking at their face even if they are spinning)
-- the rotation locking feature is still very wonky
-- option to change the list of parts you can switch between
-- if you don't want to hide the camera target indicator change HideCameraTarget to False
-- if you don't want to hide the cursor change ManageCursorVisibility to False
-- lots of other settings including keybindings in the modprefs.ini file
-- to adjust fov or camera tilt hold left shift/ctrl and drag with right mouse button while locked on
+## Settings
 
-## modprefs.ini
-- LockOnHotkey = false to disable or any value from [keynames.txt](keynames.txt), no modifiers
-- RotationHotkey = false to disable or any value from [keynames.txt](keynames.txt), no modifiers
-- CharaSwitchHotkey = false to disable or any value from [keynames.txt](keynames.txt), no modifiers
-- LockOnGuiHotkey = false to disable or any value from [keynames.txt](keynames.txt), no modifiers
-- LockedZoomSpeed = any number, negative values invert the zooming direction
-- LockedMinDistance = any positive number
-- LockedTrackingSpeed = any positive number
-- HideCameraTarget = true or false
-- ManageCursorVisibility = true or false
+Settings are located in "HoneySelect\UserData\modprefs.ini".
+
+### Hotkeys
+All hotkeys can be set to false to disable them or set to any value from [keynames.txt](keynames.txt), no modifiers
+- LockOnHotkey = lock on to the first target in quicktargets.txt on the selected character (default key = N)
+- LockOnGuiHotkey = enable/disable displaying clickable targets on the selected character (default key = K)
+- PrevCharaHotkey = select previous character in the work menu (default key = false)
+- NextCharaHotkey = select next character in the work menu (default key = L)
+
+### Other settings
+- LockedZoomSpeed = how fast zooming is when locked (negative values invert the zooming direction)
+- LockedMinDistance = minimum distance from the target (any positive number)
+- LockedTrackingSpeed = how fast the camera follows the target (any positive number)
+- ShowInfoMsg = whether to display messages about what the mod is doing (true/false)
+- ManageCursorVisibility = whethe to hide cursor when either mouse button is down (true/false)
+- HideCameraTarget = whether to hide the white camera target indicator thing (true/false)
+- ScrollThroughMalesToo = whether to scroll through males too with NextCharaHotkey (true/false)
+
+ ### Target settings
+ Target settings are located in "\HoneySelect\Plugins\LockOnPlugin\".
+ - quicktargets.txt contains targets for LockOnHotkey
+ - normaltargets.txt contains targets for LockOnGuiHotkey
+ - customtargets.txt contains additional custom targets that are between two normal targets for LockOnGuiHotkey

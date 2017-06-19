@@ -12,8 +12,7 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 3. Default hotkey is N, unlock by holding the same button for a bit
 
 ## Settings
-
-Settings are located in "HoneySelect\UserData\modprefs.ini".
+Settings are located in "HoneySelect\UserData\modprefs.ini"
 
 ### Hotkeys
 All hotkeys can be set to false to disable them or set to any value from [keynames.txt](keynames.txt), no modifiers
@@ -32,7 +31,19 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - ScrollThroughMalesToo = whether to scroll through males too with NextCharaHotkey (true/false)
 
  ### Target settings
- Target settings are located in "\HoneySelect\Plugins\LockOnPlugin\".
+ Target settings are located in "\HoneySelect\Plugins\LockOnPlugin\"
  - quicktargets.txt contains targets for LockOnHotkey
  - normaltargets.txt contains targets for LockOnGuiHotkey
  - customtargets.txt contains additional custom targets that are between two normal targets for LockOnGuiHotkey
+
+## Control tips
+To adjust fov or camera tilt hold left shift/ctrl and drag with right mouse button while locked on.
+
+The hotkeys are intended to be used with the extra mouse buttons for the maximum one handed action.  
+A little autohotkey script like this can make this mod a lot enjoyable to use.
+```
+#IfWinActive StudioNEO ahk_class UnityWndClass
+  XButton2::n ; mouse extra button to lock on
+  MButton::k ; middle click to show gui targets
+#IfWinActive
+```

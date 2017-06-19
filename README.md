@@ -11,12 +11,15 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 2. Throw the files into "HoneySelect\Plugins" folder
 3. Default hotkey is N, unlock by holding the same button for a bit
 
+## Download
+The latest release should always be [here](../../releases)
+
 ## Settings
 Settings are located in "HoneySelect\UserData\modprefs.ini"
 
 ### Hotkeys
 All hotkeys can be set to false to disable them or set to any value from [keynames.txt](keynames.txt), no modifiers
-- LockOnHotkey = lock on to the first target in quicktargets.txt on the selected character (default key = N)
+- LockOnHotkey = lock on to targets in quicktargets.txt on the selected character (default key = N)
 - LockOnGuiHotkey = enable/disable displaying clickable targets on the selected character (default key = K)
 - PrevCharaHotkey = select previous character in the work menu (default key = false)
 - NextCharaHotkey = select next character in the work menu (default key = L)
@@ -28,7 +31,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - ShowInfoMsg = whether to display messages about what the mod is doing (true/false)
 - ManageCursorVisibility = whethe to hide cursor when either mouse button is down (true/false)
 - HideCameraTarget = whether to hide the white camera target indicator thing (true/false)
-- ScrollThroughMalesToo = whether to scroll through males too with NextCharaHotkey (true/false)
+- ScrollThroughMalesToo = whether to scroll through males too with PrevCharaHotkey/NextCharaHotkey (true/false)
 
  ### Target settings
  Target settings are located in "\HoneySelect\Plugins\LockOnPlugin\"

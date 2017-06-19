@@ -29,7 +29,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - LockedMinDistance = minimum distance from the target (any positive number)
 - LockedTrackingSpeed = how fast the camera follows the target (any positive number)
 - ShowInfoMsg = whether to display messages about what the mod is doing (true/false)
-- ManageCursorVisibility = whethe to hide cursor when either mouse button is down (true/false)
+- ManageCursorVisibility = whether to hide the cursor when either mouse button is down (true/false)
 - HideCameraTarget = whether to hide the white camera target indicator thing (true/false)
 - ScrollThroughMalesToo = whether to scroll through males too with PrevCharaHotkey/NextCharaHotkey (true/false)
 
@@ -42,7 +42,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 ## Control tips
 To adjust fov or camera tilt hold left shift/ctrl and drag with right mouse button while locked on.
 
-The hotkeys are intended to be used with the extra mouse buttons for the maximum one handed action.  
+The hotkeys are intended to be used with the extra mouse buttons for maximum one handed action.  
 A little autohotkey script like this can make this mod a lot enjoyable to use.
 ```
 #IfWinActive StudioNEO ahk_class UnityWndClass

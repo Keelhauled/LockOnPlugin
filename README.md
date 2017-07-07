@@ -32,12 +32,13 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - ManageCursorVisibility = whether to hide the cursor when either mouse button is down (true/false)
 - HideCameraTarget = whether to hide the white camera target indicator thing (true/false)
 - ScrollThroughMalesToo = whether to scroll through males too with PrevCharaHotkey/NextCharaHotkey (true/false)
+- NearClipPlane = governs how close you can be to objects before clipping through them (values smaller than 0.03 may cause glitches)
 
 ### LockOnPlugin.Gamepad
-- ControllerEnabled = enable or disable gamepad controls completely
-- ControllerMoveSpeed = right stick camera movement sensitivity
-- ControllerZoomSpeed = camera zoom sensitivity
-- ControllerRotSpeed = left stick camera rotation sensitivity
+- ControllerEnabled = enable or disable gamepad controls completely (true/false)
+- ControllerMoveSpeed = right stick camera movement sensitivity (values between 0.0 - 1.0)
+- ControllerZoomSpeed = camera zoom sensitivity (values between 0.0 - 1.0)
+- ControllerRotSpeed = left stick camera rotation sensitivity (values between 0.0 - 1.0)
 
  ### Target settings
  Target settings are located in "\HoneySelect\Plugins\LockOnPlugin\"

@@ -1,11 +1,9 @@
 
-*.pdb
+obj/
+OldCode/
+LockOnStudioPluginParty/
+.vs/
 *.user
-*.cache
-*/obj/*
-/OldCode/*
-.vs/*
-demovideo.m4v
 *.txt
 !keynames.txt
-/LockOnStudioPluginParty/*
+demovideo.m4v

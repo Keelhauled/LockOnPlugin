@@ -31,6 +31,7 @@ namespace LockOnPlugin
         protected Hotkey prevCharaHotkey;
         protected Hotkey nextCharaHotkey;
         protected Hotkey rotationHotkey;
+        protected Hotkey resetOffsetHotkey;
         protected float lockedMinDistance;
         protected float trackingSpeedNormal;
         protected float trackingSpeedRotation = 0.2f;
@@ -72,6 +73,7 @@ namespace LockOnPlugin
             prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "PrevCharaHotkey", "false", true));
             nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "NextCharaHotkey", "L", true));
             rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "false", true));
+            resetOffsetHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "ResetOffsetHotkey", "false", true));
             lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0.0f, true));
             trackingSpeedNormal = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true));
             showInfoMsg = ModPrefs.GetString("LockOnPlugin.Misc", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
@@ -96,6 +98,7 @@ namespace LockOnPlugin
             prevCharaHotkey.KeyDownAction(() => CharaSwitch(false));
             nextCharaHotkey.KeyDownAction(() => CharaSwitch(true));
             //rotationHotkey.KeyDownAction(RotationLockToggle);
+            resetOffsetHotkey.KeyDownAction(() => targetOffsetAmount = new Vector3());
 
             if(lockOnTarget)
             {
@@ -393,11 +396,6 @@ namespace LockOnPlugin
             {
                 LockOnRelease();
             }
-
-            //if(Input.GetKeyDown(KeyCode.JoystickButton2))
-            //{
-                
-            //}
 
             if(Input.GetKeyDown(KeyCode.JoystickButton3))
             {

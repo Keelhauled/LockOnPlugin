@@ -1,5 +1,6 @@
 ﻿using IllusionUtility.GetUtility;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace LockOnPluginUtilities
@@ -11,15 +12,6 @@ namespace LockOnPluginUtilities
         private List<GameObject> normalTargets = new List<GameObject>();
         private List<CustomTarget> customTargets = new List<CustomTarget>();
 
-        private List<string> normalTargetNames;
-        private List<string[]> customTargetNames;
-
-        public CameraTargetManager()
-        {
-            normalTargetNames = FileManager.GetNormalTargetNames();
-            customTargetNames = FileManager.GetCustomTargetNames();
-        }
-
         public List<GameObject> GetAllTargets()
         {
             return allTargets;
@@ -30,11 +22,11 @@ namespace LockOnPluginUtilities
             return allTargetsMultiple;
         }
 
-        public void UpdateCustomTargetPositions()
+        public void UpdateCustomTargetTransforms()
         {
             foreach(CustomTarget target in customTargets)
             {
-                target.UpdateTargetPosition();
+                target.UpdateTargetTransform();
             }
         }
 
@@ -100,7 +92,7 @@ namespace LockOnPluginUtilities
         {
             List<GameObject> normalTargets = new List<GameObject>();
 
-            foreach(string targetName in normalTargetNames)
+            foreach(string targetName in FileManager.GetNormalTargetNames())
             {
                 GameObject bone = character.chaBody.objBone.transform.FindLoop(prefix + targetName);
                 if(bone) normalTargets.Add(bone);
@@ -113,13 +105,22 @@ namespace LockOnPluginUtilities
         {
             List<CustomTarget> customTargets = new List<CustomTarget>();
 
-            foreach(string[] data in customTargetNames)
+            foreach(List<string> data in FileManager.GetCustomTargetNames())
             {
                 GameObject point1 = character.chaBody.objBone.transform.FindLoop(prefix + data[1]);
                 GameObject point2 = character.chaBody.objBone.transform.FindLoop(prefix + data[2]);
                 if(point1 && point2)
                 {
-                    CustomTarget target = new CustomTarget(data[0], point1, point2);
+                    float midpoint = 0.5f;
+                    if(data.ElementAtOrDefault(3) != null)
+                    {
+                        if(!float.TryParse(data[3], out midpoint))
+                        {
+                            midpoint = 0.5f;
+                        }
+                    }
+
+                    CustomTarget target = new CustomTarget(data[0], point1, point2, midpoint);
                     customTargets.Add(target);
                 }
             }
@@ -134,23 +135,38 @@ namespace LockOnPluginUtilities
         private GameObject target;
         private GameObject point1;
         private GameObject point2;
+        private float midpoint;
 
-        public CustomTarget(string newName, GameObject newPoint1, GameObject newPoint2)
+        public CustomTarget(string newName, GameObject newPoint1, GameObject newPoint2, float newMidpoint = 0.5f)
         {
             name = newName;
             target = new GameObject(name);
 
             point1 = newPoint1;
             point2 = newPoint2;
+            midpoint = newMidpoint;
 
-            UpdateTargetPosition();
+            UpdateTargetTransform();
         }
 
-        public void UpdateTargetPosition()
+        public void UpdateTargetTransform()
+        {
+            UpdateTargetPosition();
+            UpdateTargetAngle();
+        }
+
+        private void UpdateTargetPosition()
         {
             Vector3 pos1 = point1.transform.position;
             Vector3 pos2 = point2.transform.position;
-            target.transform.position = Vector3.Lerp(pos1, pos2, 0.5f);
+            target.transform.position = Vector3.Lerp(pos1, pos2, midpoint);
+        }
+
+        private void UpdateTargetAngle()
+        {
+            Quaternion rot1 = point1.transform.rotation;
+            Quaternion rot2 = point2.transform.rotation;
+            target.transform.rotation = Quaternion.Slerp(rot1, rot2, 0.5f);
         }
 
         public GameObject GetTarget() => target;

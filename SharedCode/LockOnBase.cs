@@ -16,68 +16,101 @@ namespace LockOnPlugin
         protected abstract float CameraFov { get; set; }
         protected abstract Vector3 CameraDir { get; set; }
         protected abstract bool CameraTargetTex { set; }
+        protected abstract float CameraZoomSpeed { get; }
+        protected abstract Transform CameraTransform { get; }
+
+        protected Vector3 targetOffsetAmount = new Vector3();
+        protected Vector3 TargetOffsetAdjusted => (CameraTransform.right * targetOffsetAmount.x) + (Vector3.up * targetOffsetAmount.y); // best version yet
+        //protected Vector3 TargetOffsetAdjusted => (CameraTransform.right * targetOffsetAmount.x) + (CameraTransform.up * targetOffsetAmount.y); // bad
+        //protected Vector3 TargetOffsetAdjusted => (CameraTransform.right * targetOffsetAmount.x) + (lockOnTarget.transform.up * targetOffsetAmount.y); // confusing
 
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;
         protected Hotkey prevCharaHotkey;
         protected Hotkey nextCharaHotkey;
         protected Hotkey rotationHotkey;
-        protected float lockedZoomSpeed;
         protected float lockedMinDistance;
-        protected float trackingSpeed;
+        protected float trackingSpeedNormal;
+        protected float trackingSpeedRotation = 0.2f;
         protected bool manageCursorVisibility;
         protected bool scrollThroughMalesToo;
+        protected bool showInfoMsg;
 
-        protected GameObject lockOnTarget;
+        protected bool controllerEnabled;
+        protected float controllerMoveSpeed;
+        protected float controllerZoomSpeed;
+        protected float controllerRotSpeed;
+
         protected CameraTargetManager targetManager;
-        protected Vector3? lastTargetPos;
-        protected List<string> targetList;
         protected CharInfo currentCharaInfo;
-        
+        protected GameObject lockOnTarget;
+        protected Vector3? lastTargetPos;
+        protected Vector3 lastTargetAngle;
+        protected bool lockRotation = false;
+        protected bool showLockOnTargets = false;
         protected float defaultCameraSpeed;
         protected float targetSize = 25.0f;
         protected float guiTimeAngle = 0.0f;
         protected float guiTimeFov = 0.0f;
         protected float guiTimeInfo = 0.0f;
-        protected bool showLockOnTargets = false;
-        protected bool showInfoMsg;
         protected string infoMsg = "";
-        
+        protected Vector2 infoMsgPosition = new Vector2();
+
         protected virtual void Start()
         {
             targetManager = new CameraTargetManager();
-            targetList = FileManager.GetQuickTargetNames();
             defaultCameraSpeed = CameraMoveSpeed;
+            LoadSettings();
+        }
 
+        protected virtual void LoadSettings()
+        {
             lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "N", true), 0.4f);
             lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", "K", true));
             prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "PrevCharaHotkey", "false", true));
             nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "NextCharaHotkey", "L", true));
             rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "false", true));
-            lockedZoomSpeed = ModPrefs.GetFloat("LockOnPlugin", "LockedZoomSpeed", 5.0f, true);
-            lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.2f, true));
-            trackingSpeed = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true));
-            showInfoMsg = Convert.ToBoolean(ModPrefs.GetString("LockOnPlugin", "ShowInfoMsg", "False", true));
+            lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.0f, true));
+            trackingSpeedNormal = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true));
+            showInfoMsg = ModPrefs.GetString("LockOnPlugin", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
             manageCursorVisibility = ModPrefs.GetString("LockOnPlugin", "ManageCursorVisibility", "True", true).ToLower() == "true" ? true : false;
             CameraTargetTex = ModPrefs.GetString("LockOnPlugin", "HideCameraTarget", "True", true).ToLower() == "true" ? false : true;
             scrollThroughMalesToo = ModPrefs.GetString("LockOnPlugin", "ScrollThroughMalesToo", "False", true).ToLower() == "true" ? true : false;
+
+            controllerEnabled = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerEnabled", "True", true).ToLower() == "true" ? true : false;
+            controllerMoveSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerMoveSpeed", 0.3f, true);
+            controllerZoomSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerZoomSpeed", 0.2f, true);
+            controllerRotSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerRotSpeed", 0.4f, true);
         }
-        
+
         protected virtual void Update()
         {
-            if(showLockOnTargets) targetManager.UpdateCustomTargetPositions();
+            if(controllerEnabled) GamepadControls();
+            targetManager.UpdateCustomTargetTransforms();
 
-            lockOnHotkey.KeyUpAction(LockOn);
             lockOnHotkey.KeyHoldAction(LockOnRelease);
+            lockOnHotkey.KeyUpAction(() => LockOn());
             lockOnGuiHotkey.KeyDownAction(ToggleLockOnGUI);
+            prevCharaHotkey.KeyDownAction(() => CharaSwitch(false));
+            nextCharaHotkey.KeyDownAction(() => CharaSwitch(true));
+            //rotationHotkey.KeyDownAction(RotationLockToggle);
 
             if(lockOnTarget)
             {
-                float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos, distance * trackingSpeed);
-                lastTargetPos = lockOnTarget.transform.position;
+                float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
 
-                if(Input.GetMouseButton(1))
+                if(Input.GetMouseButton(0) && Input.GetMouseButton(1))
+                {
+                    float x = Input.GetAxis("Mouse X");
+                    float y = Input.GetAxis("Mouse Y");
+                    if(Mathf.Abs(x) > 0 || Mathf.Abs(y) > 0)
+                    {
+                        targetOffsetAmount.x += x * defaultCameraSpeed;
+                        targetOffsetAmount.y += y * defaultCameraSpeed;
+                        trackingSpeed = 1.0f;
+                    }
+                }
+                else if(Input.GetMouseButton(1))
                 {
                     float x = Input.GetAxis("Mouse X");
                     if(Input.GetKey("left ctrl"))
@@ -86,7 +119,7 @@ namespace LockOnPlugin
                         if(Mathf.Abs(x) > 0)
                         {
                             //camera tilt adjustment
-                            float newAngle = CameraAngle.z - x * Time.deltaTime * 50.0f;
+                            float newAngle = CameraAngle.z - x;
                             newAngle = Mathf.Repeat(newAngle, 360.0f);
                             CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
                         }
@@ -97,22 +130,39 @@ namespace LockOnPlugin
                         if(Mathf.Abs(x) > 0)
                         {
                             //fov adjustment
-                            float newFov = CameraFov + x * Time.deltaTime * 15.0f;
-                            newFov = Mathf.Clamp(newFov, 10.0f, 100.0f);
+                            float newFov = CameraFov + x;
+                            newFov = Mathf.Clamp(newFov, 1.0f, 300.0f);
                             CameraFov = newFov;
                         }
                     }
                     else if(Mathf.Abs(x) > 0)
                     {
                         //handle zooming manually when camera.movespeed = 0
-                        float newDir = CameraDir.z - x * Time.deltaTime * lockedZoomSpeed;
+                        float newDir = CameraDir.z - x * CameraZoomSpeed;
                         if(newDir >= -lockedMinDistance) newDir = -lockedMinDistance;
                         CameraDir = new Vector3(0.0f, 0.0f, newDir);
                     }
                 }
+
+                float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
+                if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + TargetOffsetAdjusted, distance * trackingSpeed);
+                lastTargetPos = LockOnTargetPos + TargetOffsetAdjusted;
             }
 
-            if(manageCursorVisibility)
+            if(lockRotation)
+            {
+                Vector3 targetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
+                Vector3 difference = targetAngle - lastTargetAngle;
+                CameraAngle += new Vector3(-difference.x, -difference.y, -difference.z);
+                lastTargetAngle = targetAngle;
+            }
+
+            if(Input.GetKeyDown(KeyCode.Escape))
+            {
+                showLockOnTargets = false;
+            }
+
+            if(Hotkey.allowHotkeys && manageCursorVisibility)
             {
                 if(Input.GetMouseButton(0) || Input.GetMouseButton(1))
                 {
@@ -127,6 +177,12 @@ namespace LockOnPlugin
         
         protected virtual void OnGUI()
         {
+            if(showInfoMsg && guiTimeInfo > 0.0f)
+            {
+                DebugGUI(infoMsgPosition.x, infoMsgPosition.y, 200f, 45f, infoMsg);
+                guiTimeInfo -= Time.deltaTime;
+            }
+
             if(guiTimeAngle > 0.0f)
             {
                 DebugGUI(0.5f, 0.5f, 100f, 50f, "Camera tilt\n" + CameraAngle.z.ToString("0.0"));
@@ -152,49 +208,29 @@ namespace LockOnPlugin
             }
         }
         
-        protected virtual void LockOn()
+        protected virtual bool LockOn()
         {
             if(currentCharaInfo)
             {
-                string prefix = currentCharaInfo is CharFemale ? "cf_" : "cm_";
-
+                List<string> targetList = currentCharaInfo is CharFemale ? FileManager.GetQuickFemaleTargetNames() : FileManager.GetQuickMaleTargetNames();
+                
                 if(!lockOnTarget)
                 {
-                    LockOn(prefix + targetList[0]);
+                    return LockOn(targetList[0]);
                 }
                 else
                 {
-                    bool targetChanged = false; // if locked on to something not in quicktargets.txt, lock on to first quicktarget
-
                     for(int i = 0; i < targetList.Count; i++)
                     {
-                        if(lockOnTarget.name == prefix + targetList[i])
+                        if(lockOnTarget.name == targetList[i])
                         {
                             int next = i + 1 > targetList.Count - 1 ? 0 : i + 1;
-                            LockOn(prefix + targetList[next]);
-                            targetChanged = true;
-                            break;
+                            return LockOn(targetList[next]);
                         }
                     }
-
-                    if(!targetChanged)
-                    {
-                        LockOn(prefix + targetList[0]);
-                    }
+                    
+                    return LockOn(targetList[0]);
                 }
-            }
-        }
-
-        protected virtual bool LockOn(GameObject target)
-        {
-            if(target)
-            {
-                lockOnTarget = target;
-                if(lastTargetPos == null) lastTargetPos = lockOnTarget.transform.position;
-                CameraMoveSpeed = 0.0f;
-
-                CreateInfoMsg("Locked to \"" + lockOnTarget.name + "\"");
-                return true;
             }
 
             return false;
@@ -206,14 +242,34 @@ namespace LockOnPlugin
             {
                 if(target.name.Substring(3) == targetName.Substring(3))
                 {
-                    LockOn(target);
-                    return true;
+                    if(LockOn(target))
+                    {
+                        targetOffsetAmount = new Vector3();
+                        return true;
+                    }
                 }
             }
 
             if(lockOnAnyway)
             {
-                LockOn();
+                if(LockOn())
+                {
+                    targetOffsetAmount = new Vector3();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected virtual bool LockOn(GameObject target)
+        {
+            if(target)
+            {
+                lockOnTarget = target;
+                if(lastTargetPos == null) lastTargetPos = LockOnTargetPos + TargetOffsetAdjusted;
+                CameraMoveSpeed = 0.0f;
+                CreateInfoMsg("Locked to \"" + lockOnTarget.name + "\"");
                 return true;
             }
 
@@ -224,10 +280,11 @@ namespace LockOnPlugin
         {
             if(lockOnTarget)
             {
+                targetOffsetAmount = new Vector3();
                 lockOnTarget = null;
                 lastTargetPos = null;
+                lockRotation = false;
                 CameraMoveSpeed = defaultCameraSpeed;
-
                 CreateInfoMsg("Camera unlocked");
             }
         }
@@ -240,13 +297,30 @@ namespace LockOnPlugin
             }
         }
 
+        protected virtual void CharaSwitch(bool scrollDown = true){}
+
+        protected virtual void RotationLockToggle()
+        {
+            if(lockRotation)
+            {
+                lockRotation = false;
+                CreateInfoMsg("Rotation released");
+            }
+            else
+            {
+                lockRotation = true;
+                lastTargetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
+                CreateInfoMsg("Rotation locked");
+            }
+        }
+
         protected void CreateInfoMsg(string msg, float time = 3.0f)
         {
             infoMsg = msg;
             guiTimeInfo = time;
         }
 
-        protected bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
+        protected static bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
         {
             float xpos = Screen.width * screenWidthMult - width / 2.0f;
             float ypos = Screen.height * screenHeightMult - height / 2.0f;
@@ -255,21 +329,118 @@ namespace LockOnPlugin
             return GUI.Button(new Rect(xpos, ypos, width, height), msg);
         }
 
-        protected FieldType GetSecureField<ObjectType, FieldType>(string fieldName)
+        protected static FieldType GetSecureField<ObjectType, FieldType>(string fieldName)
             where ObjectType : UnityEngine.Object
             where FieldType : class
         {
             try
             {
                 ObjectType target = FindObjectOfType<ObjectType>();
-                FieldInfo fieldinfo = typeof(Studio.CameraControl).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldType field = (fieldinfo.GetValue(target)) as FieldType;
+                FieldInfo fieldinfo = typeof(ObjectType).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldType field = fieldinfo.GetValue(target) as FieldType;
                 return field;
             }
             catch(Exception ex)
             {
                 Console.WriteLine(ex);
-                throw ex;
+                return null;
+            }
+        }
+
+        protected static Vector3 CameraAdjustedEulerAngles(GameObject target, Transform cameraTransform)
+        {
+            float x = AngleSigned(target.transform.forward, Vector3.forward, cameraTransform.right);
+            float y = AngleSigned(target.transform.right, Vector3.right, cameraTransform.up);
+            float z = AngleSigned(target.transform.up, Vector3.up, cameraTransform.forward);
+            return new Vector3(x, y, z);
+        }
+
+        protected static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
+        {
+            return Mathf.Atan2(
+                Vector3.Dot(n, Vector3.Cross(v1, v2)),
+                Vector3.Dot(v1, v2)) * Mathf.Rad2Deg;
+        }
+        
+        protected static bool PluginInstalled(string name, string version = "")
+        {
+            foreach(var item in IllusionInjector.PluginManager.Plugins)
+            {
+                if(item.Name == name)
+                {
+                    if(version != "" && item.Version != version)
+                    {
+                        return false;
+                    }
+                    
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected void GamepadControls()
+        {
+            if(Input.GetKeyDown(KeyCode.JoystickButton0))
+            {
+                LockOn();
+            }
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton1))
+            {
+                LockOnRelease();
+            }
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton2))
+            {
+                
+            }
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton3))
+            {
+                CharaSwitch(true);
+            }
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton9))
+            {
+                targetOffsetAmount = new Vector3();
+            }
+
+            float ly = Input.GetAxis("Oculus_GearVR_LThumbstickX");
+            float lx = Input.GetAxis("Oculus_GearVR_LThumbstickY");
+            Vector2 cameraInput = new Vector2(ly, lx);
+            if(cameraInput.magnitude > 0.2f)
+            {
+                if(Input.GetKey(KeyCode.JoystickButton4))
+                {
+                    float newDir = CameraDir.z + lx * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
+                    if(newDir >= -lockedMinDistance) newDir = -lockedMinDistance;
+                    CameraDir = new Vector3(0.0f, 0.0f, newDir);
+                }
+                else
+                {
+                    float power = Mathf.Lerp(1.0f, 4.0f, controllerRotSpeed);
+                    CameraAngle += new Vector3(lx * power, -ly * power, 0.0f);
+                }
+            }
+            
+            float ry = Input.GetAxis("Oculus_GearVR_RThumbstickY");
+            float rx = Input.GetAxis("Oculus_GearVR_DpadX");
+            Vector2 stickInput = new Vector2(rx, ry);
+            if(stickInput.magnitude > 0.2f)
+            {
+                if(lockOnTarget)
+                {
+                    float power = Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
+                    targetOffsetAmount.x += -ry * power;
+                    targetOffsetAmount.y += -rx * power;
+                }
+                else
+                {
+                    float power = Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
+                    CameraTargetPos += (CameraTransform.right * -ry * power) + (CameraTransform.up * -rx * power);
+                }
             }
         }
     }

@@ -1,51 +1,58 @@
-﻿using System;
+﻿using IllusionUtility.GetUtility;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using IllusionPlugin;
 using UnityEngine;
+using UnityEngine.UI;
 using Studio;
+using Manager;
+using LockOnPluginUtilities;
 
 namespace LockOnPlugin
 {
     internal partial class NeoMono : LockOnBase
     {
-        private Studio.CameraControl camera;
+        private Studio.Studio studio => Singleton<Studio.Studio>.Instance;
+        private Studio.CameraControl camera => studio.cameraCtrl;
+        private TreeNodeCtrl treeNodeCtrl => studio.treeNodeCtrl;
+
         private Studio.CameraControl.CameraData cameraData;
         private OCIChar currentCharaOCI;
 
         protected override void Start()
         {
-            camera = Singleton<Studio.Studio>.Instance.cameraCtrl;
-            cameraData = GetSecureField<Studio.CameraControl, Studio.CameraControl.CameraData>("cameraData");
-            Singleton<Studio.Studio>.Instance.treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
-            Singleton<Studio.Studio>.Instance.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
-
             base.Start();
 
+            cameraData = GetSecureField<Studio.CameraControl, Studio.CameraControl.CameraData>("cameraData"); //studio.sceneInfo.cameraData
+            treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
+            studio.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
+            Transform systemMenuContent = studio.gameObject.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
+            systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
+            systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
+            systemMenuContent.Find("Option").GetComponent<Button>().onClick.AddListener(() => InstallNearClipPlaneSlider());
+            StartCoroutine(InstallSettingsReloadButton());
+        }
+
+        protected override void LoadSettings()
+        {
+            base.LoadSettings();
+
             manageCursorVisibility = false;
+            infoMsgPosition = new Vector2(1.0f, 1.0f);
+            Camera.main.nearClipPlane = ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true);
+
+            //studio.sceneInfo.enableVignette = false;
+            //studio.sceneInfo.enableBloom = false;
+            //studio.sceneInfo.enableDepth = false;
+            //studio.sceneInfo.enableFog = false;
         }
 
-        protected override void Update()
-        {
-            base.Update();
-
-            prevCharaHotkey.KeyDownAction(() => CharaSwitch(false, scrollThroughMalesToo));
-            nextCharaHotkey.KeyDownAction(() => CharaSwitch(true, scrollThroughMalesToo));
-        }
-
-        protected override void OnGUI()
-        {
-            base.OnGUI();
-
-            if(showInfoMsg && guiTimeInfo > 0.0f)
-            {
-                DebugGUI(1.0f, 0.0f, 200f, 50f, infoMsg);
-                guiTimeInfo -= Time.deltaTime;
-            }
-        }
-
-        private void OnSelectWork(TreeNodeObject _node)
+        private void OnSelectWork(TreeNodeObject node)
         {
             ObjectCtrlInfo objectCtrlInfo = null;
-            if(Singleton<Studio.Studio>.Instance.dicInfo.TryGetValue(_node, out objectCtrlInfo))
+            if(studio.dicInfo.TryGetValue(node, out objectCtrlInfo))
             {
                 if(objectCtrlInfo.kind == 0)
                 {
@@ -75,66 +82,112 @@ namespace LockOnPlugin
                 }
             }
 
+            LockOnRelease();
             showLockOnTargets = false;
+
             currentCharaOCI = null;
             currentCharaInfo = null;
             targetManager.UpdateAllTargets(null);
+        }
+
+        private void OnDeleteWork(ObjectCtrlInfo info)
+        {
+            if(info.kind == 0)
+            {
+                LockOnRelease();
+                showLockOnTargets = false;
+
+                currentCharaOCI = null;
+                currentCharaInfo = null;
+                targetManager.UpdateAllTargets(null);
+            }
+        }
+
+        private IEnumerator OnSceneMenuOpen()
+        {
+            SceneLoadScene scene;
+            while((scene = FindObjectOfType<SceneLoadScene>()) == null)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
             LockOnRelease();
-        }
+            showLockOnTargets = false;
 
-        private void OnDeleteWork(ObjectCtrlInfo _info)
-        {
-            ObjectCtrlInfo objectCtrlInfo = _info;
-            
-            if(objectCtrlInfo.kind == 0)
+            // if HSStudioNEOAddon is installed everything has to be cleared here already
+            if(PluginInstalled("HoneyStudioNEO Adddon"))
             {
-                OCIChar ocichar = objectCtrlInfo as OCIChar;
-
-                if(ocichar == currentCharaOCI)
-                {
-                    showLockOnTargets = false;
-                    currentCharaOCI = null;
-                    currentCharaInfo = null;
-                    targetManager.UpdateAllTargets(null);
-                    LockOnRelease();
-                }
-            }
-        }
-
-        protected override void LockOn()
-        {
-            TreeNodeCtrl nodeCtrl = Singleton<Studio.Studio>.Instance.treeNodeCtrl;
-
-            if(!nodeCtrl.selectNode)
-            {
-                List<TreeNodeObject> femaleNodes = GetCharaNodes<OCICharFemale>();
-                if(femaleNodes.Count > 0) nodeCtrl.SelectSingle(femaleNodes[0]);
-            }
-
-            base.LockOn();
-        }
-        
-        private void CharaSwitch(bool scrollDown, bool malesToo)
-        {
-            TreeNodeCtrl nodeCtrl = Singleton<Studio.Studio>.Instance.treeNodeCtrl;
-            List<TreeNodeObject> charaNodes = malesToo ? GetCharaNodes<OCIChar>() : GetCharaNodes<OCICharFemale>();
-
-            if(!nodeCtrl.selectNode && charaNodes.Count > 0)
-            {
-                nodeCtrl.SelectSingle(charaNodes[0]);
+                currentCharaOCI = null;
+                currentCharaInfo = null;
+                targetManager.UpdateAllTargets(null);
+                treeNodeCtrl.SelectSingle(null);
             }
             else
             {
-                for(int i = 0; i < charaNodes.Count; i++)
+                try
                 {
-                    if(charaNodes[i] == nodeCtrl.selectNode)
-                    {
-                        int next = i + 1 > charaNodes.Count - 1 ? 0 : i + 1;
-                        if(!scrollDown) next = i - 1 < 0 ? charaNodes.Count - 1 : i - 1;
-                        nodeCtrl.SelectSingle(charaNodes[next]);
-                        break;
-                    }
+                    Button buttonLoad = ((typeof(SceneLoadScene).GetField("buttonLoad", BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(scene)) as Button;
+                    buttonLoad.onClick.AddListener(OnSceneMenuLoad);
+                    Button buttonClose = ((typeof(SceneLoadScene).GetField("buttonClose", BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(scene)) as Button;
+                    buttonClose.onClick.AddListener(() => Hotkey.allowHotkeys = true);
+                    Hotkey.allowHotkeys = false;
                 }
+                catch(Exception ex)
+                {
+                    Hotkey.allowHotkeys = true;
+                    currentCharaOCI = null;
+                    currentCharaInfo = null;
+                    targetManager.UpdateAllTargets(null);
+                    treeNodeCtrl.SelectSingle(null);
+                    Console.WriteLine(ex);
+                }
+            }
+            
+            yield break;
+        }
+
+        private void OnSceneMenuLoad()
+        {
+            Hotkey.allowHotkeys = true;
+            currentCharaOCI = null;
+            currentCharaInfo = null;
+            targetManager.UpdateAllTargets(null);
+            StartCoroutine(FindObjectOfType<SceneLoadScene>().NotificationLoadCoroutine());
+            Singleton<Scene>.Instance.UnLoad();
+        }
+
+        protected override bool LockOn()
+        {
+            if(base.LockOn()) return true;
+
+            List<TreeNodeObject> charaNodes = scrollThroughMalesToo ? GetCharaNodes<OCIChar>() : GetCharaNodes<OCICharFemale>();
+            if(charaNodes.Count > 0)
+            {
+                studio.treeNodeCtrl.SelectSingle(charaNodes[0]);
+                if(base.LockOn()) return true;
+            }
+
+            return false;
+        }
+
+        protected override void CharaSwitch(bool scrollDown = true)
+        {
+            List<TreeNodeObject> charaNodes = scrollThroughMalesToo ? GetCharaNodes<OCIChar>() : GetCharaNodes<OCICharFemale>();
+
+            for(int i = 0; i < charaNodes.Count; i++)
+            {
+                if(charaNodes[i] == treeNodeCtrl.selectNode)
+                {
+                    int next = i + 1 > charaNodes.Count - 1 ? 0 : i + 1;
+                    if(!scrollDown) next = i - 1 < 0 ? charaNodes.Count - 1 : i - 1;
+                    treeNodeCtrl.SelectSingle(charaNodes[next]);
+                    return;
+                }
+            }
+
+            if(charaNodes.Count > 0)
+            {
+                treeNodeCtrl.SelectSingle(charaNodes[0]);
             }
         }
 
@@ -143,10 +196,10 @@ namespace LockOnPlugin
             List<TreeNodeObject> charaNodes = new List<TreeNodeObject>();
 
             int n = 0; TreeNodeObject nthNode;
-            while(nthNode = Singleton<Studio.Studio>.Instance.treeNodeCtrl.GetNode(n))
+            while(nthNode = treeNodeCtrl.GetNode(n))
             {
                 ObjectCtrlInfo objectCtrlInfo = null;
-                if(Singleton<Studio.Studio>.Instance.dicInfo.TryGetValue(nthNode, out objectCtrlInfo))
+                if(studio.dicInfo.TryGetValue(nthNode, out objectCtrlInfo))
                 {
                     if(objectCtrlInfo is CharaType)
                     {
@@ -157,6 +210,84 @@ namespace LockOnPlugin
             }
 
             return charaNodes;
+        }
+
+        private IEnumerator InstallSettingsReloadButton()
+        {
+            Transform systemMenuContent = studio.gameObject.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
+            if(systemMenuContent && !systemMenuContent.Find("LockOnPluginReload"))
+            {
+                // wait for HSStudioNEOAddon specifically
+                yield return new WaitForSeconds(0.1f);
+
+                List<Transform> buttonlist = new List<Transform>();
+                List<GameObject> menuContents = new List<GameObject>();
+                systemMenuContent.FindLoopAll(menuContents);
+                foreach(GameObject item in menuContents)
+                {
+                    if(item.GetComponent<Button>())
+                    {
+                        buttonlist.Add(item.transform);
+                    }
+                }
+                Transform parentButton = buttonlist[buttonlist.Count - 1];
+
+                GameObject newButton = Instantiate(parentButton.gameObject);
+                newButton.name = "LockOnPluginReload";
+                newButton.transform.SetParent(parentButton.transform.parent);
+                newButton.transform.Find("Text").gameObject.GetComponent<Text>().text = "LockOnPlugin rld";
+                newButton.transform.localPosition = parentButton.transform.localPosition - new Vector3(0f, 30f, 0f);
+                newButton.transform.localScale = Vector3.one;
+
+                Button buttonComponent = newButton.GetComponent<Button>();
+                buttonComponent.onClick = new Button.ButtonClickedEvent();
+                buttonComponent.onClick.AddListener(() =>
+                {
+                    LoadSettings();
+                    targetManager.UpdateAllTargets(currentCharaInfo);
+                });
+
+                Console.WriteLine("LockOnPlugin reload button installed");
+            }
+
+            yield break;
+        }
+
+        private void InstallNearClipPlaneSlider()
+        {
+            GameObject sliderParentObject = GameObject.Find("Slider Camera Speed");
+            if(sliderParentObject && !GameObject.Find("Slider NearClipPlane"))
+            {
+                GameObject nearClipSlider = Instantiate(sliderParentObject);
+                nearClipSlider.name = "Slider NearClipPlane";
+                nearClipSlider.transform.SetParent(sliderParentObject.transform);
+                nearClipSlider.transform.position = sliderParentObject.transform.position + new Vector3(45.0f, 82.0f, 0.0f);
+
+                Slider nearClipSliderComponent = nearClipSlider.GetComponent<Slider>();
+                nearClipSliderComponent.maxValue = 0.060f;
+                nearClipSliderComponent.minValue = 0.001f;
+                nearClipSliderComponent.value = ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true);
+                nearClipSliderComponent.onValueChanged = new Slider.SliderEvent();
+                nearClipSliderComponent.onValueChanged.AddListener((value) =>
+                {
+                    Camera.main.nearClipPlane = value;
+                    ModPrefs.SetFloat("LockOnPlugin", "NearClipPlane", value);
+                });
+
+                Console.WriteLine("NearClipPlane slider installed");
+            }
+
+            GameObject textParentObject = GameObject.Find("Text Camera Speed");
+            if(sliderParentObject && textParentObject && !GameObject.Find("Text NearClipPlane"))
+            {
+                GameObject nearClipText = Instantiate(textParentObject);
+                nearClipText.name = "Text NearClipPlane";
+                nearClipText.transform.SetParent(sliderParentObject.transform);
+                nearClipText.transform.position = sliderParentObject.transform.position + new Vector3(0.0f, 82.0f, 0.0f);
+                Text nearClipTextComponent = nearClipText.GetComponent<Text>();
+                nearClipTextComponent.text = "NearClip";
+                Console.WriteLine("NearClipPlane text installed");
+            }
         }
     }
 }

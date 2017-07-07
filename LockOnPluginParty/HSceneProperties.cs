@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace LockOnPlugin
 {
@@ -43,5 +44,17 @@ namespace LockOnPlugin
         {
             set { camera.isOutsideTargetTex = value; }
         }
+
+        protected override float CameraZoomSpeed
+        {
+            get { return defaultCameraSpeed; }
+        }
+
+        protected override Transform CameraTransform
+        {
+            get { return camera.transform; }
+        }
+
+        // Singleton<HScene>.Instance.sprite.categoryToggleOption.isActiveAndEnabled
     }
 }

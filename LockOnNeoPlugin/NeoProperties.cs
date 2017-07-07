@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace LockOnPlugin
 {
@@ -42,6 +43,16 @@ namespace LockOnPlugin
         protected override bool CameraTargetTex
         {
             set { camera.isConfigTargetTex = value; }
+        }
+
+        protected override float CameraZoomSpeed
+        {
+            get { return defaultCameraSpeed * Studio.Studio.optionSystem.cameraSpeed; }
+        }
+
+        protected override Transform CameraTransform
+        {
+            get { return camera.transform; }
         }
     }
 }

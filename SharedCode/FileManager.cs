@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace LockOnPluginUtilities
 {
     public static class FileManager
     {
+        private static string quickFemaleTargetNamesPath = Environment.CurrentDirectory + "\\Plugins\\LockOnPlugin\\quicktargetsfemale.txt";
+        private static string quickMaleTargetNamesPath = Environment.CurrentDirectory + "\\Plugins\\LockOnPlugin\\quicktargetsmale.txt";
         private static string normalTargetNamesPath = Environment.CurrentDirectory + "\\Plugins\\LockOnPlugin\\normaltargets.txt";
         private static string customTargetNamesPath = Environment.CurrentDirectory + "\\Plugins\\LockOnPlugin\\customtargets.txt";
-        private static string quickTargetNamesPath = Environment.CurrentDirectory + "\\Plugins\\LockOnPlugin\\quicktargets.txt";
 
         public static bool TargetSettingsExist()
         {
-            if(File.Exists(normalTargetNamesPath) &&
-            File.Exists(customTargetNamesPath) &&
-            File.Exists(quickTargetNamesPath))
+            if(File.Exists(quickFemaleTargetNamesPath) &&
+            File.Exists(quickMaleTargetNamesPath) &&
+            File.Exists(normalTargetNamesPath) &&
+            File.Exists(customTargetNamesPath))
             {
                 return true;
             }
@@ -25,22 +28,27 @@ namespace LockOnPluginUtilities
             }
         }
 
+        public static List<string> GetQuickFemaleTargetNames()
+        {
+            return GetTargetNames(quickFemaleTargetNamesPath);
+        }
+
+        public static List<string> GetQuickMaleTargetNames()
+        {
+            return GetTargetNames(quickMaleTargetNamesPath);
+        }
+
         public static List<string> GetNormalTargetNames()
         {
             return GetTargetNames(normalTargetNamesPath);
         }
 
-        public static List<string> GetQuickTargetNames()
+        public static List<List<string>> GetCustomTargetNames()
         {
-            return GetTargetNames(quickTargetNamesPath);
-        }
-
-        public static List<string[]> GetCustomTargetNames()
-        {
-            List<string[]> list = new List<string[]>();
+            List<List<string>> list = new List<List<string>>();
             foreach(string item in GetTargetNames(customTargetNamesPath))
             {
-                list.Add(item.Split('|'));
+                list.Add(item.Split('|').ToList());
             }
             return list;
         }

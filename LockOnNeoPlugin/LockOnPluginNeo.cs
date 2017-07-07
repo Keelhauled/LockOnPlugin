@@ -1,13 +1,14 @@
 ﻿using IllusionPlugin;
 using UnityEngine;
 using LockOnPluginUtilities;
+using System;
 
 namespace LockOnPlugin
 {
     public class LockOnPluginNeo : IEnhancedPlugin
     {
         public string Name => GetType().Name;
-        public string Version => "2.0.0";
+        public string Version => "2.1.0";
 
         public string[] Filter => new string[]
         {

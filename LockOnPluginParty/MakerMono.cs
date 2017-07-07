@@ -6,18 +6,22 @@ namespace LockOnPlugin
 {
     internal partial class MakerMono : LockOnBase
     {
-        private CameraControl camera;
-        private CustomControl customControl;
+        private CameraControl camera => Singleton<CameraControl>.Instance;
+        private CustomControl customControl => Singleton<CustomControl>.Instance;
 
         protected override void Start()
         {
-            currentCharaInfo = FindObjectsOfType<CharFemale>()[1];
-            camera = FindObjectOfType<CameraControl>();
-            customControl = FindObjectOfType<CustomControl>();
-
             base.Start();
 
+            currentCharaInfo = customControl.chainfo;
             targetManager.UpdateAllTargets(currentCharaInfo);
+        }
+
+        protected override void LoadSettings()
+        {
+            base.LoadSettings();
+            
+            infoMsgPosition = new Vector2(0.5f, 0.0f);
         }
 
         protected override void Update()
@@ -25,17 +29,6 @@ namespace LockOnPlugin
             base.Update();
 
             CameraSpeedHack();
-        }
-
-        protected override void OnGUI()
-        {
-            base.OnGUI();
-
-            if(showInfoMsg && guiTimeInfo > 0.0f && customControl.cvsMainMenu.isActiveAndEnabled)
-            {
-                DebugGUI(0.5f, 0.0f, 200f, 50f, infoMsg);
-                guiTimeInfo -= Time.deltaTime;
-            }
         }
 
         private void CameraSpeedHack()

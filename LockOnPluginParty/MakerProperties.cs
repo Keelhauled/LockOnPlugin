@@ -43,5 +43,17 @@ namespace LockOnPlugin
         {
             set { camera.isOutsideTargetTex = value; }
         }
+
+        protected override float CameraZoomSpeed
+        {
+            get { return defaultCameraSpeed; }
+        }
+
+        protected override Transform CameraTransform
+        {
+            get { return camera.transform; }
+        }
+
+        // Singleton<CustomControl>.Instance.cvsMainMenu.isActiveAndEnabled
     }
 }

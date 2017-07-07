@@ -72,6 +72,7 @@ namespace LockOnPlugin
             prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "PrevCharaHotkey", "false", true));
             nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "NextCharaHotkey", "L", true));
             rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "false", true));
+
             lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0.0f, true));
             trackingSpeedNormal = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true));
             showInfoMsg = ModPrefs.GetString("LockOnPlugin.Misc", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
@@ -109,7 +110,6 @@ namespace LockOnPlugin
                     {
                         targetOffsetAmount.x += x * defaultCameraSpeed;
                         targetOffsetAmount.y += y * defaultCameraSpeed;
-                        trackingSpeed = 1.0f;
                     }
                 }
                 else if(Input.GetMouseButton(1))
@@ -133,8 +133,7 @@ namespace LockOnPlugin
                         {
                             //fov adjustment
                             float newFov = CameraFov + x;
-                            newFov = Mathf.Clamp(newFov, 1.0f, 300.0f);
-                            CameraFov = newFov;
+                            CameraFov = Mathf.Clamp(newFov, 1.0f, 160.0f);
                         }
                     }
                     else if(Mathf.Abs(x) > 0)
@@ -405,17 +404,17 @@ namespace LockOnPlugin
                 CharaSwitch(true);
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton9))
-            {
-                targetOffsetAmount = new Vector3();
-            }
-
-            float ly = Input.GetAxis("Oculus_GearVR_LThumbstickX");
             float lx = Input.GetAxis("Oculus_GearVR_LThumbstickY");
-            Vector2 cameraInput = new Vector2(ly, lx);
-            if(cameraInput.magnitude > 0.2f)
+            float ly = Input.GetAxis("Oculus_GearVR_LThumbstickX");
+            if(new Vector2(lx, ly).magnitude > 0.2f)
             {
-                if(Input.GetKey(KeyCode.JoystickButton4))
+                if(Input.GetKey(KeyCode.JoystickButton5))
+                {
+                    guiTimeFov = 1.0f;
+                    float newFov = CameraFov + -lx;
+                    CameraFov = Mathf.Clamp(newFov, 1.0f, 160.0f);
+                }
+                else if(Input.GetKey(KeyCode.JoystickButton4))
                 {
                     float newDir = CameraDir.z + lx * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
                     if(newDir >= -lockedMinDistance) newDir = -lockedMinDistance;
@@ -424,14 +423,13 @@ namespace LockOnPlugin
                 else
                 {
                     float power = Mathf.Lerp(1.0f, 4.0f, controllerRotSpeed);
-                    CameraAngle += new Vector3(lx * power, -ly * power, 0.0f);
+                    CameraAngle += new Vector3(Mathf.Repeat(lx * power, 360.0f), Mathf.Repeat(-ly * power, 360.0f), 0.0f);
                 }
             }
             
-            float ry = Input.GetAxis("Oculus_GearVR_RThumbstickY");
             float rx = Input.GetAxis("Oculus_GearVR_DpadX");
-            Vector2 stickInput = new Vector2(rx, ry);
-            if(stickInput.magnitude > 0.2f)
+            float ry = Input.GetAxis("Oculus_GearVR_RThumbstickY");
+            if(new Vector2(rx, ry).magnitude > 0.2f)
             {
                 if(lockOnTarget)
                 {
@@ -444,6 +442,16 @@ namespace LockOnPlugin
                     float power = Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
                     CameraTargetPos += (CameraTransform.right * -ry * power) + (CameraTransform.up * -rx * power);
                 }
+            }
+
+            // goot place to practice delay after first tick when holding
+            float dx = Input.GetAxis("Oculus_GearVR_DpadY");
+            if(Math.Abs(dx) > 0)
+            {
+                guiTimeAngle = 1.0f;
+                float newAngle = CameraAngle.z - -dx;
+                newAngle = Mathf.Repeat(newAngle, 360.0f);
+                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
             }
         }
     }

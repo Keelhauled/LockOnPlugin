@@ -7,7 +7,7 @@ namespace LockOnPlugin
     public class LockOnPlugin : IEnhancedPlugin
     {
         public string Name => GetType().Name;
-        public string Version => "2.0.0";
+        public string Version => "2.1.0";
 
         public string[] Filter => new string[]
         {
@@ -17,8 +17,8 @@ namespace LockOnPlugin
 
         public void OnLevelWasLoaded(int level)
         {
-            //if(level == 15 && !GameObject.Find("HSceneMono") && FileManager.TargetSettingsExist())
-            //    new GameObject("HSceneMono").AddComponent<HSceneMono>();
+            if(level == 15 && !GameObject.Find("HSceneMono") && FileManager.TargetSettingsExist())
+                new GameObject("HSceneMono").AddComponent<HSceneMono>();
 
             if(level == 21 && !GameObject.Find("MakerMono") && FileManager.TargetSettingsExist())
                 new GameObject("MakerMono").AddComponent<MakerMono>();

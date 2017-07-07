@@ -9,7 +9,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public static string version = "2.1.0";
+        public static string version = "2.1.1";
 
         protected abstract float CameraMoveSpeed { get; set; }
         protected abstract Vector3 CameraTargetPos { get; set; }

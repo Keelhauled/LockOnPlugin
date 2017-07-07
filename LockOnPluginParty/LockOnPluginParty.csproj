@@ -62,11 +62,6 @@
       <HintPath>..\..\..\HoneySelect_64_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI.Translation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\HoneySelect_64_Data\Managed\UnityEngine.UI.Translation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedCode\FileManager.cs">

@@ -9,6 +9,8 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
+        public static string version = "2.1.0";
+
         protected abstract float CameraMoveSpeed { get; set; }
         protected abstract Vector3 CameraTargetPos { get; set; }
         protected abstract Vector3 LockOnTargetPos { get; }
@@ -65,17 +67,17 @@ namespace LockOnPlugin
 
         protected virtual void LoadSettings()
         {
-            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "N", true), 0.4f);
-            lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", "K", true));
-            prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "PrevCharaHotkey", "false", true));
-            nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "NextCharaHotkey", "L", true));
-            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "false", true));
-            lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedMinDistance", 0.0f, true));
-            trackingSpeedNormal = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true));
-            showInfoMsg = ModPrefs.GetString("LockOnPlugin", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
-            manageCursorVisibility = ModPrefs.GetString("LockOnPlugin", "ManageCursorVisibility", "True", true).ToLower() == "true" ? true : false;
-            CameraTargetTex = ModPrefs.GetString("LockOnPlugin", "HideCameraTarget", "True", true).ToLower() == "true" ? false : true;
-            scrollThroughMalesToo = ModPrefs.GetString("LockOnPlugin", "ScrollThroughMalesToo", "False", true).ToLower() == "true" ? true : false;
+            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "LockOnHotkey", "N", true), 0.4f);
+            lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "LockOnGuiHotkey", "K", true));
+            prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "PrevCharaHotkey", "false", true));
+            nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "NextCharaHotkey", "L", true));
+            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "false", true));
+            lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0.0f, true));
+            trackingSpeedNormal = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true));
+            showInfoMsg = ModPrefs.GetString("LockOnPlugin.Misc", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
+            manageCursorVisibility = ModPrefs.GetString("LockOnPlugin.Misc", "ManageCursorVisibility", "True", true).ToLower() == "true" ? true : false;
+            CameraTargetTex = ModPrefs.GetString("LockOnPlugin.Misc", "HideCameraTarget", "True", true).ToLower() == "true" ? false : true;
+            scrollThroughMalesToo = ModPrefs.GetString("LockOnPlugin.Misc", "ScrollThroughMalesToo", "False", true).ToLower() == "true" ? true : false;
 
             controllerEnabled = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerEnabled", "True", true).ToLower() == "true" ? true : false;
             controllerMoveSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerMoveSpeed", 0.3f, true);
@@ -392,10 +394,10 @@ namespace LockOnPlugin
                 LockOnRelease();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton2))
-            {
+            //if(Input.GetKeyDown(KeyCode.JoystickButton2))
+            //{
                 
-            }
+            //}
 
             if(Input.GetKeyDown(KeyCode.JoystickButton3))
             {

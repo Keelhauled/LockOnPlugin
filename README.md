@@ -17,14 +17,14 @@ The latest release should always be [here](../../releases)
 ## Settings
 Settings are located in "HoneySelect\UserData\modprefs.ini"
 
-### Hotkeys
+### LockOnPlugin.Hotkeys
 All hotkeys can be set to false to disable them or set to any value from [keynames.txt](keynames.txt), no modifiers
 - LockOnHotkey = lock on to targets in quicktargets.txt on the selected character (default key = N)
 - LockOnGuiHotkey = enable/disable displaying clickable targets on the selected character (default key = K)
 - PrevCharaHotkey = select previous character in the work menu (default key = false)
 - NextCharaHotkey = select next character in the work menu (default key = L)
 
-### Other settings
+### LockOnPlugin.Misc
 - LockedZoomSpeed = how fast zooming is when locked (negative values invert the zooming direction)
 - LockedMinDistance = minimum distance from the target (any positive number)
 - LockedTrackingSpeed = how fast the camera follows the target (any positive number)
@@ -33,9 +33,15 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - HideCameraTarget = whether to hide the white camera target indicator thing (true/false)
 - ScrollThroughMalesToo = whether to scroll through males too with PrevCharaHotkey/NextCharaHotkey (true/false)
 
+### LockOnPlugin.Gamepad
+- ControllerEnabled = enable or disable gamepad controls completely
+- ControllerMoveSpeed = right stick camera movement sensitivity
+- ControllerZoomSpeed = camera zoom sensitivity
+- ControllerRotSpeed = left stick camera rotation sensitivity
+
  ### Target settings
  Target settings are located in "\HoneySelect\Plugins\LockOnPlugin\"
- - quicktargets.txt contains targets for LockOnHotkey
+ - quicktargetsfemale/male.txt contains targets for LockOnHotkey
  - normaltargets.txt contains targets for LockOnGuiHotkey
  - customtargets.txt contains additional custom targets that are between two normal targets for LockOnGuiHotkey
 

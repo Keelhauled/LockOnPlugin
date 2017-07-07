@@ -62,10 +62,6 @@
       <HintPath>..\..\..\StudioNEO_64_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI.Translation">
-      <HintPath>..\..\..\StudioNEO_64_Data\Managed\UnityEngine.UI.Translation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedCode\FileManager.cs">

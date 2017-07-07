@@ -83,14 +83,14 @@ namespace LockOnPluginUtilities
             }
 
             // this requires UnityEngine.UI.Translation.dll for some reason
-            foreach(InputField inputField in GameObject.FindObjectsOfType<InputField>())
-            {
-                if(inputField.isFocused)
-                {
-                    shouldReset = true;
-                    break;
-                }
-            }
+            //foreach(InputField inputField in FindObjectsOfType<InputField>())
+            //{
+            //    if(inputField.isFocused)
+            //    {
+            //        shouldReset = true;
+            //        break;
+            //    }
+            //}
 
             if(GUIUtility.keyboardControl > 0)
             {

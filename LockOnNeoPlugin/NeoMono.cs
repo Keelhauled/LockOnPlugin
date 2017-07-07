@@ -41,7 +41,7 @@ namespace LockOnPlugin
 
             manageCursorVisibility = false;
             infoMsgPosition = new Vector2(1.0f, 1.0f);
-            Camera.main.nearClipPlane = ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true);
+            Camera.main.nearClipPlane = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
 
             //studio.sceneInfo.enableVignette = false;
             //studio.sceneInfo.enableBloom = false;
@@ -266,12 +266,12 @@ namespace LockOnPlugin
                 Slider nearClipSliderComponent = nearClipSlider.GetComponent<Slider>();
                 nearClipSliderComponent.maxValue = 0.060f;
                 nearClipSliderComponent.minValue = 0.001f;
-                nearClipSliderComponent.value = ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true);
+                nearClipSliderComponent.value = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
                 nearClipSliderComponent.onValueChanged = new Slider.SliderEvent();
                 nearClipSliderComponent.onValueChanged.AddListener((value) =>
                 {
                     Camera.main.nearClipPlane = value;
-                    ModPrefs.SetFloat("LockOnPlugin", "NearClipPlane", value);
+                    ModPrefs.SetFloat("LockOnPlugin.Misc", "NearClipPlane", value);
                 });
 
                 Console.WriteLine("NearClipPlane slider installed");

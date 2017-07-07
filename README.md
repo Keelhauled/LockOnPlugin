@@ -2,7 +2,8 @@
 
 ## Description
 This plugin allows you to keep the camera target on specific parts of the target character.  
-The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.
+The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.  
+Neo and maker are the only currently supported modes.
 
 [Video of the mod in action](https://my.mixtape.moe/rgkydu.m4v)
 
@@ -23,6 +24,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - LockOnGuiHotkey = enable/disable displaying clickable targets on the selected character (default key = K)
 - PrevCharaHotkey = select previous character in the work menu (default key = false)
 - NextCharaHotkey = select next character in the work menu (default key = L)
+- ~~RotationHotkey = forces the camera mimic the targeted parts rotation (default key = false)~~
 
 ### LockOnPlugin.Misc
 - LockedZoomSpeed = how fast zooming is when locked (negative values invert the zooming direction)

@@ -1,13 +1,11 @@
 
 *.pdb
-*.csproj
 *.user
 *.cache
 */obj/*
-AssemblyInfo.cs
-*.sln
 /OldCode/*
 .vs/*
 demovideo.m4v
 *.txt
 !keynames.txt
+/LockOnStudioPluginParty/*

@@ -24,8 +24,8 @@ namespace LockOnPlugin
         protected override void Start()
         {
             base.Start();
-
-            cameraData = GetSecureField<Studio.CameraControl, Studio.CameraControl.CameraData>("cameraData"); //studio.sceneInfo.cameraData
+            
+            cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera); //studio.sceneInfo.cameraData
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
             studio.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
             Transform systemMenuContent = studio.gameObject.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
@@ -124,36 +124,39 @@ namespace LockOnPlugin
             }
             else
             {
-                try
+                Button buttonClose = GetSecureField<Button, SceneLoadScene>("buttonClose", scene);
+                Button buttonLoad = GetSecureField<Button, SceneLoadScene>("buttonLoad", scene);
+
+                if(buttonClose != null && buttonLoad != null)
                 {
-                    Button buttonLoad = ((typeof(SceneLoadScene).GetField("buttonLoad", BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(scene)) as Button;
-                    buttonLoad.onClick.AddListener(OnSceneMenuLoad);
-                    Button buttonClose = ((typeof(SceneLoadScene).GetField("buttonClose", BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(scene)) as Button;
-                    buttonClose.onClick.AddListener(() => Hotkey.allowHotkeys = true);
-                    Hotkey.allowHotkeys = false;
+                    buttonClose.onClick.AddListener(() =>
+                    {
+                        Hotkey.allowHotkeys = true;
+                    });
+
+                    buttonLoad.onClick.AddListener(() =>
+                    {
+                        Hotkey.allowHotkeys = true;
+                        currentCharaOCI = null;
+                        currentCharaInfo = null;
+                        targetManager.UpdateAllTargets(null);
+                        StartCoroutine(scene.NotificationLoadCoroutine());
+                        Singleton<Scene>.Instance.UnLoad();
+                    });
+
+                    Hotkey.allowHotkeys = false; 
                 }
-                catch(Exception ex)
+                else
                 {
                     Hotkey.allowHotkeys = true;
                     currentCharaOCI = null;
                     currentCharaInfo = null;
                     targetManager.UpdateAllTargets(null);
                     treeNodeCtrl.SelectSingle(null);
-                    Console.WriteLine(ex);
                 }
             }
             
             yield break;
-        }
-
-        private void OnSceneMenuLoad()
-        {
-            Hotkey.allowHotkeys = true;
-            currentCharaOCI = null;
-            currentCharaInfo = null;
-            targetManager.UpdateAllTargets(null);
-            StartCoroutine(FindObjectOfType<SceneLoadScene>().NotificationLoadCoroutine());
-            Singleton<Scene>.Instance.UnLoad();
         }
 
         protected override bool LockOn()

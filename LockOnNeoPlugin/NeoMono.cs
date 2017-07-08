@@ -25,13 +25,13 @@ namespace LockOnPlugin
         {
             base.Start();
             
-            cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera); //studio.sceneInfo.cameraData
+            cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
             studio.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
             Transform systemMenuContent = studio.gameObject.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
             systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
-            systemMenuContent.Find("Option").GetComponent<Button>().onClick.AddListener(() => InstallNearClipPlaneSlider());
+            systemMenuContent.Find("Option").GetComponent<Button>().onClick.AddListener(InstallNearClipPlaneSlider);
             StartCoroutine(InstallSettingsReloadButton());
         }
 
@@ -42,11 +42,6 @@ namespace LockOnPlugin
             manageCursorVisibility = false;
             infoMsgPosition = new Vector2(1.0f, 1.0f);
             Camera.main.nearClipPlane = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
-
-            //studio.sceneInfo.enableVignette = false;
-            //studio.sceneInfo.enableBloom = false;
-            //studio.sceneInfo.enableDepth = false;
-            //studio.sceneInfo.enableFog = false;
         }
 
         private void OnSelectWork(TreeNodeObject node)
@@ -153,6 +148,7 @@ namespace LockOnPlugin
                     currentCharaInfo = null;
                     targetManager.UpdateAllTargets(null);
                     treeNodeCtrl.SelectSingle(null);
+                    Console.WriteLine("SceneLoadScene buttons not found");
                 }
             }
             

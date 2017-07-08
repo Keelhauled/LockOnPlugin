@@ -336,22 +336,25 @@ namespace LockOnPlugin
             return GUI.Button(new Rect(xpos, ypos, width, height), msg);
         }
 
-        protected static FieldType GetSecureField<ObjectType, FieldType>(string fieldName)
+        protected static FieldType GetSecureField<FieldType, ObjectType>(string fieldName, ObjectType target = null)
             where ObjectType : UnityEngine.Object
             where FieldType : class
         {
-            try
+            if(target.Equals(null))
             {
-                ObjectType target = FindObjectOfType<ObjectType>();
+                target = FindObjectOfType<ObjectType>();
+            }
+
+            if(!target.Equals(null))
+            {
                 FieldInfo fieldinfo = typeof(ObjectType).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldType field = fieldinfo.GetValue(target) as FieldType;
-                return field;
+                if(!fieldinfo.Equals(null))
+                {
+                    return fieldinfo.GetValue(target) as FieldType;
+                }
             }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                return null;
-            }
+
+            return null;
         }
 
         protected static Vector3 CameraAdjustedEulerAngles(GameObject target, Transform cameraTransform)

@@ -24,7 +24,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - LockOnGuiHotkey = enable/disable displaying clickable targets on the selected character (default key = K)
 - PrevCharaHotkey = select previous character in the work menu (default key = false)
 - NextCharaHotkey = select next character in the work menu (default key = L)
-- ~~RotationHotkey = forces the camera mimic the targeted parts rotation (default key = false)~~
+- ~~RotationHotkey = forces the camera to mimic the targeted parts rotation (default key = false)~~
 
 ### LockOnPlugin.Misc
 - LockedZoomSpeed = how fast zooming is when locked (negative values invert the zooming direction)

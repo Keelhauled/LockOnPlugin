@@ -8,7 +8,7 @@ namespace LockOnPlugin
     public class LockOnPluginNeo : IEnhancedPlugin
     {
         public string Name => GetType().Name;
-        public string Version => LockOnBase.version;
+        public string Version => LockOnBase.VERSION;
 
         public string[] Filter => new string[]
         {

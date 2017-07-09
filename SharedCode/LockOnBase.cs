@@ -21,7 +21,6 @@ namespace LockOnPlugin
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
 
-
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;
         protected Hotkey prevCharaHotkey;
@@ -54,8 +53,8 @@ namespace LockOnPlugin
         protected float guiTimeFov = 0.0f;
         protected float guiTimeInfo = 0.0f;
         protected string infoMsg = "";
-        protected Vector2 infoMsgPosition = new Vector2();
-        protected Vector3 targetOffsetAmount = new Vector3();
+        protected Vector2 infoMsgPosition = Vector2.zero;
+        protected Vector3 targetOffsetSize = Vector3.zero;
 
         protected virtual void Start()
         {
@@ -107,7 +106,7 @@ namespace LockOnPlugin
                     float y = Input.GetAxis("Mouse Y");
                     if(Mathf.Abs(x) > 0 || Mathf.Abs(y) > 0)
                     {
-                        targetOffsetAmount += (CameraTransform.right * x * defaultCameraSpeed) + (CameraTransform.forward * y * defaultCameraSpeed);
+                        targetOffsetSize += (CameraTransform.right * x * defaultCameraSpeed) + (CameraTransform.forward * y * defaultCameraSpeed);
                     }
                 }
                 else if(Input.GetMouseButton(1))
@@ -147,15 +146,15 @@ namespace LockOnPlugin
                         float y = Input.GetAxis("Mouse Y");
                         if(Mathf.Abs(y) > 0)
                         {
-                            targetOffsetAmount += (CameraTransform.up * y * defaultCameraSpeed);
+                            targetOffsetSize += (Vector3.up * y * defaultCameraSpeed);
                         }
                     }
                 }
                 
                 float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                 float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPosWithOffset(), distance * trackingSpeed);
-                lastTargetPos = LockOnTargetPosWithOffset();
+                if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPosOffset(), distance * trackingSpeed);
+                lastTargetPos = LockOnTargetPosOffset();
             }
 
             if(lockRotation)
@@ -206,12 +205,23 @@ namespace LockOnPlugin
 
             if(showLockOnTargets)
             {
+                //List<GameObject> list = new List<GameObject>();
+                //foreach(var item in currentCharaInfo.chaBody.GetComponentsInChildren<Transform>())
+                //{
+                //    if(item.name.Substring(0, 3) == "cf_" && item.transform.position != new Vector3())
+                //    {
+                //        list.Add(item.gameObject);
+                //    }
+                //}
+
                 foreach(GameObject target in targetManager.GetAllTargets())
                 {
                     Vector3 pos = Camera.main.WorldToScreenPoint(target.transform.position);
                     if(pos.z > 0.0f && GUI.Button(new Rect(pos.x - targetSize / 2, Screen.height - pos.y - targetSize / 2, targetSize, targetSize), "L"))
                     {
+                        targetOffsetSize = Vector3.zero;
                         LockOn(target);
+                        //Console.WriteLine(target.name);
                     }
                 }
             }
@@ -221,9 +231,9 @@ namespace LockOnPlugin
         {
             if(currentCharaInfo)
             {
-                if(targetOffsetAmount.magnitude > 0.0f)
+                if(targetOffsetSize.magnitude > 0.0f)
                 {
-                    targetOffsetAmount = new Vector3();
+                    targetOffsetSize = Vector3.zero;
                     return true;
                 }
 
@@ -259,7 +269,7 @@ namespace LockOnPlugin
                 {
                     if(LockOn(target))
                     {
-                        targetOffsetAmount = new Vector3();
+                        targetOffsetSize = Vector3.zero;
                         return true;
                     }
                 }
@@ -269,7 +279,7 @@ namespace LockOnPlugin
             {
                 if(LockOn())
                 {
-                    targetOffsetAmount = new Vector3();
+                    targetOffsetSize = Vector3.zero;
                     return true;
                 }
             }
@@ -282,7 +292,7 @@ namespace LockOnPlugin
             if(target)
             {
                 lockOnTarget = target;
-                if(lastTargetPos == null) lastTargetPos = LockOnTargetPosWithOffset();
+                if(lastTargetPos == null) lastTargetPos = LockOnTargetPosOffset();
                 CameraMoveSpeed = 0.0f;
                 CreateInfoMsg("Locked to \"" + lockOnTarget.name + "\"");
                 return true;
@@ -295,7 +305,7 @@ namespace LockOnPlugin
         {
             if(lockOnTarget)
             {
-                targetOffsetAmount = new Vector3();
+                targetOffsetSize = Vector3.zero;
                 lockOnTarget = null;
                 lastTargetPos = null;
                 lockRotation = false;
@@ -335,9 +345,9 @@ namespace LockOnPlugin
             guiTimeInfo = time;
         }
 
-        protected Vector3 LockOnTargetPosWithOffset()
+        protected Vector3 LockOnTargetPosOffset()
         {
-            return LockOnTargetPos + (Vector3.right * targetOffsetAmount.x) + (Vector3.up * targetOffsetAmount.y) + (Vector3.forward * targetOffsetAmount.z);
+            return LockOnTargetPos + (Vector3.right * targetOffsetSize.x) + (Vector3.up * targetOffsetSize.y) + (Vector3.forward * targetOffsetSize.z);
         }
 
         protected static bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
@@ -452,11 +462,11 @@ namespace LockOnPlugin
                 {
                     if(Input.GetKey(KeyCode.JoystickButton5))
                     {
-                        targetOffsetAmount += (CameraTransform.forward * -rightStick.y * power);
+                        targetOffsetSize += (CameraTransform.forward * -rightStick.y * power);
                     }
                     else
                     {
-                        targetOffsetAmount += (CameraTransform.right * rightStick.x * power) + (CameraTransform.up * -rightStick.y * power);
+                        targetOffsetSize += (CameraTransform.right * rightStick.x * power) + (CameraTransform.up * -rightStick.y * power);
                     } 
                 }
                 else

@@ -65,6 +65,11 @@ namespace LockOnPlugin
                                 LockOnRelease();
                             }
                         }
+
+                        //foreach(var item in targetManager.GetAllTargets())
+                        //{
+                        //    Console.WriteLine(item.name);
+                        //}
                     }
                     else
                     {
@@ -232,9 +237,9 @@ namespace LockOnPlugin
 
                 GameObject newButton = Instantiate(parentButton.gameObject);
                 newButton.name = "LockOnPluginReload";
-                newButton.transform.SetParent(parentButton.transform.parent);
+                newButton.transform.SetParent(parentButton.parent);
                 newButton.transform.Find("Text").gameObject.GetComponent<Text>().text = "LockOnPlugin rld";
-                newButton.transform.localPosition = parentButton.transform.localPosition - new Vector3(0f, 30f, 0f);
+                newButton.transform.localPosition = parentButton.localPosition - new Vector3(0f, 30f, 0f);
                 newButton.transform.localScale = Vector3.one;
 
                 Button buttonComponent = newButton.GetComponent<Button>();
@@ -243,6 +248,8 @@ namespace LockOnPlugin
                 {
                     LoadSettings();
                     targetManager.UpdateAllTargets(currentCharaInfo);
+                    LockOn(lockOnTarget);
+                    targetOffsetSize = Vector3.zero;
                 });
 
                 Console.WriteLine("LockOnPlugin reload button installed");

@@ -11,6 +11,7 @@ namespace LockOnPluginUtilities
         private List<GameObject> allTargetsMultiple = new List<GameObject>();
         private List<GameObject> normalTargets = new List<GameObject>();
         private List<CustomTarget> customTargets = new List<CustomTarget>();
+        private CenterPoint centerPoint = null;
 
         public List<GameObject> GetAllTargets()
         {
@@ -28,6 +29,8 @@ namespace LockOnPluginUtilities
             {
                 target.UpdateTargetTransform();
             }
+
+            if(centerPoint != null && centerPoint.GetCenterPoint()) centerPoint.UpdateCenterPointPosition();
         }
 
         public void UpdateAllTargets(CharInfo character)
@@ -44,12 +47,16 @@ namespace LockOnPluginUtilities
                 {
                     allTargets.Add(target.GetTarget());
                 }
+
+                centerPoint = UpdateCenterPoint(character, prefix);
+                if(centerPoint != null && centerPoint.GetCenterPoint()) allTargets.Add(centerPoint.GetCenterPoint());
             }
             else
             {
                 allTargets = new List<GameObject>();
                 normalTargets = new List<GameObject>();
                 customTargets = new List<CustomTarget>();
+                centerPoint = null;
             }
         }
 
@@ -127,6 +134,26 @@ namespace LockOnPluginUtilities
 
             return customTargets;
         }
+
+        private CenterPoint UpdateCenterPoint(CharInfo character, string prefix)
+        {
+            Dictionary<GameObject, float> points = new Dictionary<GameObject, float>();
+
+            foreach(List<string> data in FileManager.GetCenterTargetWeights())
+            {
+                GameObject point = character.chaBody.objBone.transform.FindLoop(prefix + data[0]);
+                float weight = 1.0f;
+                if(!float.TryParse(data[1], out weight))
+                {
+                    weight = 1.0f;
+                }
+                points.Add(point, weight);
+            }
+
+            CenterPoint centerPoint = new CenterPoint(points);
+            if(centerPoint.GetCenterPoint()) return centerPoint;
+            return null;
+        }
     }
 
     internal class CustomTarget
@@ -149,6 +176,8 @@ namespace LockOnPluginUtilities
             UpdateTargetTransform();
         }
 
+        public GameObject GetTarget() => target;
+
         public void UpdateTargetTransform()
         {
             UpdateTargetPosition();
@@ -168,7 +197,47 @@ namespace LockOnPluginUtilities
             Quaternion rot2 = point2.transform.rotation;
             target.transform.rotation = Quaternion.Slerp(rot1, rot2, 0.5f);
         }
+    }
 
-        public GameObject GetTarget() => target;
+    internal class CenterPoint
+    {
+        private Dictionary<GameObject, float> points = new Dictionary<GameObject, float>();
+        private GameObject centerPoint = null;
+
+        public CenterPoint(Dictionary<GameObject, float> newPoints)
+        {
+            if(newPoints.Count > 0)
+            {
+                centerPoint = new GameObject("CenterPoint");
+                points = newPoints;
+                UpdateCenterPointPosition();
+            }
+            else
+            {
+                centerPoint = null;
+            }
+        }
+
+        public GameObject GetCenterPoint() => centerPoint;
+
+        public void UpdateCenterPointPosition()
+        {
+            centerPoint.transform.position = GetCenterPoint(points);
+        }
+
+        private Vector3 GetCenterPoint(Dictionary<GameObject, float> points)
+        {
+            Vector3 center = new Vector3(0, 0, 0);
+            //int count = 0;
+            float totalWeight = 0.0f;
+            foreach(KeyValuePair<GameObject, float> point in points)
+            {
+                center += point.Key.transform.position * point.Value;
+                //count++;
+                totalWeight += point.Value;
+            }
+            //return center / count;
+            return center / totalWeight;
+        }
     }
 }

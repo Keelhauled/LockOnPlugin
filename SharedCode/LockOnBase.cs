@@ -74,7 +74,7 @@ namespace LockOnPlugin
             rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "false", true));
 
             lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0.0f, true));
-            trackingSpeedNormal = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true));
+            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true), 0.01f, 1.0f);
             showInfoMsg = ModPrefs.GetString("LockOnPlugin.Misc", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
             manageCursorVisibility = ModPrefs.GetString("LockOnPlugin.Misc", "ManageCursorVisibility", "True", true).ToLower() == "true" ? true : false;
             CameraTargetTex = ModPrefs.GetString("LockOnPlugin.Misc", "HideCameraTarget", "True", true).ToLower() == "true" ? false : true;
@@ -100,8 +100,6 @@ namespace LockOnPlugin
 
             if(lockOnTarget)
             {
-                float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
-
                 if(Input.GetMouseButton(0) && Input.GetMouseButton(1))
                 {
                     float x = Input.GetAxis("Mouse X");
@@ -144,7 +142,8 @@ namespace LockOnPlugin
                         CameraDir = new Vector3(0.0f, 0.0f, newDir);
                     }
                 }
-
+                
+                float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                 float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
                 if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + TargetOffsetAdjusted, distance * trackingSpeed);
                 lastTargetPos = LockOnTargetPos + TargetOffsetAdjusted;

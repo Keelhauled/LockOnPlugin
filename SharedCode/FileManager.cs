@@ -7,7 +7,7 @@ namespace LockOnPluginUtilities
 {
     public static class FileManager
     {
-        private static string settingsPath = Environment.CurrentDirectory + "\\Plugins\\LockOnPlugin\\";
+        private static string settingsPath = Environment.CurrentDirectory + "\\Plugins\\TargetSettings\\";
         private static string quickFemaleTargetNamesPath = settingsPath + "quicktargetsfemale.txt";
         private static string quickMaleTargetNamesPath = settingsPath + "quicktargetsmale.txt";
         private static string normalTargetNamesPath = settingsPath + "normaltargets.txt";

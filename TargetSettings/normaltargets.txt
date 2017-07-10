@@ -1,0 +1,51 @@
+// HEAD
+J_FaceUp_tz //center
+J_Neck
+J_pupil_s_L
+J_pupil_s_R
+J_NoseBridge_t
+J_Nose_r
+J_MouthBase_tr
+
+// SHOULDERS
+J_ArmUp00_L
+J_ArmUp00_R
+
+// ARMS
+J_Hand_L //wrist
+J_Hand_R
+J_ArmLow01_L
+J_ArmLow01_R
+J_Hand_Middle01_L //palm
+J_Hand_Middle01_R
+
+// BREASTS
+J_Mune03_L
+J_Mune03_R
+
+// TORSO
+J_Mune00 //chest
+J_Spine02 //ribs
+J_Spine01 //midriff
+
+// BITS
+J_Kokan //pussy
+J_Ana //anus
+
+// HIPS
+J_LegUpDam_L
+J_LegUpDam_R
+
+// CHEEKS
+J_Siri_s_L_00
+J_Siri_s_R_00
+
+// LEGS
+J_LegUp02_L //thighs
+J_LegUp02_R
+J_LegLow01_L //knee
+J_LegLow01_R
+J_LegLowRoll_L //shin
+J_LegLowRoll_R
+//J_Toes01_L
+//J_Toes01_R

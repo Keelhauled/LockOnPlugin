@@ -228,15 +228,12 @@ namespace LockOnPluginUtilities
         private Vector3 GetCenterPoint(Dictionary<GameObject, float> points)
         {
             Vector3 center = new Vector3(0, 0, 0);
-            //int count = 0;
             float totalWeight = 0.0f;
             foreach(KeyValuePair<GameObject, float> point in points)
             {
                 center += point.Key.transform.position * point.Value;
-                //count++;
                 totalWeight += point.Value;
             }
-            //return center / count;
             return center / totalWeight;
         }
     }

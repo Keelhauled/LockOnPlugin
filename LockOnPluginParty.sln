@@ -10,8 +10,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F1983BF1-EA7A-4214-B7CA-F3654561DA35}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		TargetSettings\centertargetweights.txt = TargetSettings\centertargetweights.txt
 		changelog.txt = changelog.txt
+		TargetSettings\customtargets.txt = TargetSettings\customtargets.txt
 		keynames.txt = keynames.txt
+		TargetSettings\normaltargets.txt = TargetSettings\normaltargets.txt
+		TargetSettings\quicktargetsfemale.txt = TargetSettings\quicktargetsfemale.txt
+		TargetSettings\quicktargetsmale.txt = TargetSettings\quicktargetsmale.txt
 		README.md = README.md
 		rotationlockshit.txt = rotationlockshit.txt
 		TODO.txt = TODO.txt

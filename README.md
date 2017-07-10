@@ -5,7 +5,7 @@ This plugin allows you to keep the camera target on specific parts of the target
 The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.  
 Neo and maker are the only currently supported modes.
 
-[Video of the mod in action](https://my.mixtape.moe/rgkydu.m4v)
+[Video of the mod in action](https://my.mixtape.moe/rgkydu.m4v) (old video without many of the new features)
 
 ## Installation
 1. Install Illusion Plugin Architecture (IPA)
@@ -41,12 +41,15 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - ControllerMoveSpeed = right stick camera movement sensitivity (values between 0.0 - 1.0)
 - ControllerZoomSpeed = camera zoom sensitivity (values between 0.0 - 1.0)
 - ControllerRotSpeed = left stick camera rotation sensitivity (values between 0.0 - 1.0)
+- ControllerInvertX = Invert look direction on x axis (true/false)
+- ControllerInvertY = Invert look direction on y axis (true/false)
 
  ### Target settings
- Target settings are located in "\HoneySelect\Plugins\LockOnPlugin\"
+ Target settings are located in "\HoneySelect\Plugins\TargetSettings\"
  - quicktargetsfemale/male.txt contains targets for LockOnHotkey
  - normaltargets.txt contains targets for LockOnGuiHotkey
  - customtargets.txt contains additional custom targets that are between two normal targets for LockOnGuiHotkey
+ - centertargetweights.txt contains points and weights the CenterTargets position is based on
 
 ## Control tips
 To adjust fov or camera tilt hold left shift/ctrl and drag with right mouse button while locked on.

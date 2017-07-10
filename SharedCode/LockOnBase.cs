@@ -447,9 +447,10 @@ namespace LockOnPlugin
                 }
                 else
                 {
+                    bool shouldInvert = controllerInvertX || CameraDir.z == 0.0f;
                     float power = Mathf.Lerp(1.0f, 4.0f, controllerRotSpeed);
-                    float newX = Mathf.Repeat(controllerInvertX ? leftStick.x : -leftStick.x * power, 360.0f);
-                    float newY = Mathf.Repeat(controllerInvertY ? leftStick.y : -leftStick.y * power, 360.0f);
+                    float newX = Mathf.Repeat(shouldInvert ? leftStick.x : -leftStick.x * power, 360.0f);
+                    float newY = Mathf.Repeat(shouldInvert ? leftStick.y : -leftStick.y * power, 360.0f);
                     CameraAngle += new Vector3(newX, newY, 0.0f);
                 }
             }
@@ -457,7 +458,7 @@ namespace LockOnPlugin
             Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
             if(rightStick.magnitude > 0.2f)
             {
-                float power = Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
+                float power = Input.GetKey(KeyCode.JoystickButton5) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
                 if(lockOnTarget)
                 {
                     if(Input.GetKey(KeyCode.JoystickButton5))
@@ -466,7 +467,7 @@ namespace LockOnPlugin
                     }
                     else
                     {
-                        targetOffsetSize += (CameraTransform.right * rightStick.x * power) + (CameraTransform.up * -rightStick.y * power);
+                        targetOffsetSize += (CameraTransform.right * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
                     } 
                 }
                 else
@@ -477,7 +478,7 @@ namespace LockOnPlugin
                     }
                     else
                     {
-                        CameraTargetPos += (CameraTransform.right * rightStick.x * power) + (CameraTransform.up * -rightStick.y * power);
+                        CameraTargetPos += (CameraTransform.right * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
                     }
                 }
             }

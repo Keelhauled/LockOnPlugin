@@ -1,0 +1,23 @@
+//PARTNAME|WEIGHT
+
+// HEAD
+J_FaceUp_tz|0.5
+
+// ARMS
+J_Hand_L|0.0
+J_Hand_R|0.0
+J_ArmLow01_L|0.7
+J_ArmLow01_R|0.7
+
+// TORSO
+J_Mune00|1.0
+J_Spine01|1.5
+
+// BITS
+J_Kokan|1.5
+
+// LEGS
+J_LegLow01_L|0.7
+J_LegLow01_R|0.7
+J_Toes01_L|0.5
+J_Toes01_R|0.5

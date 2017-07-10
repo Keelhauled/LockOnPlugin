@@ -9,7 +9,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public static string VERSION = "2.1.1";
+        public static string VERSION = "2.2.0";
 
         protected abstract float CameraMoveSpeed { get; set; }
         protected abstract Vector3 CameraTargetPos { get; set; }
@@ -442,7 +442,7 @@ namespace LockOnPlugin
                 else if(Input.GetKey(KeyCode.JoystickButton4))
                 {
                     float newDir = CameraDir.z + -leftStick.x * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
-                    newDir = Mathf.Clamp(newDir, -float.MaxValue, 0.0f);
+                    newDir = Mathf.Clamp(newDir, float.MinValue, 0.0f);
                     CameraDir = new Vector3(0.0f, 0.0f, newDir);
                 }
                 else

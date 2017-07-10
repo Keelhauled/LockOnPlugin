@@ -65,11 +65,6 @@ namespace LockOnPlugin
                                 LockOnRelease();
                             }
                         }
-
-                        //foreach(var item in targetManager.GetAllTargets())
-                        //{
-                        //    Console.WriteLine(item.name);
-                        //}
                     }
                     else
                     {

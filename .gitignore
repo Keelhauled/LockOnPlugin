@@ -7,3 +7,4 @@ LockOnStudioPluginParty/
 *.txt
 !keynames.txt
 demovideo.m4v
+!TargetSettings/*

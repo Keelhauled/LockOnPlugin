@@ -260,8 +260,9 @@ namespace LockOnPlugin
             {
                 GameObject nearClipSlider = Instantiate(sliderParentObject);
                 nearClipSlider.name = "Slider NearClipPlane";
-                nearClipSlider.transform.SetParent(sliderParentObject.transform);
-                nearClipSlider.transform.position = sliderParentObject.transform.position + new Vector3(45.0f, 82.0f, 0.0f);
+                nearClipSlider.transform.SetParent(sliderParentObject.transform.parent);
+                nearClipSlider.transform.localPosition = new Vector3(114.0f, -16.0f, 0.0f);
+                nearClipSlider.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
 
                 Slider nearClipSliderComponent = nearClipSlider.GetComponent<Slider>();
                 nearClipSliderComponent.maxValue = 0.060f;
@@ -282,8 +283,9 @@ namespace LockOnPlugin
             {
                 GameObject nearClipText = Instantiate(textParentObject);
                 nearClipText.name = "Text NearClipPlane";
-                nearClipText.transform.SetParent(sliderParentObject.transform);
-                nearClipText.transform.position = sliderParentObject.transform.position + new Vector3(0.0f, 82.0f, 0.0f);
+                nearClipText.transform.SetParent(sliderParentObject.transform.parent);
+                nearClipText.transform.localPosition = new Vector3(83.0f, -16.0f, 0.0f);
+                nearClipText.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
                 Text nearClipTextComponent = nearClipText.GetComponent<Text>();
                 nearClipTextComponent.text = "NearClip";
                 Console.WriteLine("NearClipPlane text installed");

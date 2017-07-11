@@ -39,6 +39,7 @@ namespace LockOnPlugin
         protected float controllerRotSpeed;
         protected bool controllerInvertX;
         protected bool controllerInvertY;
+        protected bool swapSticks;
 
         protected CameraTargetManager targetManager;
         protected CharInfo currentCharaInfo;
@@ -55,6 +56,7 @@ namespace LockOnPlugin
         protected string infoMsg = "";
         protected Vector2 infoMsgPosition = Vector2.zero;
         protected Vector3 targetOffsetSize = Vector3.zero;
+        protected float dpadXTimeHeld = 0.0f;
 
         protected virtual void Start()
         {
@@ -84,6 +86,7 @@ namespace LockOnPlugin
             controllerRotSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerRotSpeed", 0.4f, true);
             controllerInvertX = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertX", "False", true).ToLower() == "true" ? true : false;
             controllerInvertY = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertY", "False", true).ToLower() == "true" ? true : false;
+            swapSticks = ModPrefs.GetString("LockOnPlugin.Gamepad", "SwapSticks", "False", true).ToLower() == "true" ? true : false;
         }
 
         protected virtual void Update()
@@ -430,18 +433,31 @@ namespace LockOnPlugin
                 CharaSwitch(true);
             }
             
-            Vector2 leftStick = new Vector2(-Input.GetAxis("Oculus_GearVR_LThumbstickY"), Input.GetAxis("Oculus_GearVR_LThumbstickX"));
+            Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));
+            Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
+            KeyCode L1 = KeyCode.JoystickButton4;
+            KeyCode R1 = KeyCode.JoystickButton5;
+
+            if(swapSticks)
+            {
+                Vector3 temp = rightStick;
+                rightStick = leftStick;
+                leftStick = temp;
+                L1 = KeyCode.JoystickButton5;
+                R1 = KeyCode.JoystickButton4;
+            }
+
             if(leftStick.magnitude > 0.2f)
             {
-                if(Input.GetKey(KeyCode.JoystickButton5))
+                if(Input.GetKey(R1))
                 {
                     guiTimeFov = 1.0f;
-                    float newFov = CameraFov + leftStick.x;
+                    float newFov = CameraFov + leftStick.y;
                     CameraFov = Mathf.Clamp(newFov, 1.0f, 160.0f);
                 }
-                else if(Input.GetKey(KeyCode.JoystickButton4))
+                else if(Input.GetKey(L1))
                 {
-                    float newDir = CameraDir.z + -leftStick.x * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
+                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
                     newDir = Mathf.Clamp(newDir, float.MinValue, 0.0f);
                     CameraDir = new Vector3(0.0f, 0.0f, newDir);
                 }
@@ -449,30 +465,29 @@ namespace LockOnPlugin
                 {
                     bool shouldInvert = controllerInvertX || CameraDir.z == 0.0f;
                     float power = Mathf.Lerp(1.0f, 4.0f, controllerRotSpeed);
-                    float newX = Mathf.Repeat(shouldInvert ? leftStick.x : -leftStick.x * power, 360.0f);
-                    float newY = Mathf.Repeat(shouldInvert ? leftStick.y : -leftStick.y * power, 360.0f);
+                    float newX = Mathf.Repeat(shouldInvert ? leftStick.y : -leftStick.y * power, 360.0f);
+                    float newY = Mathf.Repeat(shouldInvert ? leftStick.x : -leftStick.x * power, 360.0f);
                     CameraAngle += new Vector3(newX, newY, 0.0f);
                 }
             }
             
-            Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
             if(rightStick.magnitude > 0.2f)
             {
-                float power = Input.GetKey(KeyCode.JoystickButton5) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
+                float power = Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
                 if(lockOnTarget)
                 {
-                    if(Input.GetKey(KeyCode.JoystickButton5))
+                    if(Input.GetKey(R1))
                     {
                         targetOffsetSize += (CameraTransform.forward * -rightStick.y * power);
                     }
                     else
                     {
                         targetOffsetSize += (CameraTransform.right * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
-                    } 
+                    }
                 }
                 else
                 {
-                    if(Input.GetKey(KeyCode.JoystickButton5))
+                    if(Input.GetKey(R1))
                     {
                         CameraTargetPos += (CameraTransform.forward * -rightStick.y * power);
                     }
@@ -483,14 +498,22 @@ namespace LockOnPlugin
                 }
             }
 
-            // goot place to practice delay after first tick when holding
             float dpadX = -Input.GetAxis("Oculus_GearVR_DpadY");
             if(Math.Abs(dpadX) > 0)
             {
-                guiTimeAngle = 1.0f;
-                float newAngle = CameraAngle.z - dpadX;
-                newAngle = Mathf.Repeat(newAngle, 360.0f);
-                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
+                if(dpadXTimeHeld == 0.0f || dpadXTimeHeld > 0.15f)
+                {
+                    guiTimeAngle = 1.0f;
+                    float newAngle = CameraAngle.z - dpadX;
+                    newAngle = Mathf.Repeat(newAngle, 360.0f);
+                    CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
+                }
+
+                dpadXTimeHeld += Time.deltaTime;
+            }
+            else
+            {
+                dpadXTimeHeld = 0.0f;
             }
         }
     }

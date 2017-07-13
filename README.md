@@ -27,7 +27,6 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - ~~RotationHotkey = forces the camera to mimic the targeted parts rotation (default key = false)~~
 
 ### LockOnPlugin.Misc
-- LockedZoomSpeed = how fast zooming is when locked (negative values invert the zooming direction)
 - LockedMinDistance = minimum distance from the target (any positive number)
 - LockedTrackingSpeed = how fast the camera follows the target (any positive number)
 - ShowInfoMsg = whether to display messages about what the mod is doing (true/false)

@@ -1,4 +1,5 @@
 //PARTNAME|FIRST|SECOND|DISTANCE
+//referenced customtargets have to be defined before the line they are referenced in
 
 BetweenPuppers|J_Mune03_L|J_Mune03_R|0.5
 BetweenCheeks|J_Siri_s_L_00|J_Siri_s_R_00|0.5
@@ -7,5 +8,4 @@ BetweenKnees|J_LegLow01_L|J_LegLow01_R|0.5
 BetweenShins|J_LegLowRoll_L|J_LegLowRoll_R|0.5
 LeftSole|J_Foot02_L|J_Toes01_L|0.5
 RightSole|J_Foot02_R|J_Toes01_R|0.5
-//BetweenFeet|J_Toes01_L|J_Toes01_R|0.5
-//BetweenFeet|LeftSole|RightSole|0.5
+BetweenFeet|LeftSole|RightSole|0.5

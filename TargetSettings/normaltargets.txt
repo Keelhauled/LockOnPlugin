@@ -16,7 +16,7 @@ J_Hand_L //wrist
 J_Hand_R
 J_ArmLow01_L
 J_ArmLow01_R
-J_Hand_Middle01_L //palm
+J_Hand_Middle01_L //center
 J_Hand_Middle01_R
 
 // BREASTS
@@ -47,5 +47,5 @@ J_LegLow01_L //knee
 J_LegLow01_R
 J_LegLowRoll_L //shin
 J_LegLowRoll_R
-//J_Toes01_L
-//J_Toes01_R
+J_Toes01_L
+J_Toes01_R

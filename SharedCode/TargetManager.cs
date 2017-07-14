@@ -116,6 +116,20 @@ namespace LockOnPluginUtilities
             {
                 GameObject point1 = character.chaBody.objBone.transform.FindLoop(prefix + data[1]);
                 GameObject point2 = character.chaBody.objBone.transform.FindLoop(prefix + data[2]);
+
+                foreach(CustomTarget target in customTargets)
+                {
+                    if(target.GetTarget().name == data[1])
+                    {
+                        point1 = target.GetTarget();
+                    }
+
+                    if(target.GetTarget().name == data[2])
+                    {
+                        point2 = target.GetTarget();
+                    }
+                }
+
                 if(point1 && point2)
                 {
                     float midpoint = 0.5f;

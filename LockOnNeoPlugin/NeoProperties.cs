@@ -30,8 +30,8 @@ namespace LockOnPlugin
 
         protected override float CameraFov
         {
-            get { return Camera.main.fieldOfView; }
-            set { Camera.main.fieldOfView = value; }
+            get { return camera.fieldOfView; }
+            set { camera.fieldOfView = value; }
         }
 
         protected override Vector3 CameraDir

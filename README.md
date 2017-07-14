@@ -42,6 +42,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - ControllerRotSpeed = left stick camera rotation sensitivity (values between 0.0 - 1.0)
 - ControllerInvertX = Invert look direction on x axis (true/false)
 - ControllerInvertY = Invert look direction on y axis (true/false)
+- SwapSticks = Swap functionality of controller sticks (true/false)
 
  ### Target settings
  Target settings are located in "\HoneySelect\Plugins\TargetSettings\"

@@ -20,6 +20,7 @@ namespace LockOnPlugin
         protected abstract bool CameraTargetTex { set; }
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
+        protected virtual bool CameraMovementCheck => true;
 
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;
@@ -153,11 +154,14 @@ namespace LockOnPlugin
                         }
                     }
                 }
-                
-                float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
-                float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPosOffset(), distance * trackingSpeed);
-                lastTargetPos = LockOnTargetPosOffset();
+
+                if(CameraMovementCheck)
+                {
+                    float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
+                    float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
+                    if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPosOffset(), distance * trackingSpeed);
+                    lastTargetPos = LockOnTargetPosOffset(); 
+                }
             }
 
             if(lockRotation)
@@ -224,7 +228,6 @@ namespace LockOnPlugin
                     {
                         targetOffsetSize = Vector3.zero;
                         LockOn(target);
-                        //Console.WriteLine(target.name);
                     }
                 }
             }

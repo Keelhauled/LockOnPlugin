@@ -1,5 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using Studio;
 
 namespace LockOnPlugin
 {
@@ -53,6 +53,11 @@ namespace LockOnPlugin
         protected override Transform CameraTransform
         {
             get { return camera.transform; }
+        }
+
+        protected override bool CameraMovementCheck
+        {
+            get { return !Singleton<GuideObjectManager>.Instance.isOperationTarget; }
         }
     }
 }

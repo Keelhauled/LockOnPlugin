@@ -21,6 +21,7 @@ namespace LockOnPlugin
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
         protected virtual bool CameraMovementCheck => true;
+        protected virtual bool OnInputField => false;
 
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;
@@ -92,6 +93,8 @@ namespace LockOnPlugin
 
         protected virtual void Update()
         {
+            Hotkey.onInputField = OnInputField;
+
             if(controllerEnabled) GamepadControls();
             targetManager.UpdateCustomTargetTransforms();
 
@@ -212,15 +215,6 @@ namespace LockOnPlugin
 
             if(showLockOnTargets)
             {
-                //List<GameObject> list = new List<GameObject>();
-                //foreach(var item in currentCharaInfo.chaBody.GetComponentsInChildren<Transform>())
-                //{
-                //    if(item.name.Substring(0, 3) == "cf_" && item.transform.position != new Vector3())
-                //    {
-                //        list.Add(item.gameObject);
-                //    }
-                //}
-
                 foreach(GameObject target in targetManager.GetAllTargets())
                 {
                     Vector3 pos = Camera.main.WorldToScreenPoint(target.transform.position);

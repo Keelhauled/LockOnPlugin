@@ -6,7 +6,7 @@ namespace LockOnPluginUtilities
     public class Hotkey
     {
         public static bool allowHotkeys = true;
-        public static bool onInputField = false;
+        public static bool inputFieldSelected = false;
 
         private string key = "";
         private float procTime = 0.0f;
@@ -87,7 +87,7 @@ namespace LockOnPluginUtilities
                 shouldReset = true;
             }
             
-            if(onInputField)
+            if(inputFieldSelected)
             {
                 shouldReset = true;
             }

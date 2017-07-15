@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace LockOnPlugin
 {
@@ -52,6 +53,22 @@ namespace LockOnPlugin
         protected override Transform CameraTransform
         {
             get { return camera.transform; }
+        }
+
+        protected override bool InputFieldSelected
+        {
+            get
+            {
+                foreach(InputField inputField in customControl.inputText)
+                {
+                    if(inputField.isFocused)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
 
         // Singleton<CustomControl>.Instance.cvsMainMenu.isActiveAndEnabled

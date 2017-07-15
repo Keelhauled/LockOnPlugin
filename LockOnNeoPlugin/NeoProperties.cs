@@ -60,7 +60,7 @@ namespace LockOnPlugin
             get { return !Singleton<GuideObjectManager>.Instance.isOperationTarget; }
         }
         
-        protected override bool OnInputField
+        protected override bool InputFieldSelected
         {
             get { return studio.isInputNow; }
         }

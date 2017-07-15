@@ -21,7 +21,7 @@ namespace LockOnPlugin
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
         protected virtual bool CameraMovementCheck => true;
-        protected virtual bool OnInputField => false;
+        protected virtual bool InputFieldSelected => false;
 
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;
@@ -93,7 +93,7 @@ namespace LockOnPlugin
 
         protected virtual void Update()
         {
-            Hotkey.onInputField = OnInputField;
+            Hotkey.inputFieldSelected = InputFieldSelected;
 
             if(controllerEnabled) GamepadControls();
             targetManager.UpdateCustomTargetTransforms();

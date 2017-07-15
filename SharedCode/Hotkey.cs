@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 namespace LockOnPluginUtilities
 {
     public class Hotkey
     {
         public static bool allowHotkeys = true;
+        public static bool onInputField = false;
 
         private string key = "";
         private float procTime = 0.0f;
@@ -82,26 +82,15 @@ namespace LockOnPluginUtilities
                 shouldReset = true;
             }
 
-            // this requires UnityEngine.UI.Translation.dll for some reason
-            //foreach(InputField inputField in FindObjectsOfType<InputField>())
-            //{
-            //    if(inputField.isFocused)
-            //    {
-            //        shouldReset = true;
-            //        break;
-            //    }
-            //}
-
             if(GUIUtility.keyboardControl > 0)
             {
                 shouldReset = true;
             }
-
-            // this only works in neo
-            //if(Singleton<Studio.Studio>.Instance.isInputNow)
-            //{
-            //    shouldReset = true;
-            //}
+            
+            if(onInputField)
+            {
+                shouldReset = true;
+            }
 
             if(shouldReset)
             {

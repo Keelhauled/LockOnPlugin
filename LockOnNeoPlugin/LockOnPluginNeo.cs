@@ -1,7 +1,6 @@
 ﻿using IllusionPlugin;
 using UnityEngine;
 using LockOnPluginUtilities;
-using System;
 
 namespace LockOnPlugin
 {

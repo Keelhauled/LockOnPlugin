@@ -27,10 +27,10 @@ namespace LockOnPlugin
             cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
             studio.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
-            Transform systemMenuContent = studio.gameObject.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
+            Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
             systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
-            systemMenuContent.Find("Option").GetComponent<Button>().onClick.AddListener(InstallNearClipPlaneSlider);
+            InstallNearClipPlaneSlider();
             StartCoroutine(InstallSettingsReloadButton());
         }
 
@@ -40,7 +40,10 @@ namespace LockOnPlugin
 
             manageCursorVisibility = false;
             infoMsgPosition = new Vector2(1.0f, 1.0f);
-            Camera.main.nearClipPlane = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
+            float nearClipPlane = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
+            Camera.main.nearClipPlane = nearClipPlane;
+            GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
+            if(nearClipSlider) nearClipSlider.GetComponent<Slider>().value = nearClipPlane;
         }
 
         private void OnSelectWork(TreeNodeObject node)
@@ -212,7 +215,7 @@ namespace LockOnPlugin
 
         private IEnumerator InstallSettingsReloadButton()
         {
-            Transform systemMenuContent = studio.gameObject.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
+            Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
             if(systemMenuContent && !systemMenuContent.Find("LockOnPluginReload"))
             {
                 // wait for HSStudioNEOAddon specifically
@@ -255,12 +258,12 @@ namespace LockOnPlugin
 
         private void InstallNearClipPlaneSlider()
         {
-            GameObject sliderParentObject = GameObject.Find("Slider Camera Speed");
+            Transform sliderParentObject = studio.transform.Find("Canvas Main Menu/04_System/02_Option/Slider Camera Speed");
             if(sliderParentObject && !GameObject.Find("Slider NearClipPlane"))
             {
-                GameObject nearClipSlider = Instantiate(sliderParentObject);
+                GameObject nearClipSlider = Instantiate(sliderParentObject.gameObject);
                 nearClipSlider.name = "Slider NearClipPlane";
-                nearClipSlider.transform.SetParent(sliderParentObject.transform.parent);
+                nearClipSlider.transform.SetParent(sliderParentObject.parent);
                 nearClipSlider.transform.localPosition = new Vector3(114.0f, -16.0f, 0.0f);
                 nearClipSlider.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
 
@@ -278,12 +281,12 @@ namespace LockOnPlugin
                 Console.WriteLine("NearClipPlane slider installed");
             }
 
-            GameObject textParentObject = GameObject.Find("Text Camera Speed");
+            Transform textParentObject = studio.transform.Find("Canvas Main Menu/04_System/02_Option/Text Camera Speed");
             if(sliderParentObject && textParentObject && !GameObject.Find("Text NearClipPlane"))
             {
-                GameObject nearClipText = Instantiate(textParentObject);
+                GameObject nearClipText = Instantiate(textParentObject.gameObject);
                 nearClipText.name = "Text NearClipPlane";
-                nearClipText.transform.SetParent(sliderParentObject.transform.parent);
+                nearClipText.transform.SetParent(sliderParentObject.parent);
                 nearClipText.transform.localPosition = new Vector3(83.0f, -16.0f, 0.0f);
                 nearClipText.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
                 Text nearClipTextComponent = nearClipText.GetComponent<Text>();

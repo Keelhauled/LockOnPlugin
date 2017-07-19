@@ -3,13 +3,14 @@ using System.Reflection;
 using System.Collections.Generic;
 using IllusionPlugin;
 using UnityEngine;
-using LockOnPluginUtilities;
 
 namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public static string VERSION = "2.2.2";
+        public const string VERSION = "2.2.2";
+        public const string NAME_HSCENEMAKER = "LockOnPlugin";
+        public const string NAME_NEO = "LockOnPluginNeo";
 
         protected abstract float CameraMoveSpeed { get; set; }
         protected abstract Vector3 CameraTargetPos { get; set; }

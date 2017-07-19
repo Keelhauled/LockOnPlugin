@@ -1,12 +1,11 @@
 ﻿using IllusionPlugin;
 using UnityEngine;
-using LockOnPluginUtilities;
 
 namespace LockOnPlugin
 {
     public class LockOnPlugin : IEnhancedPlugin
     {
-        public string Name => GetType().Name;
+        public string Name => LockOnBase.NAME_HSCENEMAKER;
         public string Version => LockOnBase.VERSION;
 
         public string[] Filter => new string[]
@@ -15,13 +14,16 @@ namespace LockOnPlugin
             "HoneySelect_64",
         };
 
+        //private HSceneMono hsceneObject;
+        private MakerMono makerObject;
+
         public void OnLevelWasLoaded(int level)
         {
-            //if(level == 15 && !GameObject.Find("HSceneMono") && FileManager.TargetSettingsExist())
-            //    new GameObject("HSceneMono").AddComponent<HSceneMono>();
+            //if(level == 15 && !hsceneObject && FileManager.TargetSettingsExist())
+            //    hsceneObject = new GameObject().AddComponent<HSceneMono>();
 
-            if(level == 21 && !GameObject.Find("MakerMono") && FileManager.TargetSettingsExist())
-                new GameObject("MakerMono").AddComponent<MakerMono>();
+            if(level == 21 && !makerObject && FileManager.TargetSettingsExist())
+                makerObject = new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<MakerMono>();
         }
 
         public void OnUpdate(){}

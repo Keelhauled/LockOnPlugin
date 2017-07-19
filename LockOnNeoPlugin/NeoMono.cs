@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Studio;
 using Manager;
-using LockOnPluginUtilities;
 
 namespace LockOnPlugin
 {

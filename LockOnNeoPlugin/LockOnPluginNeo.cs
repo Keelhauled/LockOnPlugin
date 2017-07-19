@@ -1,12 +1,11 @@
 ﻿using IllusionPlugin;
 using UnityEngine;
-using LockOnPluginUtilities;
 
 namespace LockOnPlugin
 {
     public class LockOnPluginNeo : IEnhancedPlugin
     {
-        public string Name => GetType().Name;
+        public string Name => LockOnBase.NAME_NEO;
         public string Version => LockOnBase.VERSION;
 
         public string[] Filter => new string[]
@@ -15,10 +14,12 @@ namespace LockOnPlugin
             "StudioNEO_64",
         };
 
+        private NeoMono neoObject;
+
         public void OnLevelWasLoaded(int level)
         {
-            if(level == 3 && !GameObject.Find("NeoMono") && FileManager.TargetSettingsExist())
-                new GameObject("NeoMono").AddComponent<NeoMono>();
+            if(level == 3 && !neoObject && FileManager.TargetSettingsExist())
+                neoObject = new GameObject(LockOnBase.NAME_NEO).AddComponent<NeoMono>();
         }
 
         public void OnUpdate(){}

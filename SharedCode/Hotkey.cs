@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 
-namespace LockOnPluginUtilities
+namespace LockOnPlugin
 {
     public class Hotkey
     {

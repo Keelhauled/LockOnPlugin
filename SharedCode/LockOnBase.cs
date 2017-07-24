@@ -95,9 +95,8 @@ namespace LockOnPlugin
         protected virtual void Update()
         {
             Hotkey.inputFieldSelected = InputFieldSelected;
-
-            if(controllerEnabled) GamepadControls();
             targetManager.UpdateCustomTargetTransforms();
+            GamepadControls();
 
             lockOnHotkey.KeyHoldAction(LockOnRelease);
             lockOnHotkey.KeyUpAction(() => LockOn());
@@ -157,6 +156,32 @@ namespace LockOnPlugin
                             targetOffsetSize += (Vector3.up * y * defaultCameraSpeed);
                         }
                     }
+                }
+
+                float speed = Time.deltaTime * 0.33f;
+                if(Input.GetKey(KeyCode.RightArrow))
+                {
+                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(speed, 0f, 0f));
+                }
+                else if(Input.GetKey(KeyCode.LeftArrow))
+                {
+                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(-speed, 0f, 0f));
+                }
+                if(Input.GetKey(KeyCode.UpArrow))
+                {
+                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, speed));
+                }
+                else if(Input.GetKey(KeyCode.DownArrow))
+                {
+                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, -speed));
+                }
+                if(Input.GetKey(KeyCode.PageUp))
+                {
+                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, speed, 0f));
+                }
+                else if(Input.GetKey(KeyCode.PageDown))
+                {
+                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, -speed, 0f));
                 }
 
                 if(CameraMovementCheck)
@@ -227,7 +252,7 @@ namespace LockOnPlugin
                 }
             }
         }
-        
+
         protected virtual bool LockOn()
         {
             if(currentCharaInfo)
@@ -414,8 +439,11 @@ namespace LockOnPlugin
             return false;
         }
 
-        protected void GamepadControls()
+        private void GamepadControls()
         {
+            if(!controllerEnabled) return;
+            if(Input.GetJoystickNames().Length == 0) return;
+            
             if(Input.GetKeyDown(KeyCode.JoystickButton0))
             {
                 LockOn();
@@ -430,7 +458,7 @@ namespace LockOnPlugin
             {
                 CharaSwitch(true);
             }
-            
+
             Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));
             Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
             KeyCode L1 = KeyCode.JoystickButton4;
@@ -467,7 +495,7 @@ namespace LockOnPlugin
                     CameraAngle += new Vector3(newX, newY, 0.0f);
                 }
             }
-            
+
             if(rightStick.magnitude > 0.2f)
             {
                 float power = Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);

@@ -55,9 +55,14 @@ namespace LockOnPlugin
             get { return camera.transform; }
         }
 
-        protected override bool CameraMovementCheck
+        protected override bool AllowTracking
         {
-            get { return !Singleton<GuideObjectManager>.Instance.isOperationTarget; }
+            get
+            {
+                var guideManager = Singleton<GuideObjectManager>.Instance;
+                if(guideManager.isOperationTarget && guideManager.mode != 0) return false;
+                return true;
+            }
         }
         
         protected override bool InputFieldSelected

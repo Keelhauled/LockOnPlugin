@@ -21,7 +21,7 @@ namespace LockOnPlugin
         protected abstract bool CameraTargetTex { set; }
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
-        protected virtual bool CameraMovementCheck => true;
+        protected virtual bool AllowTracking => true;
         protected virtual bool InputFieldSelected => false;
 
         protected Hotkey lockOnHotkey;
@@ -184,7 +184,7 @@ namespace LockOnPlugin
                     targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, -speed, 0f));
                 }
 
-                if(CameraMovementCheck)
+                if(AllowTracking)
                 {
                     float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);

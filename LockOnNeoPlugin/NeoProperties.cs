@@ -60,7 +60,7 @@ namespace LockOnPlugin
             get
             {
                 var guideManager = Singleton<GuideObjectManager>.Instance;
-                if(guideManager.isOperationTarget && guideManager.mode != 0) return false;
+                if(guideManager.isOperationTarget && guideManager.mode == 1) return false;
                 return true;
             }
         }

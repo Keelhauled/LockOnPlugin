@@ -57,12 +57,7 @@ namespace LockOnPlugin
 
         protected override bool AllowTracking
         {
-            get
-            {
-                var guideManager = Singleton<GuideObjectManager>.Instance;
-                if(guideManager.isOperationTarget && guideManager.mode == 1) return false;
-                return true;
-            }
+            get { return !(guideObjectManager.isOperationTarget && guideObjectManager.mode == 1); }
         }
         
         protected override bool InputFieldSelected

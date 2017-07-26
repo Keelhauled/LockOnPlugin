@@ -15,6 +15,7 @@ namespace LockOnPlugin
         private Studio.Studio studio => Singleton<Studio.Studio>.Instance;
         private Studio.CameraControl camera => studio.cameraCtrl;
         private TreeNodeCtrl treeNodeCtrl => studio.treeNodeCtrl;
+        private GuideObjectManager guideObjectManager => Singleton<GuideObjectManager>.Instance;
 
         private Studio.CameraControl.CameraData cameraData;
         private Studio.CameraControl.CameraData cameraReset;

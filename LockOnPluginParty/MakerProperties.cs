@@ -59,9 +59,10 @@ namespace LockOnPlugin
         {
             get
             {
-                foreach(InputField inputField in customControl.inputText)
+                InputField[] inputFields = customControl.inputText;
+                for(int i = 0; i < inputFields.Length; i++)
                 {
-                    if(inputField.isFocused)
+                    if(inputFields[i].isFocused)
                     {
                         return true;
                     }

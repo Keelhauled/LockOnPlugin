@@ -241,13 +241,14 @@ namespace LockOnPlugin
 
             if(showLockOnTargets)
             {
-                foreach(GameObject target in targetManager.GetAllTargets())
+                var targets = targetManager.GetAllTargets();
+                for(int i = 0; i < targets.Count; i++)
                 {
-                    Vector3 pos = Camera.main.WorldToScreenPoint(target.transform.position);
+                    Vector3 pos = Camera.main.WorldToScreenPoint(targets[i].transform.position);
                     if(pos.z > 0.0f && GUI.Button(new Rect(pos.x - targetSize / 2, Screen.height - pos.y - targetSize / 2, targetSize, targetSize), "L"))
                     {
                         targetOffsetSize = Vector3.zero;
-                        LockOn(target);
+                        LockOn(targets[i]);
                     }
                 }
             }

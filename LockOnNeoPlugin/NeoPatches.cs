@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
 using Harmony;
 
 namespace LockOnPlugin
@@ -20,5 +23,17 @@ namespace LockOnPlugin
         {
             return false;
         }
+
+        //private static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
+        //{
+        //    var codes = new List<CodeInstruction>(instructions);
+
+        //    for(int i = 0; i < codes.Count; i++)
+        //    {
+        //        Console.WriteLine(i + " = " + codes[i].ToString());
+        //    }
+
+        //    return codes.AsEnumerable();
+        //}
     }
 }

@@ -25,6 +25,7 @@ namespace LockOnPlugin
         {
             base.Start();
             
+            NeoPatches.Init();
             cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
             cameraReset = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraReset", camera);
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
@@ -34,7 +35,6 @@ namespace LockOnPlugin
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
             InstallNearClipPlaneSlider();
             StartCoroutine(InstallSettingsReloadButton());
-            NeoPatches.Init();
         }
 
         protected override void LoadSettings()

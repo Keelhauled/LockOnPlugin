@@ -241,7 +241,7 @@ namespace LockOnPlugin
 
             if(showLockOnTargets)
             {
-                var targets = targetManager.GetAllTargets();
+                List<GameObject> targets = targetManager.GetAllTargets();
                 for(int i = 0; i < targets.Count; i++)
                 {
                     Vector3 pos = Camera.main.WorldToScreenPoint(targets[i].transform.position);

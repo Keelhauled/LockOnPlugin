@@ -12,12 +12,15 @@ namespace LockOnPlugin
         //private HSceneSprite sprite => Singleton<HScene>.Instance.sprite;
         //private HScene hscene => Singleton<HScene>.Instance;
 
+        private int activeCharaCount;
+
         protected override void Start()
         {
             base.Start();
 
             currentCharaInfo = charaManager.dictFemale[0];
             targetManager.UpdateAllTargets(currentCharaInfo);
+            activeCharaCount = ActiveCharaCount<CharFemale>() + ActiveCharaCount<CharMale>();
         }
 
         protected override void LoadSettings()
@@ -27,21 +30,71 @@ namespace LockOnPlugin
             infoMsgPosition = new Vector2(0.5f, 0.0f);
         }
 
+        protected override void Update()
+        {
+            base.Update();
+
+            int count = ActiveCharaCount<CharFemale>() + ActiveCharaCount<CharMale>();
+            if(activeCharaCount != count)
+            {
+                currentCharaInfo = charaManager.dictFemale[0];
+                targetManager.UpdateAllTargets(currentCharaInfo);
+                LockOnRelease();
+                activeCharaCount = count;
+            }
+        }
+
         protected override void CharaSwitch(bool scrollDown = true)
         {
-            SortedDictionary<int, CharFemale> charaList = charaManager.dictFemale;
+            if(!lockOnTarget && LockOn()) return;
 
-            for(int i = 0; i < charaList.Count; i++)
+            List<CharInfo> characters = new List<CharInfo>();
+            for(int i = 0; i < charaManager.dictFemale.Count; i++)
             {
-                if(charaList[i] == currentCharaInfo)
+                if(charaManager.dictFemale[i].animBody != null)
                 {
-                    int next = i + 1 > charaList.Count - 1 ? 0 : i + 1;
-                    currentCharaInfo = charaList[next];
+                    characters.Add(charaManager.dictFemale[i]);
+                }
+            }
+
+            if(scrollThroughMalesToo)
+            {
+                for(int i = 0; i < charaManager.dictMale.Count; i++)
+                {
+                    if(charaManager.dictMale[i].animBody != null)
+                    {
+                        characters.Add(charaManager.dictMale[i]);
+                    }
+                }
+            }
+
+            for(int i = 0; i < characters.Count; i++)
+            {
+                if(characters[i] == currentCharaInfo)
+                {
+                    int next = i + 1 > characters.Count - 1 ? 0 : i + 1;
+                    currentCharaInfo = characters[next];
                     targetManager.UpdateAllTargets(currentCharaInfo);
                     if(lockOnTarget) LockOn(lockOnTarget.name, true);
                     return;
                 }
             }
+        }
+
+        private int ActiveCharaCount<Sex>() where Sex : CharInfo
+        {
+            int count = 0;
+            var characters = typeof(Sex) == typeof(CharFemale) ? charaManager.dictFemale as SortedDictionary<int, Sex> : charaManager.dictMale as SortedDictionary<int, Sex>;
+            
+            for(int i = 0; i < characters.Count; i++)
+            {
+                if(characters[i].animBody != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
     }
 }

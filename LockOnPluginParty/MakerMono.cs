@@ -13,6 +13,7 @@ namespace LockOnPlugin
         {
             base.Start();
 
+            MakerPatches.Init();
             currentCharaInfo = customControl.chainfo;
             targetManager.UpdateAllTargets(currentCharaInfo);
         }

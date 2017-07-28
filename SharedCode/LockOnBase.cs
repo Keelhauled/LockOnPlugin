@@ -3,12 +3,13 @@ using System.Reflection;
 using System.Collections.Generic;
 using IllusionPlugin;
 using UnityEngine;
+using System.IO;
 
 namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public const string VERSION = "2.2.2";
+        public const string VERSION = "2.3.0";
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
@@ -438,6 +439,20 @@ namespace LockOnPlugin
             }
 
             return false;
+        }
+
+        public static void Log(string filename, string msg)
+        {
+            string path = Environment.CurrentDirectory + "\\Plugins\\LOPLog\\";
+            StreamWriter sw = File.AppendText(path + filename);
+            try
+            {
+                sw.WriteLine(msg);
+            }
+            finally
+            {
+                sw.Close();
+            }
         }
 
         private void GamepadControls()

@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 using Harmony;
-using System.IO;
 
 namespace LockOnPlugin
 {
@@ -14,25 +13,11 @@ namespace LockOnPlugin
             var harmony = HarmonyInstance.Create("lockonplugin.neo");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
-
-        public static void Log(string msg)
-        {
-            string path = Environment.CurrentDirectory + "\\Plugins\\";
-            StreamWriter sw = File.AppendText(path + "LOP.txt");
-            try
-            {
-                sw.WriteLine(msg);
-            }
-            finally
-            {
-                sw.Close();
-            }
-        }
     }
 
     [HarmonyPatch(typeof(Studio.CameraControl))]
     [HarmonyPatch("InputKeyProc")]
-    internal class InputKeyProc_Patch
+    internal class StudioCameraControl_InputKeyProc_Patch
     {
         private static bool Prefix()
         {
@@ -45,7 +30,7 @@ namespace LockOnPlugin
 
         //    for(int i = 0; i < codes.Count; i++)
         //    {
-        //        NeoPatches.Log(i + " = " + codes[i].ToString());
+        //        LockOnBase.Log("InputKeyProc_Transpiler.txt", i + " = " + codes[i].ToString());
         //    }
 
         //    return codes.AsEnumerable();

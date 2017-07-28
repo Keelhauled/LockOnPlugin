@@ -14,15 +14,15 @@ namespace LockOnPlugin
             "HoneySelect_64",
         };
 
-        //private HSceneMono hsceneObject;
+        private HSceneMono hsceneObject;
         private MakerMono makerObject;
 
         public void OnLevelWasLoaded(int level)
         {
-            //if(level == 15 && !hsceneObject && FileManager.TargetSettingsExist())
-            //    hsceneObject = new GameObject().AddComponent<HSceneMono>();
+            if(level == 15 && !hsceneObject && FileManager.TargetSettingsExist())
+                hsceneObject = new GameObject().AddComponent<HSceneMono>();
 
-            if(level == 21 && !makerObject && FileManager.TargetSettingsExist())
+            else if(level == 21 && !makerObject && FileManager.TargetSettingsExist())
                 makerObject = new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<MakerMono>();
         }
 

@@ -22,13 +22,7 @@ namespace LockOnPlugin
         private static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions)
         {
             var codes = new List<CodeInstruction>(instructions);
-
-            for(int i = 0; i < codes.Count; i++)
-            {
-                LockOnBase.Log("CustomControl_Update_Transpiler.txt", i + " = " + codes[i].opcode);
-                //if(i == 181) codes[i].
-            }
-
+            codes[181].operand = 0f;
             return codes.AsEnumerable();
         }
     }

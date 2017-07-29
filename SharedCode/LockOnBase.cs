@@ -58,7 +58,7 @@ namespace LockOnPlugin
         protected float guiTimeFov = 0.0f;
         protected float guiTimeInfo = 0.0f;
         protected string infoMsg = "";
-        protected Vector2 infoMsgPosition = Vector2.zero;
+        protected Vector2 infoMsgPosition = new Vector2(0.5f, 0.0f);
         protected Vector3 targetOffsetSize = Vector3.zero;
         protected float dpadXTimeHeld = 0.0f;
 

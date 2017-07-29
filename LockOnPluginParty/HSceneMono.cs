@@ -23,13 +23,6 @@ namespace LockOnPlugin
             activeCharaCount = ActiveCharaCount<CharFemale>() + ActiveCharaCount<CharMale>();
         }
 
-        protected override void LoadSettings()
-        {
-            base.LoadSettings();
-
-            infoMsgPosition = new Vector2(0.5f, 0.0f);
-        }
-
         protected override void Update()
         {
             base.Update();

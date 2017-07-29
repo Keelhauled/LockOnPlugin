@@ -1,17 +1,11 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 using Manager;
 
 namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
-        private CameraControl_Ver2 camera => Singleton<CameraControl_Ver2>.Instance;
         private Character charaManager => Singleton<Character>.Instance;
-        //private HSceneManager hSceneManager => Singleton<HSceneManager>.Instance;
-        //private HSceneSprite sprite => Singleton<HScene>.Instance.sprite;
-        //private HScene hscene => Singleton<HScene>.Instance;
-
         private int activeCharaCount;
 
         protected override void Start()

@@ -451,20 +451,5 @@ namespace LockOnPlugin
             }
             return flag;
         }
-
-        //public static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        //{
-        //    //var codes = new List<CodeInstruction>();
-        //    var ilinstructions = MethodBodyReader.GetInstructions(typeof(LockOnBase).GetMethod("TestProper", BindingFlags.NonPublic | BindingFlags.Instance));
-        //    //var ilinstructions = MethodBodyReader.GetInstructions(typeof(LockOnBase).GetMethod("TestReplacer"));
-        //    //for(int i = 0; i < ilinstructions.Count; i++)
-        //    //{
-        //    //    codes.Add(ilinstructions[i].GetCodeInstruction());
-        //    //}
-        //    var codetrans = new CodeTranspiler(ilinstructions);
-        //    var results = codetrans.GetResult(generator, typeof(LockOnBase).GetMethod("TestProper", BindingFlags.NonPublic | BindingFlags.Instance));
-        //    return results;
-        //    //return codes.AsEnumerable();
-        //}
     }
 }

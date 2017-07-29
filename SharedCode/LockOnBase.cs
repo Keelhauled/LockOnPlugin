@@ -388,8 +388,8 @@ namespace LockOnPlugin
         }
 
         protected static FieldType GetSecureField<FieldType, ObjectType>(string fieldName, ObjectType target = null)
-            where ObjectType : UnityEngine.Object
             where FieldType : class
+            where ObjectType : UnityEngine.Object
         {
             if(target.Equals(null))
             {

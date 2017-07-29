@@ -4,6 +4,8 @@ namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
+        private CameraControl_Ver2 camera => Singleton<CameraControl_Ver2>.Instance;
+
         protected override float CameraMoveSpeed
         {
             get { return camera.moveSpeed; }

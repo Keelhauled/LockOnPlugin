@@ -5,6 +5,8 @@ namespace LockOnPlugin
 {
     internal partial class MakerMono : LockOnBase
     {
+        private CameraControl camera => Singleton<CameraControl>.Instance;
+
         protected override float CameraMoveSpeed
         {
             get { return camera.moveSpeed; }
@@ -59,7 +61,7 @@ namespace LockOnPlugin
         {
             get
             {
-                InputField[] inputFields = customControl.inputText;
+                InputField[] inputFields = Singleton<CustomControl>.Instance.inputText;
                 for(int i = 0; i < inputFields.Length; i++)
                 {
                     if(inputFields[i].isFocused)

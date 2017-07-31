@@ -24,8 +24,9 @@ namespace LockOnPlugin
         protected override void Start()
         {
             base.Start();
-            
-            NeoPatches.Init();
+
+            try { NeoPatches.Init(); }
+            catch(Exception ex) { Console.WriteLine(ex); }
             cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
             cameraReset = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraReset", camera);
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
@@ -47,13 +48,6 @@ namespace LockOnPlugin
             Camera.main.nearClipPlane = nearClipPlane;
             GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
             if(nearClipSlider) nearClipSlider.GetComponent<Slider>().value = nearClipPlane;
-        }
-
-        protected override void Update()
-        {
-            base.Update();
-
-            InputKeyProc();
         }
 
         private void OnSelectWork(TreeNodeObject node)
@@ -303,153 +297,6 @@ namespace LockOnPlugin
                 nearClipTextComponent.text = "NearClip";
                 Console.WriteLine("NearClipPlane text installed");
             }
-        }
-
-        protected virtual bool InputKeyProc()
-        {
-            bool flag = false;
-            if(Input.GetKeyDown(KeyCode.A))
-            {
-                camera.Reset(0);
-            }
-            else if(Input.GetKeyDown(KeyCode.Keypad5))
-            {
-                cameraData.rotate.x = cameraReset.rotate.x;
-                cameraData.rotate.y = cameraReset.rotate.y;
-            }
-            else if(Input.GetKeyDown(KeyCode.Slash))
-            {
-                cameraData.rotate.z = 0f;
-            }
-            else if(Input.GetKeyDown(KeyCode.Semicolon))
-            {
-                camera.fieldOfView = cameraReset.parse;
-            }
-            float deltaTime = Time.deltaTime;
-            if(Input.GetKey(KeyCode.Home))
-            {
-                flag = true;
-                cameraData.distance.z = cameraData.distance.z + deltaTime;
-                cameraData.distance.z = Mathf.Min(0f, cameraData.distance.z);
-            }
-            else if(Input.GetKey(KeyCode.End))
-            {
-                flag = true;
-                cameraData.distance.z = cameraData.distance.z - deltaTime;
-            }
-
-            if(!lockOnTarget)
-            {
-                if(Input.GetKey(KeyCode.RightArrow))
-                {
-                    flag = true;
-                    if(camera.transBase != null)
-                    {
-                        cameraData.pos += camera.transBase.InverseTransformDirection(Camera.main.transform.TransformDirection(new Vector3(deltaTime, 0f, 0f)));
-                    }
-                    else
-                    {
-                        cameraData.pos += Camera.main.transform.TransformDirection(new Vector3(deltaTime, 0f, 0f));
-                    }
-                }
-                else if(Input.GetKey(KeyCode.LeftArrow))
-                {
-                    flag = true;
-                    if(camera.transBase != null)
-                    {
-                        cameraData.pos += camera.transBase.InverseTransformDirection(Camera.main.transform.TransformDirection(new Vector3(-deltaTime, 0f, 0f)));
-                    }
-                    else
-                    {
-                        cameraData.pos += Camera.main.transform.TransformDirection(new Vector3(-deltaTime, 0f, 0f));
-                    }
-                }
-                if(Input.GetKey(KeyCode.UpArrow))
-                {
-                    flag = true;
-                    if(camera.transBase != null)
-                    {
-                        cameraData.pos += camera.transBase.InverseTransformDirection(Camera.main.transform.TransformDirection(new Vector3(0f, 0f, deltaTime)));
-                    }
-                    else
-                    {
-                        cameraData.pos += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, deltaTime));
-                    }
-                }
-                else if(Input.GetKey(KeyCode.DownArrow))
-                {
-                    flag = true;
-                    if(camera.transBase != null)
-                    {
-                        cameraData.pos += camera.transBase.InverseTransformDirection(Camera.main.transform.TransformDirection(new Vector3(0f, 0f, -deltaTime)));
-                    }
-                    else
-                    {
-                        cameraData.pos += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, -deltaTime));
-                    }
-                }
-                if(Input.GetKey(KeyCode.PageUp))
-                {
-                    flag = true;
-                    cameraData.pos.y = cameraData.pos.y + deltaTime;
-                }
-                else if(Input.GetKey(KeyCode.PageDown))
-                {
-                    flag = true;
-                    cameraData.pos.y = cameraData.pos.y - deltaTime;
-                }
-            }
-
-            float num = 10f * Time.deltaTime;
-            Vector3 zero = Vector3.zero;
-            if(Input.GetKey(KeyCode.Period))
-            {
-                flag = true;
-                zero.z += num;
-            }
-            else if(Input.GetKey(KeyCode.Backslash))
-            {
-                flag = true;
-                zero.z -= num;
-            }
-            if(Input.GetKey(KeyCode.Keypad2))
-            {
-                flag = true;
-                zero.x -= num * camera.yRotSpeed;
-            }
-            else if(Input.GetKey(KeyCode.Keypad8))
-            {
-                flag = true;
-                zero.x += num * camera.yRotSpeed;
-            }
-            if(Input.GetKey(KeyCode.Keypad4))
-            {
-                flag = true;
-                zero.y += num * camera.xRotSpeed;
-            }
-            else if(Input.GetKey(KeyCode.Keypad6))
-            {
-                flag = true;
-                zero.y -= num * camera.xRotSpeed;
-            }
-            if(flag)
-            {
-                cameraData.rotate.y = (cameraData.rotate.y + zero.y) % 360f;
-                cameraData.rotate.x = (cameraData.rotate.x + zero.x) % 360f;
-                cameraData.rotate.z = (cameraData.rotate.z + zero.z) % 360f;
-            }
-            float deltaTime2 = Time.deltaTime;
-            if(Input.GetKey(KeyCode.Equals))
-            {
-                flag = true;
-                camera.fieldOfView = Mathf.Max(cameraData.parse - deltaTime2 * 15f, 1f);
-            }
-            else if(Input.GetKey(KeyCode.RightBracket))
-            {
-                flag = true;
-                camera.fieldOfView = Mathf.Min(cameraData.parse + deltaTime2 * 15f, camera.limitFov);
-            }
-            return flag;
         }
     }
 }

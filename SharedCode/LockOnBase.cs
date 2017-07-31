@@ -443,7 +443,7 @@ namespace LockOnPlugin
 
         public static void Log(string filename, string msg)
         {
-            string path = Environment.CurrentDirectory + "\\Plugins\\LOPLog\\";
+            string path = Environment.CurrentDirectory + "\\Plugins\\";
             StreamWriter sw = File.AppendText(path + filename);
             try
             {

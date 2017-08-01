@@ -12,16 +12,16 @@ namespace LockOnPlugin
         internal static void Init()
         {
             //HarmonyInstance.DEBUG = true;
-            var harmony = HarmonyInstance.Create("lockonplugin.neo");
+            HarmonyInstance harmony = HarmonyInstance.Create("lockonplugin.neo");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
 
     [HarmonyPatch(typeof(Studio.CameraControl))]
     [HarmonyPatch("InputKeyProc")]
-    internal class StudioCameraControl_InputKeyProc_Patch
+    internal class NeoPatch1
     {
-        private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, MethodBase original, IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
             Label label = ilGenerator.DefineLabel();

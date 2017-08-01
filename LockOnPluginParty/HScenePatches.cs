@@ -7,41 +7,19 @@ using Harmony;
 
 namespace LockOnPlugin
 {
-    internal static class MakerPatches
+    internal static class HScenePatches
     {
         internal static void Init()
         {
             //HarmonyInstance.DEBUG = true;
-            HarmonyInstance harmony = HarmonyInstance.Create("lockonplugin.maker");
+            HarmonyInstance harmony = HarmonyInstance.Create("lockonplugin.hscene");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
 
-    [HarmonyPatch(typeof(CustomControl))]
-    [HarmonyPatch("Update")]
-    internal class MakerPatch1
-    {
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
-
-            for(int i = 0; i < codes.Count; i++)
-            {
-                if(codes[i].opcode == OpCodes.Ldc_R4 && (float)codes[i].operand == 0.01f)
-                {
-                    Console.WriteLine("found");
-                    codes[i].operand = 0f;
-                    break;
-                }
-            }
-
-            return codes.AsEnumerable();
-        }
-    }
-
-    [HarmonyPatch(typeof(BaseCameraControl))]
+    [HarmonyPatch(typeof(CameraControl_Ver2))]
     [HarmonyPatch("InputKeyProc")]
-    internal class MakerPatch2
+    internal class HScenePatch1
     {
         private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
         {
@@ -53,7 +31,7 @@ namespace LockOnPlugin
             {
                 if(codes[i].opcode == OpCodes.Ldc_I4 && (int)codes[i].operand == 275)
                 {
-                    FieldInfo field = AccessTools.Field(typeof(CameraControl), "moveSpeed");
+                    FieldInfo field = AccessTools.Field(typeof(CameraControl_Ver2), "moveSpeed");
                     CodeInstruction thisWithLabels = new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels };
                     codes[i].labels = new List<Label>();
 

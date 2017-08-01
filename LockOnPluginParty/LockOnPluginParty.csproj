@@ -79,6 +79,7 @@
       <Link>TargetManager.cs</Link>
     </Compile>
     <Compile Include="HSceneMono.cs" />
+    <Compile Include="HScenePatches.cs" />
     <Compile Include="MakerPatches.cs" />
     <Compile Include="MakerProperties.cs" />
     <Compile Include="MakerMono.cs" />

@@ -220,7 +220,7 @@ namespace LockOnPlugin
         private IEnumerator InstallSettingsReloadButton()
         {
             Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
-            if(systemMenuContent && !systemMenuContent.Find("LockOnPluginReload"))
+            if(systemMenuContent && !GameObject.Find("LockOnPluginReload"))
             {
                 // wait for HSStudioNEOAddon specifically
                 yield return new WaitForSeconds(0.1f);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Manager;
 
 namespace LockOnPlugin
@@ -12,6 +13,8 @@ namespace LockOnPlugin
         {
             base.Start();
 
+            try { HScenePatches.Init(); }
+            catch(Exception ex) { Console.WriteLine(ex); }
             currentCharaInfo = charaManager.dictFemale[0];
             targetManager.UpdateAllTargets(currentCharaInfo);
             activeCharaCount = ActiveCharaCount<CharFemale>() + ActiveCharaCount<CharMale>();

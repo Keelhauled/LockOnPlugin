@@ -19,7 +19,7 @@ namespace LockOnPlugin
 
     [HarmonyPatch(typeof(CustomControl))]
     [HarmonyPatch("Update")]
-    internal class MakerPatch1
+    internal static class MakerPatch1
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -41,7 +41,7 @@ namespace LockOnPlugin
 
     [HarmonyPatch(typeof(BaseCameraControl))]
     [HarmonyPatch("InputKeyProc")]
-    internal class MakerPatch2
+    internal static class MakerPatch2
     {
         private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
         {

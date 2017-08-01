@@ -19,7 +19,7 @@ namespace LockOnPlugin
 
     [HarmonyPatch(typeof(CameraControl_Ver2))]
     [HarmonyPatch("InputKeyProc")]
-    internal class HScenePatch1
+    internal static class HScenePatch1
     {
         private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
         {

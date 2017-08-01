@@ -79,5 +79,37 @@ namespace LockOnPlugin
 
             return text;
         }
+        
+        public static void Log(string filename, string msg)
+        {
+            string path = Environment.CurrentDirectory + "\\Plugins\\";
+            StreamWriter sw = File.AppendText(path + filename);
+            try
+            {
+                sw.WriteLine(msg);
+            }
+            finally
+            {
+                sw.Close();
+            }
+        }
+
+        public static bool PluginInstalled(string name, string version = "")
+        {
+            foreach(var item in IllusionInjector.PluginManager.Plugins)
+            {
+                if(item.Name == name)
+                {
+                    if(version != "" && item.Version != version)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

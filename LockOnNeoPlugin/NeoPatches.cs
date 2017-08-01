@@ -19,7 +19,7 @@ namespace LockOnPlugin
 
     [HarmonyPatch(typeof(Studio.CameraControl))]
     [HarmonyPatch("InputKeyProc")]
-    internal class NeoPatch1
+    internal static class NeoPatch1
     {
         private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
         {

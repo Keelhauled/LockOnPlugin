@@ -116,7 +116,7 @@ namespace LockOnPlugin
             showLockOnTargets = false;
 
             // if HSStudioNEOAddon is installed everything has to be cleared here already
-            if(PluginInstalled("HoneyStudioNEO Adddon"))
+            if(FileManager.PluginInstalled("HoneyStudioNEO Adddon"))
             {
                 currentCharaOCI = null;
                 currentCharaInfo = null;

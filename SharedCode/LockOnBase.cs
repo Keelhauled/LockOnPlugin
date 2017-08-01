@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Collections.Generic;
 using IllusionPlugin;
 using UnityEngine;
-using System.IO;
 
 namespace LockOnPlugin
 {
@@ -421,38 +420,6 @@ namespace LockOnPlugin
             return Mathf.Atan2(
                 Vector3.Dot(n, Vector3.Cross(v1, v2)),
                 Vector3.Dot(v1, v2)) * Mathf.Rad2Deg;
-        }
-        
-        protected static bool PluginInstalled(string name, string version = "")
-        {
-            foreach(var item in IllusionInjector.PluginManager.Plugins)
-            {
-                if(item.Name == name)
-                {
-                    if(version != "" && item.Version != version)
-                    {
-                        return false;
-                    }
-                    
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static void Log(string filename, string msg)
-        {
-            string path = Environment.CurrentDirectory + "\\Plugins\\";
-            StreamWriter sw = File.AppendText(path + filename);
-            try
-            {
-                sw.WriteLine(msg);
-            }
-            finally
-            {
-                sw.Close();
-            }
         }
 
         private void GamepadControls()

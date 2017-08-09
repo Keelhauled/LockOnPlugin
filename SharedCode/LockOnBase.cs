@@ -349,7 +349,10 @@ namespace LockOnPlugin
             }
         }
 
-        protected virtual void CharaSwitch(bool scrollDown = true){}
+        protected virtual void CharaSwitch(bool scrollDown = true)
+        {
+            Console.WriteLine("Character switching not implemented in this version");
+        }
 
         protected virtual void RotationLockToggle()
         {

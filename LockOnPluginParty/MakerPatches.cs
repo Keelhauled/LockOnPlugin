@@ -29,7 +29,6 @@ namespace LockOnPlugin
             {
                 if(codes[i].opcode == OpCodes.Ldc_R4 && (float)codes[i].operand == 0.01f)
                 {
-                    Console.WriteLine("found");
                     codes[i].operand = 0f;
                     break;
                 }

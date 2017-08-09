@@ -204,7 +204,7 @@ namespace LockOnPlugin
             while(nthNode = treeNodeCtrl.GetNode(n))
             {
                 ObjectCtrlInfo objectCtrlInfo = null;
-                if(studio.dicInfo.TryGetValue(nthNode, out objectCtrlInfo))
+                if(nthNode.visible && studio.dicInfo.TryGetValue(nthNode, out objectCtrlInfo))
                 {
                     if(objectCtrlInfo is CharaType)
                     {

@@ -1,4 +1,5 @@
-﻿using IllusionPlugin;
+﻿using System;
+using IllusionPlugin;
 using UnityEngine;
 
 namespace LockOnPlugin
@@ -16,6 +17,12 @@ namespace LockOnPlugin
 
         private NeoMono neoObject;
 
+        public void OnApplicationStart()
+        {
+            try { StudioNeoPatches.Init(); }
+            catch(Exception ex) { Console.WriteLine(ex); }
+        }
+
         public void OnLevelWasLoaded(int level)
         {
             if(level == 3 && !neoObject && FileManager.TargetSettingsExist())
@@ -24,7 +31,6 @@ namespace LockOnPlugin
 
         public void OnUpdate(){}
         public void OnLateUpdate(){}
-        public void OnApplicationStart(){}
         public void OnApplicationQuit(){}
         public void OnLevelWasInitialized(int level){}
         public void OnFixedUpdate(){}

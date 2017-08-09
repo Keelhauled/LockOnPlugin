@@ -79,8 +79,7 @@
       <Link>TargetManager.cs</Link>
     </Compile>
     <Compile Include="HSceneMono.cs" />
-    <Compile Include="HScenePatches.cs" />
-    <Compile Include="MakerPatches.cs" />
+    <Compile Include="HoneySelectPatches.cs" />
     <Compile Include="MakerProperties.cs" />
     <Compile Include="MakerMono.cs" />
     <Compile Include="LockOnPlugin.cs" />

@@ -81,7 +81,7 @@
     </Compile>
     <Compile Include="NeoMono.cs" />
     <Compile Include="LockOnPluginNeo.cs" />
-    <Compile Include="NeoPatches.cs" />
+    <Compile Include="StudioNeoPatches.cs" />
     <Compile Include="NeoProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

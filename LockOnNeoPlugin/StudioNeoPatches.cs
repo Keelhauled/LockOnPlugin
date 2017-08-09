@@ -2,27 +2,27 @@
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using Harmony;
+using System.Reflection.Emit;
 
 namespace LockOnPlugin
 {
-    internal static class HScenePatches
+    internal static class StudioNeoPatches
     {
         internal static void Init()
         {
             //HarmonyInstance.DEBUG = true;
-            HarmonyInstance harmony = HarmonyInstance.Create("lockonplugin.hscene");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            HarmonyInstance harmony = HarmonyInstance.Create("lockonplugin.studioneo");
+            harmony.PatchAll(Assembly.GetAssembly(typeof(NeoPatch1)));
         }
     }
-
+    
     /// <summary>
     /// Prevents normal camera movement with keyboard if moveSpeed is 0f
     /// </summary>
-    [HarmonyPatch(typeof(CameraControl_Ver2))]
+    [HarmonyPatch(typeof(Studio.CameraControl))]
     [HarmonyPatch("InputKeyProc")]
-    internal static class HScenePatch1
+    internal static class NeoPatch1
     {
         private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
         {
@@ -34,19 +34,16 @@ namespace LockOnPlugin
             {
                 if(codes[i].opcode == OpCodes.Ldc_I4 && (int)codes[i].operand == 275)
                 {
-                    FieldInfo field = AccessTools.Field(typeof(CameraControl_Ver2), "moveSpeed");
-                    CodeInstruction thisWithLabels = new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels };
-                    codes[i].labels = new List<Label>();
-
                     List<CodeInstruction> newCodes = new List<CodeInstruction>()
                     {
-                        thisWithLabels,
-                        new CodeInstruction(OpCodes.Ldfld, field),
+                        new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
+                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Studio.CameraControl), "moveSpeed")),
                         new CodeInstruction(OpCodes.Ldc_R4, 0f),
                         new CodeInstruction(OpCodes.Ceq),
                         new CodeInstruction(OpCodes.Brtrue, label),
                     };
 
+                    codes[i].labels = new List<Label>();
                     codes.InsertRange(i, newCodes);
                     i += newCodes.Count;
                     codeFound = true;

@@ -1,4 +1,5 @@
-﻿using IllusionPlugin;
+﻿using System;
+using IllusionPlugin;
 using UnityEngine;
 
 namespace LockOnPlugin
@@ -17,6 +18,12 @@ namespace LockOnPlugin
         private HSceneMono hsceneObject;
         private MakerMono makerObject;
 
+        public void OnApplicationStart()
+        {
+            try { HoneySelectPatches.Init(); }
+            catch(Exception ex) { Console.WriteLine(ex); }
+        }
+
         public void OnLevelWasLoaded(int level)
         {
             if(level == 15 && !hsceneObject && FileManager.TargetSettingsExist())
@@ -28,7 +35,6 @@ namespace LockOnPlugin
 
         public void OnUpdate(){}
         public void OnLateUpdate(){}
-        public void OnApplicationStart(){}
         public void OnApplicationQuit(){}
         public void OnLevelWasInitialized(int level){}
         public void OnFixedUpdate(){}

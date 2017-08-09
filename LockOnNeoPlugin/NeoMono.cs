@@ -25,8 +25,6 @@ namespace LockOnPlugin
         {
             base.Start();
 
-            try { NeoPatches.Init(); }
-            catch(Exception ex) { Console.WriteLine(ex); }
             cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
             cameraReset = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraReset", camera);
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);

@@ -17,6 +17,9 @@ namespace LockOnPlugin
         }
     }
 
+    /// <summary>
+    /// Prevents normal camera movement with keyboard if moveSpeed is 0f
+    /// </summary>
     [HarmonyPatch(typeof(CameraControl_Ver2))]
     [HarmonyPatch("InputKeyProc")]
     internal static class HScenePatch1

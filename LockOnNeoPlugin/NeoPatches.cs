@@ -16,7 +16,10 @@ namespace LockOnPlugin
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
-
+    
+    /// <summary>
+    /// Prevents normal camera movement with keyboard if moveSpeed is 0f
+    /// </summary>
     [HarmonyPatch(typeof(Studio.CameraControl))]
     [HarmonyPatch("InputKeyProc")]
     internal static class NeoPatch1

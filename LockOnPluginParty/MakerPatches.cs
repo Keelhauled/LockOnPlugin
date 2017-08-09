@@ -17,6 +17,9 @@ namespace LockOnPlugin
         }
     }
 
+    /// <summary>
+    /// Allows the camera speed to be set to 0f
+    /// </summary>
     [HarmonyPatch(typeof(CustomControl))]
     [HarmonyPatch("Update")]
     internal static class MakerPatch1
@@ -38,6 +41,9 @@ namespace LockOnPlugin
         }
     }
 
+    /// <summary>
+    /// Prevents normal camera movement with keyboard if moveSpeed is 0f
+    /// </summary>
     [HarmonyPatch(typeof(BaseCameraControl))]
     [HarmonyPatch("InputKeyProc")]
     internal static class MakerPatch2

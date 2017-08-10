@@ -65,7 +65,7 @@ namespace LockOnPlugin
 
                         if(lockOnTarget)
                         {
-                            if(!LockOn(lockOnTarget.name, true))
+                            if(!LockOn(lockOnTarget.name, true, false))
                             {
                                 LockOnRelease();
                             }

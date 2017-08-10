@@ -12,6 +12,8 @@ namespace LockOnPlugin
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
+        public static bool lockedOn = false;
+
         protected abstract float CameraMoveSpeed { get; set; }
         protected abstract Vector3 CameraTargetPos { get; set; }
         protected abstract Vector3 LockOnTargetPos { get; }
@@ -318,6 +320,7 @@ namespace LockOnPlugin
         {
             if(target)
             {
+                lockedOn = true;
                 lockOnTarget = target;
                 if(lastTargetPos == null) lastTargetPos = LockOnTargetPosOffset();
                 CameraMoveSpeed = 0.0f;
@@ -332,6 +335,7 @@ namespace LockOnPlugin
         {
             if(lockOnTarget)
             {
+                lockedOn = false;
                 targetOffsetSize = Vector3.zero;
                 lockOnTarget = null;
                 lastTargetPos = null;

@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Linq;
 using Harmony;
-using System.Reflection.Emit;
 
 namespace LockOnPlugin
 {
@@ -13,7 +13,7 @@ namespace LockOnPlugin
         {
             //HarmonyInstance.DEBUG = true;
             HarmonyInstance harmony = HarmonyInstance.Create("lockonplugin.studioneo");
-            harmony.PatchAll(Assembly.GetAssembly(typeof(NeoPatch1)));
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
     

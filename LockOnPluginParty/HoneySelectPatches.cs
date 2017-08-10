@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
+using System.Linq;
 using Harmony;
 
 namespace LockOnPlugin
@@ -13,10 +13,7 @@ namespace LockOnPlugin
         {
             //HarmonyInstance.DEBUG = true;
             HarmonyInstance harmony = HarmonyInstance.Create("lockonplugin.honeyselect");
-            //harmony.PatchAll(Assembly.GetExecutingAssembly());
-            harmony.PatchAll(Assembly.GetAssembly(typeof(HScenePatch1)));
-            harmony.PatchAll(Assembly.GetAssembly(typeof(MakerPatch1)));
-            harmony.PatchAll(Assembly.GetAssembly(typeof(MakerPatch2)));
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
 
@@ -37,19 +34,16 @@ namespace LockOnPlugin
             {
                 if(codes[i].opcode == OpCodes.Ldc_I4 && (int)codes[i].operand == 275)
                 {
-                    FieldInfo field = AccessTools.Field(typeof(CameraControl_Ver2), "moveSpeed");
-                    CodeInstruction thisWithLabels = new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels };
-                    codes[i].labels = new List<Label>();
-
                     List<CodeInstruction> newCodes = new List<CodeInstruction>()
                     {
-                        thisWithLabels,
-                        new CodeInstruction(OpCodes.Ldfld, field),
+                        new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
+                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(CameraControl_Ver2), "moveSpeed")),
                         new CodeInstruction(OpCodes.Ldc_R4, 0f),
                         new CodeInstruction(OpCodes.Ceq),
                         new CodeInstruction(OpCodes.Brtrue, label),
                     };
 
+                    codes[i].labels = new List<Label>();
                     codes.InsertRange(i, newCodes);
                     i += newCodes.Count;
                     codeFound = true;
@@ -67,25 +61,48 @@ namespace LockOnPlugin
     }
 
     /// <summary>
-    /// Allows the camera speed to be set to 0f
+    /// Set moveSpeed to 0f if lockedOn = true
     /// </summary>
     [HarmonyPatch(typeof(CustomControl))]
     [HarmonyPatch("Update")]
     internal static class MakerPatch1
     {
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+            Label label1 = ilGenerator.DefineLabel();
+            Label label2 = ilGenerator.DefineLabel();
+            bool codeFound = false;
 
             for(int i = 0; i < codes.Count; i++)
             {
-                if(codes[i].opcode == OpCodes.Ldc_R4 && (float)codes[i].operand == 0.01f)
+                if(codes[i].opcode == OpCodes.Stfld && codes[i].operand.ToString() == "System.Single yRotSpeed")
                 {
-                    codes[i].operand = 0f;
-                    break;
+                    List<CodeInstruction> newCodes = new List<CodeInstruction>()
+                    {
+                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(LockOnBase), "lockedOn")),
+                        new CodeInstruction(OpCodes.Brtrue_S, label1),
+                    };
+
+                    codes.InsertRange(i + 3, newCodes);
+                    i += newCodes.Count + 3;
+                    codeFound = true;
+                }
+
+                if(codeFound && codes[i].opcode == OpCodes.Stfld && codes[i].operand.ToString() == "System.Single moveSpeed")
+                {
+                    List<CodeInstruction> newCodes = new List<CodeInstruction>()
+                    {
+                        new CodeInstruction(OpCodes.Br_S, label2),
+                        new CodeInstruction(OpCodes.Ldc_R4, 0f),
+                    };
+
+                    newCodes[1].labels.Add(label1);
+                    codes[i].labels.Add(label2);
+                    codes.InsertRange(i, newCodes);
+                    i += newCodes.Count;
                 }
             }
-
             return codes.AsEnumerable();
         }
     }
@@ -107,19 +124,16 @@ namespace LockOnPlugin
             {
                 if(codes[i].opcode == OpCodes.Ldc_I4 && (int)codes[i].operand == 275)
                 {
-                    FieldInfo field = AccessTools.Field(typeof(CameraControl), "moveSpeed");
-                    CodeInstruction thisWithLabels = new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels };
-                    codes[i].labels = new List<Label>();
-
                     List<CodeInstruction> newCodes = new List<CodeInstruction>()
                     {
-                        thisWithLabels,
-                        new CodeInstruction(OpCodes.Ldfld, field),
+                        new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
+                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(CameraControl), "moveSpeed")),
                         new CodeInstruction(OpCodes.Ldc_R4, 0f),
                         new CodeInstruction(OpCodes.Ceq),
                         new CodeInstruction(OpCodes.Brtrue, label),
                     };
 
+                    codes[i].labels = new List<Label>();
                     codes.InsertRange(i, newCodes);
                     i += newCodes.Count;
                     codeFound = true;

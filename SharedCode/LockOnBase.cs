@@ -61,7 +61,8 @@ namespace LockOnPlugin
         protected string infoMsg = "";
         protected Vector2 infoMsgPosition = new Vector2(0.5f, 0.0f);
         protected Vector3 targetOffsetSize = Vector3.zero;
-        protected float dpadXTimeHeld = 0.0f;
+        private float dpadXTimeHeld = 0.0f;
+        private float offsetKeyHeld = 0.0f;
 
         protected virtual void Start()
         {
@@ -160,30 +161,48 @@ namespace LockOnPlugin
                     }
                 }
 
-                float speed = Time.deltaTime * 0.33f;
-                if(Input.GetKey(KeyCode.RightArrow))
+                Console.WriteLine(offsetKeyHeld);
+                float speedMult = Mathf.Lerp(0.2f, 2f, offsetKeyHeld);
+                float speed = Time.deltaTime * speedMult;
+
+                bool RightArrow = Input.GetKey(KeyCode.RightArrow), LeftArrow = Input.GetKey(KeyCode.LeftArrow);
+                bool UpArrow = Input.GetKey(KeyCode.UpArrow), DownArrow = Input.GetKey(KeyCode.DownArrow);
+                bool PageUp = Input.GetKey(KeyCode.PageUp), PageDown = Input.GetKey(KeyCode.PageDown);
+
+                if(RightArrow || LeftArrow || UpArrow || DownArrow || PageUp || PageDown)
                 {
-                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(speed, 0f, 0f));
+                    offsetKeyHeld += Time.deltaTime / 3;
+                    if(offsetKeyHeld > 1f) offsetKeyHeld = 1f;
+
+                    if(RightArrow)
+                    {
+                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(speed, 0f, 0f));
+                    }
+                    else if(LeftArrow)
+                    {
+                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(-speed, 0f, 0f));
+                    }
+                    if(UpArrow)
+                    {
+                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, speed));
+                    }
+                    else if(DownArrow)
+                    {
+                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, -speed));
+                    }
+                    if(PageUp)
+                    {
+                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, speed, 0f));
+                    }
+                    else if(PageDown)
+                    {
+                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, -speed, 0f));
+                    }
                 }
-                else if(Input.GetKey(KeyCode.LeftArrow))
+                else
                 {
-                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(-speed, 0f, 0f));
-                }
-                if(Input.GetKey(KeyCode.UpArrow))
-                {
-                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, speed));
-                }
-                else if(Input.GetKey(KeyCode.DownArrow))
-                {
-                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, -speed));
-                }
-                if(Input.GetKey(KeyCode.PageUp))
-                {
-                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, speed, 0f));
-                }
-                else if(Input.GetKey(KeyCode.PageDown))
-                {
-                    targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, -speed, 0f));
+                    offsetKeyHeld -= Time.deltaTime * 2;
+                    if(offsetKeyHeld < 0f) offsetKeyHeld = 0f;
                 }
 
                 if(AllowTracking)
@@ -290,15 +309,14 @@ namespace LockOnPlugin
             return false;
         }
 
-        protected virtual bool LockOn(string targetName, bool lockOnAnyway = false)
+        protected virtual bool LockOn(string targetName, bool lockOnAnyway = false, bool resetOffset = true)
         {
             foreach(GameObject target in targetManager.GetAllTargets())
             {
                 if(target.name.Substring(3) == targetName.Substring(3))
                 {
-                    if(LockOn(target))
+                    if(LockOn(target, resetOffset))
                     {
-                        targetOffsetSize = Vector3.zero;
                         return true;
                     }
                 }
@@ -308,7 +326,6 @@ namespace LockOnPlugin
             {
                 if(LockOn())
                 {
-                    targetOffsetSize = Vector3.zero;
                     return true;
                 }
             }
@@ -316,10 +333,11 @@ namespace LockOnPlugin
             return false;
         }
 
-        protected virtual bool LockOn(GameObject target)
+        protected virtual bool LockOn(GameObject target, bool resetOffset = true)
         {
             if(target)
             {
+                if(resetOffset) targetOffsetSize = Vector3.zero;
                 lockedOn = true;
                 lockOnTarget = target;
                 if(lastTargetPos == null) lastTargetPos = LockOnTargetPosOffset();

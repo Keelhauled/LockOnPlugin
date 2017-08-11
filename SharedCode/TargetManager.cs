@@ -156,10 +156,10 @@ namespace LockOnPlugin
             foreach(List<string> data in FileManager.GetCenterTargetWeights())
             {
                 GameObject point = character.chaBody.objBone.transform.FindLoop(prefix + data[0]);
-                float weight = 1.0f;
+                float weight = 1f;
                 if(!float.TryParse(data[1], out weight))
                 {
-                    weight = 1.0f;
+                    weight = 1f;
                 }
                 points.Add(point, weight);
             }
@@ -241,8 +241,8 @@ namespace LockOnPlugin
 
         private Vector3 GetCenterPoint(Dictionary<GameObject, float> points)
         {
-            Vector3 center = new Vector3(0, 0, 0);
-            float totalWeight = 0.0f;
+            Vector3 center = new Vector3();
+            float totalWeight = 0f;
             foreach(KeyValuePair<GameObject, float> point in points)
             {
                 center += point.Key.transform.position * point.Value;

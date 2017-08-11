@@ -41,7 +41,7 @@ namespace LockOnPlugin
             base.LoadSettings();
 
             manageCursorVisibility = false;
-            infoMsgPosition = new Vector2(1.0f, 1.0f);
+            infoMsgPosition = new Vector2(1f, 1f);
             float nearClipPlane = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
             Camera.main.nearClipPlane = nearClipPlane;
             GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
@@ -249,7 +249,7 @@ namespace LockOnPlugin
                     LoadSettings();
                     targetManager.UpdateAllTargets(currentCharaInfo);
                     LockOn(lockOnTarget);
-                    targetOffsetSize = Vector3.zero;
+                    targetOffsetSize = new Vector3();
                 });
 
                 Console.WriteLine("LockOnPlugin reload button installed");
@@ -266,7 +266,7 @@ namespace LockOnPlugin
                 GameObject nearClipSlider = Instantiate(sliderParentObject.gameObject);
                 nearClipSlider.name = "Slider NearClipPlane";
                 nearClipSlider.transform.SetParent(sliderParentObject.parent);
-                nearClipSlider.transform.localPosition = new Vector3(114.0f, -16.0f, 0.0f);
+                nearClipSlider.transform.localPosition = new Vector3(114f, -16f, 0f);
                 nearClipSlider.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
 
                 Slider nearClipSliderComponent = nearClipSlider.GetComponent<Slider>();
@@ -289,7 +289,7 @@ namespace LockOnPlugin
                 GameObject nearClipText = Instantiate(textParentObject.gameObject);
                 nearClipText.name = "Text NearClipPlane";
                 nearClipText.transform.SetParent(sliderParentObject.parent);
-                nearClipText.transform.localPosition = new Vector3(83.0f, -16.0f, 0.0f);
+                nearClipText.transform.localPosition = new Vector3(83f, -16f, 0f);
                 nearClipText.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
                 Text nearClipTextComponent = nearClipText.GetComponent<Text>();
                 nearClipTextComponent.text = "NearClip";

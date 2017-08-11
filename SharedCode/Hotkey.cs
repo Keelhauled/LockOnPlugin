@@ -9,19 +9,19 @@ namespace LockOnPlugin
         public static bool inputFieldSelected = false;
 
         private string key = "";
-        private float procTime = 0.0f;
-        private float timeHeld = 0.0f;
+        private float procTime = 0f;
+        private float timeHeld = 0f;
         private bool released = true;
         private bool enabled = true;
 
-        public Hotkey(string newKey, float newProcTime = 0.0f)
+        public Hotkey(string newKey, float newProcTime = 0f)
         {
             key = newKey.ToLower();
 
             if(key.Length < 1 || key == "false")
                 enabled = false;
 
-            if(newProcTime > 0.0f)
+            if(newProcTime > 0f)
                 procTime = newProcTime;
         }
 
@@ -41,7 +41,7 @@ namespace LockOnPlugin
         {
             if(ResetIfShould()) return;
 
-            if(enabled && procTime > 0.0f && Input.GetKey(key) && !GetModifiers())
+            if(enabled && procTime > 0f && Input.GetKey(key) && !GetModifiers())
             {
                 timeHeld += Time.deltaTime;
                 if(timeHeld >= procTime && released)
@@ -63,7 +63,7 @@ namespace LockOnPlugin
                     action();
                 }
 
-                timeHeld = 0.0f;
+                timeHeld = 0f;
                 released = true;
             }
         }
@@ -94,7 +94,7 @@ namespace LockOnPlugin
 
             if(shouldReset)
             {
-                timeHeld = 0.0f;
+                timeHeld = 0f;
                 released = true;
                 return true;
             }

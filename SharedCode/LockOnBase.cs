@@ -54,15 +54,15 @@ namespace LockOnPlugin
         protected bool lockRotation = false;
         protected bool showLockOnTargets = false;
         protected float defaultCameraSpeed;
-        protected float targetSize = 25.0f;
-        protected float guiTimeAngle = 0.0f;
-        protected float guiTimeFov = 0.0f;
-        protected float guiTimeInfo = 0.0f;
+        protected float targetSize = 25f;
+        protected float guiTimeAngle = 0f;
+        protected float guiTimeFov = 0f;
+        protected float guiTimeInfo = 0f;
         protected string infoMsg = "";
-        protected Vector2 infoMsgPosition = new Vector2(0.5f, 0.0f);
-        protected Vector3 targetOffsetSize = Vector3.zero;
-        private float dpadXTimeHeld = 0.0f;
-        private float offsetKeyHeld = 0.0f;
+        protected Vector2 infoMsgPosition = new Vector2(0.5f, 0f);
+        protected Vector3 targetOffsetSize = new Vector3();
+        private float dpadXTimeHeld = 0f;
+        private float offsetKeyHeld = 0f;
 
         protected virtual void Start()
         {
@@ -79,8 +79,8 @@ namespace LockOnPlugin
             nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "NextCharaHotkey", "L", true));
             rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "false", true));
 
-            lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0.0f, true));
-            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true), 0.01f, 1.0f);
+            lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0f, true));
+            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true), 0.01f, 1f);
             showInfoMsg = ModPrefs.GetString("LockOnPlugin.Misc", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
             manageCursorVisibility = ModPrefs.GetString("LockOnPlugin.Misc", "ManageCursorVisibility", "True", true).ToLower() == "true" ? true : false;
             CameraTargetTex = ModPrefs.GetString("LockOnPlugin.Misc", "HideCameraTarget", "True", true).ToLower() == "true" ? false : true;
@@ -114,7 +114,7 @@ namespace LockOnPlugin
                 {
                     float x = Input.GetAxis("Mouse X");
                     float y = Input.GetAxis("Mouse Y");
-                    if(Mathf.Abs(x) > 0 || Mathf.Abs(y) > 0)
+                    if(Mathf.Abs(x) > 0f || Mathf.Abs(y) > 0f)
                     {
                         targetOffsetSize += (CameraTransform.right * x * defaultCameraSpeed) + (CameraTransform.forward * y * defaultCameraSpeed);
                     }
@@ -125,53 +125,50 @@ namespace LockOnPlugin
                     if(Input.GetKey("left ctrl"))
                     {
                         guiTimeAngle = 0.1f;
-                        if(Mathf.Abs(x) > 0)
+                        if(Mathf.Abs(x) > 0f)
                         {
                             //camera tilt adjustment
                             float newAngle = CameraAngle.z - x;
-                            newAngle = Mathf.Repeat(newAngle, 360.0f);
+                            newAngle = Mathf.Repeat(newAngle, 360f);
                             CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
                         }
                     }
                     else if(Input.GetKey("left shift"))
                     {
                         guiTimeFov = 0.1f;
-                        if(Mathf.Abs(x) > 0)
+                        if(Mathf.Abs(x) > 0f)
                         {
                             //fov adjustment
                             float newFov = CameraFov + x;
-                            CameraFov = Mathf.Clamp(newFov, 1.0f, 160.0f);
+                            CameraFov = Mathf.Clamp(newFov, 1f, 160f);
                         }
                     }
                     else
                     {
-                        if(Mathf.Abs(x) > 0)
+                        if(Mathf.Abs(x) > 0f)
                         {
                             //handle zooming manually when camera.movespeed = 0
                             float newDir = CameraDir.z - x * CameraZoomSpeed;
-                            newDir = Mathf.Clamp(newDir, -float.MaxValue, 0.0f);
-                            CameraDir = new Vector3(0.0f, 0.0f, newDir);
+                            newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
+                            CameraDir = new Vector3(0f, 0f, newDir);
                         }
 
                         float y = Input.GetAxis("Mouse Y");
-                        if(Mathf.Abs(y) > 0)
+                        if(Mathf.Abs(y) > 0f)
                         {
                             targetOffsetSize += (Vector3.up * y * defaultCameraSpeed);
                         }
                     }
                 }
-
-                Console.WriteLine(offsetKeyHeld);
-                float speedMult = Mathf.Lerp(0.2f, 2f, offsetKeyHeld);
-                float speed = Time.deltaTime * speedMult;
-
+                
+                float speed = Time.deltaTime * Mathf.Lerp(0.2f, 2f, offsetKeyHeld);
                 bool RightArrow = Input.GetKey(KeyCode.RightArrow), LeftArrow = Input.GetKey(KeyCode.LeftArrow);
                 bool UpArrow = Input.GetKey(KeyCode.UpArrow), DownArrow = Input.GetKey(KeyCode.DownArrow);
                 bool PageUp = Input.GetKey(KeyCode.PageUp), PageDown = Input.GetKey(KeyCode.PageDown);
 
                 if(RightArrow || LeftArrow || UpArrow || DownArrow || PageUp || PageDown)
                 {
-                    offsetKeyHeld += Time.deltaTime / 3;
+                    offsetKeyHeld += Time.deltaTime / 3f;
                     if(offsetKeyHeld > 1f) offsetKeyHeld = 1f;
 
                     if(RightArrow)
@@ -201,7 +198,7 @@ namespace LockOnPlugin
                 }
                 else
                 {
-                    offsetKeyHeld -= Time.deltaTime * 2;
+                    offsetKeyHeld -= Time.deltaTime * 2f;
                     if(offsetKeyHeld < 0f) offsetKeyHeld = 0f;
                 }
 
@@ -209,7 +206,7 @@ namespace LockOnPlugin
                 {
                     float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                    if(distance > 0.00001) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPosOffset(), distance * trackingSpeed);
+                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPosOffset(), distance * trackingSpeed);
                     lastTargetPos = LockOnTargetPosOffset(); 
                 }
             }
@@ -242,19 +239,19 @@ namespace LockOnPlugin
         
         protected virtual void OnGUI()
         {
-            if(showInfoMsg && guiTimeInfo > 0.0f)
+            if(showInfoMsg && guiTimeInfo > 0f)
             {
                 DebugGUI(infoMsgPosition.x, infoMsgPosition.y, 200f, 45f, infoMsg);
                 guiTimeInfo -= Time.deltaTime;
             }
 
-            if(guiTimeAngle > 0.0f)
+            if(guiTimeAngle > 0f)
             {
                 DebugGUI(0.5f, 0.5f, 100f, 50f, "Camera tilt\n" + CameraAngle.z.ToString("0.0"));
                 guiTimeAngle -= Time.deltaTime;
             }
 
-            if(guiTimeFov > 0.0f)
+            if(guiTimeFov > 0f)
             {
                 DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + CameraFov.ToString("0.0"));
                 guiTimeFov -= Time.deltaTime;
@@ -266,9 +263,9 @@ namespace LockOnPlugin
                 for(int i = 0; i < targets.Count; i++)
                 {
                     Vector3 pos = Camera.main.WorldToScreenPoint(targets[i].transform.position);
-                    if(pos.z > 0.0f && GUI.Button(new Rect(pos.x - targetSize / 2, Screen.height - pos.y - targetSize / 2, targetSize, targetSize), "L"))
+                    if(pos.z > 0f && GUI.Button(new Rect(pos.x - targetSize / 2f, Screen.height - pos.y - targetSize / 2f, targetSize, targetSize), "L"))
                     {
-                        targetOffsetSize = Vector3.zero;
+                        targetOffsetSize = new Vector3();
                         LockOn(targets[i]);
                     }
                 }
@@ -279,9 +276,9 @@ namespace LockOnPlugin
         {
             if(currentCharaInfo)
             {
-                if(targetOffsetSize.magnitude > 0.0f)
+                if(targetOffsetSize.magnitude > 0f)
                 {
-                    targetOffsetSize = Vector3.zero;
+                    targetOffsetSize = new Vector3();
                     return true;
                 }
 
@@ -337,11 +334,11 @@ namespace LockOnPlugin
         {
             if(target)
             {
-                if(resetOffset) targetOffsetSize = Vector3.zero;
+                if(resetOffset) targetOffsetSize = new Vector3();
                 lockedOn = true;
                 lockOnTarget = target;
                 if(lastTargetPos == null) lastTargetPos = LockOnTargetPosOffset();
-                CameraMoveSpeed = 0.0f;
+                CameraMoveSpeed = 0f;
                 CreateInfoMsg("Locked to \"" + lockOnTarget.name + "\"");
                 return true;
             }
@@ -354,7 +351,7 @@ namespace LockOnPlugin
             if(lockOnTarget)
             {
                 lockedOn = false;
-                targetOffsetSize = Vector3.zero;
+                targetOffsetSize = new Vector3();
                 lockOnTarget = null;
                 lastTargetPos = null;
                 lockRotation = false;
@@ -391,7 +388,7 @@ namespace LockOnPlugin
             }
         }
 
-        protected void CreateInfoMsg(string msg, float time = 3.0f)
+        protected void CreateInfoMsg(string msg, float time = 3f)
         {
             infoMsg = msg;
             guiTimeInfo = time;
@@ -404,10 +401,10 @@ namespace LockOnPlugin
 
         protected static bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
         {
-            float xpos = Screen.width * screenWidthMult - width / 2.0f;
-            float ypos = Screen.height * screenHeightMult - height / 2.0f;
-            xpos = Mathf.Clamp(xpos, 0, Screen.width - width);
-            ypos = Mathf.Clamp(ypos, 0, Screen.height - height);
+            float xpos = Screen.width * screenWidthMult - width / 2f;
+            float ypos = Screen.height * screenHeightMult - height / 2f;
+            xpos = Mathf.Clamp(xpos, 0f, Screen.width - width);
+            ypos = Mathf.Clamp(ypos, 0f, Screen.height - height);
             return GUI.Button(new Rect(xpos, ypos, width, height), msg);
         }
 
@@ -485,22 +482,22 @@ namespace LockOnPlugin
             {
                 if(Input.GetKey(R1))
                 {
-                    guiTimeFov = 1.0f;
+                    guiTimeFov = 1f;
                     float newFov = CameraFov + leftStick.y;
-                    CameraFov = Mathf.Clamp(newFov, 1.0f, 160.0f);
+                    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
                 }
                 else if(Input.GetKey(L1))
                 {
                     float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
-                    newDir = Mathf.Clamp(newDir, float.MinValue, 0.0f);
-                    CameraDir = new Vector3(0.0f, 0.0f, newDir);
+                    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
+                    CameraDir = new Vector3(0f, 0f, newDir);
                 }
                 else
                 {
-                    float power = Mathf.Lerp(1.0f, 4.0f, controllerRotSpeed);
-                    float newX = Mathf.Repeat(controllerInvertX || CameraDir.z == 0.0f ? leftStick.y : -leftStick.y * power, 360.0f);
-                    float newY = Mathf.Repeat(controllerInvertY || CameraDir.z == 0.0f ? leftStick.x : -leftStick.x * power, 360.0f);
-                    CameraAngle += new Vector3(newX, newY, 0.0f);
+                    float power = Mathf.Lerp(1f, 4f, controllerRotSpeed);
+                    float newX = Mathf.Repeat(controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y * power, 360f);
+                    float newY = Mathf.Repeat(controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x * power, 360f);
+                    CameraAngle += new Vector3(newX, newY, 0f);
                 }
             }
 
@@ -532,13 +529,13 @@ namespace LockOnPlugin
             }
 
             float dpadX = -Input.GetAxis("Oculus_GearVR_DpadY");
-            if(Math.Abs(dpadX) > 0)
+            if(Math.Abs(dpadX) > 0f)
             {
-                if(dpadXTimeHeld == 0.0f || dpadXTimeHeld > 0.15f)
+                if(dpadXTimeHeld == 0f || dpadXTimeHeld > 0.15f)
                 {
-                    guiTimeAngle = 1.0f;
+                    guiTimeAngle = 1f;
                     float newAngle = CameraAngle.z - dpadX;
-                    newAngle = Mathf.Repeat(newAngle, 360.0f);
+                    newAngle = Mathf.Repeat(newAngle, 360f);
                     CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
                 }
 
@@ -546,7 +543,7 @@ namespace LockOnPlugin
             }
             else
             {
-                dpadXTimeHeld = 0.0f;
+                dpadXTimeHeld = 0f;
             }
         }
     }

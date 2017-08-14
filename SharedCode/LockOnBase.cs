@@ -61,8 +61,8 @@ namespace LockOnPlugin
         protected string infoMsg = "";
         protected Vector2 infoMsgPosition = new Vector2(0.5f, 0f);
         protected Vector3 targetOffsetSize = new Vector3();
-        private float dpadXTimeHeld = 0f;
-        private float offsetKeyHeld = 0f;
+        protected float dpadXTimeHeld = 0f;
+        protected float offsetKeyHeld = 0f;
 
         protected virtual void Start()
         {
@@ -75,9 +75,9 @@ namespace LockOnPlugin
         {
             lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "LockOnHotkey", "N", true), 0.4f);
             lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "LockOnGuiHotkey", "K", true));
-            prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "PrevCharaHotkey", "false", true));
+            prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "PrevCharaHotkey", "False", true));
             nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "NextCharaHotkey", "L", true));
-            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "false", true));
+            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "False", true));
 
             lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0f, true));
             trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true), 0.01f, 1f);

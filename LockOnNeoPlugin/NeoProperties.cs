@@ -54,21 +54,6 @@ namespace LockOnPlugin
             get { return camera.transform; }
         }
 
-        protected override Vector3 CameraForward
-        {
-            get { return camera.transform.forward; }
-        }
-
-        protected override Vector3 CameraRight
-        {
-            get { return camera.transform.right; }
-        }
-
-        protected override Vector3 CameraUp
-        {
-            get { return camera.transform.up; }
-        }
-
         protected override bool AllowTracking
         {
             get { return !(guideObjectManager.isOperationTarget && guideObjectManager.mode == 1); }

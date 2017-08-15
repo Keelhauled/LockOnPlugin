@@ -5,7 +5,6 @@
 ## Description
 This plugin allows you to keep the camera target on specific parts of the target character.  
 The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.  
-Neo and maker are the only currently supported modes.
 
 [Video of the mod in action](https://my.mixtape.moe/rgkydu.m4v) (old video without many of the new features)
 

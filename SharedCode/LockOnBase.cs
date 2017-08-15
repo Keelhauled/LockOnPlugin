@@ -23,6 +23,9 @@ namespace LockOnPlugin
         protected abstract bool CameraTargetTex { set; }
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
+        protected abstract Vector3 CameraForward { get; }
+        protected abstract Vector3 CameraRight { get; }
+        protected abstract Vector3 CameraUp { get; }
         protected virtual bool AllowTracking => true;
         protected virtual bool InputFieldSelected => false;
 
@@ -116,7 +119,7 @@ namespace LockOnPlugin
                     float y = Input.GetAxis("Mouse Y");
                     if(Mathf.Abs(x) > 0f || Mathf.Abs(y) > 0f)
                     {
-                        targetOffsetSize += (CameraTransform.right * x * defaultCameraSpeed) + (CameraTransform.forward * y * defaultCameraSpeed);
+                        targetOffsetSize += (CameraRight * x * defaultCameraSpeed) + (CameraForward * y * defaultCameraSpeed);
                     }
                 }
                 else if(Input.GetMouseButton(1))
@@ -147,7 +150,7 @@ namespace LockOnPlugin
                     {
                         if(Mathf.Abs(x) > 0f)
                         {
-                            //handle zooming manually when camera.movespeed = 0
+                            //handle zooming manually when camera.movespeed == 0
                             float newDir = CameraDir.z - x * CameraZoomSpeed;
                             newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
                             CameraDir = new Vector3(0f, 0f, newDir);
@@ -173,27 +176,27 @@ namespace LockOnPlugin
 
                     if(RightArrow)
                     {
-                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(speed, 0f, 0f));
+                        targetOffsetSize += CameraRight * speed;
                     }
                     else if(LeftArrow)
                     {
-                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(-speed, 0f, 0f));
+                        targetOffsetSize += CameraRight * -speed;
                     }
                     if(UpArrow)
                     {
-                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, speed));
+                        targetOffsetSize += CameraForward * speed;
                     }
                     else if(DownArrow)
                     {
-                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, 0f, -speed));
+                        targetOffsetSize += CameraForward * -speed;
                     }
                     if(PageUp)
                     {
-                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, speed, 0f));
+                        targetOffsetSize += CameraUp * speed;
                     }
                     else if(PageDown)
                     {
-                        targetOffsetSize += Camera.main.transform.TransformDirection(new Vector3(0f, -speed, 0f));
+                        targetOffsetSize += CameraUp * -speed;
                     }
                 }
                 else
@@ -508,22 +511,22 @@ namespace LockOnPlugin
                 {
                     if(Input.GetKey(R1))
                     {
-                        targetOffsetSize += (CameraTransform.forward * -rightStick.y * power);
+                        targetOffsetSize += (CameraForward * -rightStick.y * power);
                     }
                     else
                     {
-                        targetOffsetSize += (CameraTransform.right * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
+                        targetOffsetSize += (CameraRight * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
                     }
                 }
                 else
                 {
                     if(Input.GetKey(R1))
                     {
-                        CameraTargetPos += (CameraTransform.forward * -rightStick.y * power);
+                        CameraTargetPos += (CameraForward * -rightStick.y * power);
                     }
                     else
                     {
-                        CameraTargetPos += (CameraTransform.right * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
+                        CameraTargetPos += (CameraRight * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
                     }
                 }
             }

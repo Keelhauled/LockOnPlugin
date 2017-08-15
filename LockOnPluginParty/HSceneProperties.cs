@@ -56,6 +56,21 @@ namespace LockOnPlugin
             get { return camera.transform; }
         }
 
+        protected override Vector3 CameraForward
+        {
+            get { return camera.transBase.InverseTransformDirection(camera.transform.forward); }
+        }
+
+        protected override Vector3 CameraRight
+        {
+            get { return camera.transBase.InverseTransformDirection(camera.transform.right); }
+        }
+
+        protected override Vector3 CameraUp
+        {
+            get { return camera.transBase.InverseTransformDirection(camera.transform.up); }
+        }
+
         // Singleton<HScene>.Instance.sprite.categoryToggleOption.isActiveAndEnabled
     }
 }

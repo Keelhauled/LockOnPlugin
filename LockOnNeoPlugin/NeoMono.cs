@@ -249,7 +249,7 @@ namespace LockOnPlugin
                     LoadSettings();
                     targetManager.UpdateAllTargets(currentCharaInfo);
                     LockOn(lockOnTarget);
-                    targetOffsetSize = new Vector3();
+                    reduceOffset = true;
                 });
 
                 Console.WriteLine("LockOnPlugin reload button installed");

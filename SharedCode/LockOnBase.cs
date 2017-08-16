@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
 using IllusionPlugin;
 using UnityEngine;
 
@@ -64,8 +64,10 @@ namespace LockOnPlugin
         protected string infoMsg = "";
         protected Vector2 infoMsgPosition = new Vector2(0.5f, 0f);
         protected Vector3 targetOffsetSize = new Vector3();
+        protected Vector3 targetOffsetSizeAdded = new Vector3();
         protected float dpadXTimeHeld = 0f;
         protected float offsetKeyHeld = 0f;
+        protected bool reduceOffset = false;
 
         protected virtual void Start()
         {
@@ -120,6 +122,7 @@ namespace LockOnPlugin
                     if(Mathf.Abs(x) > 0f || Mathf.Abs(y) > 0f)
                     {
                         targetOffsetSize += (CameraRight * x * defaultCameraSpeed) + (CameraForward * y * defaultCameraSpeed);
+                        reduceOffset = false;
                     }
                 }
                 else if(Input.GetMouseButton(1))
@@ -154,12 +157,14 @@ namespace LockOnPlugin
                             float newDir = CameraDir.z - x * CameraZoomSpeed;
                             newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
                             CameraDir = new Vector3(0f, 0f, newDir);
+                            reduceOffset = false;
                         }
 
                         float y = Input.GetAxis("Mouse Y");
                         if(Mathf.Abs(y) > 0f)
                         {
                             targetOffsetSize += (Vector3.up * y * defaultCameraSpeed);
+                            reduceOffset = false;
                         }
                     }
                 }
@@ -171,6 +176,8 @@ namespace LockOnPlugin
 
                 if(RightArrow || LeftArrow || UpArrow || DownArrow || PageUp || PageDown)
                 {
+                    reduceOffset = false;
+
                     offsetKeyHeld += Time.deltaTime / 3f;
                     if(offsetKeyHeld > 1f) offsetKeyHeld = 1f;
 
@@ -205,12 +212,27 @@ namespace LockOnPlugin
                     if(offsetKeyHeld < 0f) offsetKeyHeld = 0f;
                 }
 
+                if(reduceOffset)
+                {
+                    if(targetOffsetSize.magnitude > 0.00001f)
+                    {
+                        targetOffsetSize = Vector3.MoveTowards(targetOffsetSize, new Vector3(), targetOffsetSize.magnitude / 10); 
+                    }
+                    else
+                    {
+                        targetOffsetSize = new Vector3();
+                        reduceOffset = false;
+                    }
+                }
+
                 if(AllowTracking)
                 {
                     float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPosOffset(), distance * trackingSpeed);
-                    lastTargetPos = LockOnTargetPosOffset(); 
+                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, distance * trackingSpeed);
+                    CameraTargetPos += targetOffsetSize - targetOffsetSizeAdded;
+                    targetOffsetSizeAdded = targetOffsetSize;
+                    lastTargetPos = LockOnTargetPos + targetOffsetSize; 
                 }
             }
 
@@ -268,6 +290,7 @@ namespace LockOnPlugin
                     Vector3 pos = Camera.main.WorldToScreenPoint(targets[i].transform.position);
                     if(pos.z > 0f && GUI.Button(new Rect(pos.x - targetSize / 2f, Screen.height - pos.y - targetSize / 2f, targetSize, targetSize), "L"))
                     {
+                        CameraTargetPos += targetOffsetSize;
                         targetOffsetSize = new Vector3();
                         LockOn(targets[i]);
                     }
@@ -279,9 +302,14 @@ namespace LockOnPlugin
         {
             if(currentCharaInfo)
             {
-                if(targetOffsetSize.magnitude > 0f)
+                if(reduceOffset == true)
                 {
+                    CameraTargetPos += targetOffsetSize;
                     targetOffsetSize = new Vector3();
+                }
+                else if(targetOffsetSize.magnitude > 0f)
+                {
+                    reduceOffset = true;
                     return true;
                 }
 
@@ -337,10 +365,10 @@ namespace LockOnPlugin
         {
             if(target)
             {
-                if(resetOffset) targetOffsetSize = new Vector3();
+                if(resetOffset) reduceOffset = true;
                 lockedOn = true;
                 lockOnTarget = target;
-                if(lastTargetPos == null) lastTargetPos = LockOnTargetPosOffset();
+                if(lastTargetPos == null) lastTargetPos = LockOnTargetPos + targetOffsetSize;
                 CameraMoveSpeed = 0f;
                 CreateInfoMsg("Locked to \"" + lockOnTarget.name + "\"");
                 return true;
@@ -354,7 +382,7 @@ namespace LockOnPlugin
             if(lockOnTarget)
             {
                 lockedOn = false;
-                targetOffsetSize = new Vector3();
+                reduceOffset = true;
                 lockOnTarget = null;
                 lastTargetPos = null;
                 lockRotation = false;
@@ -395,11 +423,6 @@ namespace LockOnPlugin
         {
             infoMsg = msg;
             guiTimeInfo = time;
-        }
-
-        protected Vector3 LockOnTargetPosOffset()
-        {
-            return LockOnTargetPos + (Vector3.right * targetOffsetSize.x) + (Vector3.up * targetOffsetSize.y) + (Vector3.forward * targetOffsetSize.z);
         }
 
         protected static bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
@@ -506,6 +529,7 @@ namespace LockOnPlugin
 
             if(rightStick.magnitude > 0.2f)
             {
+                reduceOffset = false;
                 float power = Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
                 if(lockOnTarget)
                 {

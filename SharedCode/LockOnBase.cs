@@ -174,7 +174,7 @@ namespace LockOnPlugin
                 bool UpArrow = Input.GetKey(KeyCode.UpArrow), DownArrow = Input.GetKey(KeyCode.DownArrow);
                 bool PageUp = Input.GetKey(KeyCode.PageUp), PageDown = Input.GetKey(KeyCode.PageDown);
 
-                if(RightArrow || LeftArrow || UpArrow || DownArrow || PageUp || PageDown)
+                if(!InputFieldSelected && Hotkey.allowHotkeys && (RightArrow || LeftArrow || UpArrow || DownArrow || PageUp || PageDown))
                 {
                     reduceOffset = false;
 

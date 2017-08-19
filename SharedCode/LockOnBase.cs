@@ -9,7 +9,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public const string VERSION = "2.3.0";
+        public const string VERSION = "2.3.1";
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
@@ -69,7 +69,8 @@ namespace LockOnPlugin
         protected float dpadXTimeHeld = 0f;
         protected float offsetKeyHeld = 0f;
         protected bool reduceOffset = false;
-        protected bool mouseButtonDown = false;
+        protected bool mouseButtonDown0 = false;
+        protected bool mouseButtonDown1 = false;
 
         protected virtual void Start()
         {
@@ -255,17 +256,38 @@ namespace LockOnPlugin
             {
                 if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
                 {
-                    mouseButtonDown = true;
+                    if(Input.GetMouseButtonDown(0))
+                    {
+                        mouseButtonDown0 = true;
+                    }
+
+                    if(Input.GetMouseButtonDown(1))
+                    {
+                        mouseButtonDown1 = true;
+                    }
+
                     Cursor.visible = false;
                     Cursor.lockState = CursorLockMode.Locked;
                 }
             }
 
-            if(mouseButtonDown && Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1))
+            if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
             {
-                mouseButtonDown = false;
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                if(Input.GetMouseButtonUp(0))
+                {
+                    mouseButtonDown0 = false;
+                }
+
+                if(Input.GetMouseButtonUp(1))
+                {
+                    mouseButtonDown1 = false;
+                }
+
+                if(!mouseButtonDown1 && !mouseButtonDown0)
+                {
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true; 
+                }
             }
         }
         

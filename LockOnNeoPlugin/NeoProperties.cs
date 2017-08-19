@@ -16,11 +16,6 @@ namespace LockOnPlugin
             set { camera.targetPos = value; }
         }
 
-        protected override Vector3 LockOnTargetPos
-        {
-            get { return lockOnTarget.transform.position; }
-        }
-
         protected override Vector3 CameraAngle
         {
             get { return camera.cameraAngle; }

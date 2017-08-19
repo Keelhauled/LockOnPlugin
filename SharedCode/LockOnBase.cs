@@ -17,7 +17,6 @@ namespace LockOnPlugin
 
         protected abstract float CameraMoveSpeed { get; set; }
         protected abstract Vector3 CameraTargetPos { get; set; }
-        protected abstract Vector3 LockOnTargetPos { get; }
         protected abstract Vector3 CameraAngle { get; set; }
         protected abstract float CameraFov { get; set; }
         protected abstract Vector3 CameraDir { get; set; }
@@ -27,6 +26,7 @@ namespace LockOnPlugin
         protected virtual Vector3 CameraForward => CameraTransform.forward;
         protected virtual Vector3 CameraRight => CameraTransform.right;
         protected virtual Vector3 CameraUp => CameraTransform.up;
+        protected virtual Vector3 LockOnTargetPos => lockOnTarget.transform.position;
         protected virtual bool AllowTracking => true;
         protected virtual bool InputFieldSelected => false;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using IllusionPlugin;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace LockOnPlugin
 {
@@ -68,6 +69,7 @@ namespace LockOnPlugin
         protected float dpadXTimeHeld = 0f;
         protected float offsetKeyHeld = 0f;
         protected bool reduceOffset = false;
+        protected bool mouseButtonDown = false;
 
         protected virtual void Start()
         {
@@ -249,16 +251,21 @@ namespace LockOnPlugin
                 showLockOnTargets = false;
             }
 
-            if(Hotkey.allowHotkeys && manageCursorVisibility)
+            if(Hotkey.allowHotkeys && GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && manageCursorVisibility)
             {
-                if(Input.GetMouseButton(0) || Input.GetMouseButton(1))
+                if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
                 {
+                    mouseButtonDown = true;
                     Cursor.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
                 }
-                else
-                {
-                    Cursor.visible = true;
-                }
+            }
+
+            if(mouseButtonDown && Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1))
+            {
+                mouseButtonDown = false;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
             }
         }
         

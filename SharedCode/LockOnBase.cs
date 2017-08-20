@@ -252,19 +252,12 @@ namespace LockOnPlugin
                 showLockOnTargets = false;
             }
 
-            if(Hotkey.allowHotkeys && GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && manageCursorVisibility)
+            if(GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && Hotkey.allowHotkeys && manageCursorVisibility)
             {
                 if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
                 {
-                    if(Input.GetMouseButtonDown(0))
-                    {
-                        mouseButtonDown0 = true;
-                    }
-
-                    if(Input.GetMouseButtonDown(1))
-                    {
-                        mouseButtonDown1 = true;
-                    }
+                    if(Input.GetMouseButtonDown(0)) mouseButtonDown0 = true;
+                    if(Input.GetMouseButtonDown(1)) mouseButtonDown1 = true;
 
                     Cursor.visible = false;
                     Cursor.lockState = CursorLockMode.Locked;
@@ -273,15 +266,8 @@ namespace LockOnPlugin
 
             if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
             {
-                if(Input.GetMouseButtonUp(0))
-                {
-                    mouseButtonDown0 = false;
-                }
-
-                if(Input.GetMouseButtonUp(1))
-                {
-                    mouseButtonDown1 = false;
-                }
+                if(Input.GetMouseButtonUp(0)) mouseButtonDown0 = false;
+                if(Input.GetMouseButtonUp(1)) mouseButtonDown1 = false;
 
                 if(!mouseButtonDown1 && !mouseButtonDown0)
                 {

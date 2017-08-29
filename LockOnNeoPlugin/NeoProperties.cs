@@ -56,7 +56,7 @@ namespace LockOnPlugin
         
         protected override bool InputFieldSelected
         {
-            get { return studio.isInputNow; }
+            get { return studio.isInputNow || guideObjectManager.isOperationTarget; }
         }
     }
 }

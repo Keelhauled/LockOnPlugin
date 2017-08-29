@@ -512,7 +512,7 @@ namespace LockOnPlugin
 
             if(swapSticks)
             {
-                Vector3 temp = rightStick;
+                Vector2 temp = rightStick;
                 rightStick = leftStick;
                 leftStick = temp;
                 L1 = KeyCode.JoystickButton5;
@@ -541,34 +541,8 @@ namespace LockOnPlugin
                     CameraAngle += new Vector3(newX, newY, 0f);
                 }
             }
-
-            if(rightStick.magnitude > 0.2f)
-            {
-                reduceOffset = false;
-                float power = Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
-                if(lockOnTarget)
-                {
-                    if(Input.GetKey(R1))
-                    {
-                        targetOffsetSize += (CameraForward * -rightStick.y * power);
-                    }
-                    else
-                    {
-                        targetOffsetSize += (CameraRight * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
-                    }
-                }
-                else
-                {
-                    if(Input.GetKey(R1))
-                    {
-                        CameraTargetPos += (CameraForward * -rightStick.y * power);
-                    }
-                    else
-                    {
-                        CameraTargetPos += (CameraRight * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
-                    }
-                }
-            }
+            
+            RightStickStuff(rightStick);
 
             float dpadX = -Input.GetAxis("Oculus_GearVR_DpadY");
             if(Math.Abs(dpadX) > 0f)
@@ -587,6 +561,34 @@ namespace LockOnPlugin
             {
                 dpadXTimeHeld = 0f;
             }
+        }
+
+        protected virtual void RightStickStuff(Vector2 stick)
+        {
+            //reduceOffset = false;
+            //float power = Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
+            //if(lockOnTarget)
+            //{
+            //    if(Input.GetKey(R1))
+            //    {
+            //        targetOffsetSize += (CameraForward * -stick.y * power);
+            //    }
+            //    else
+            //    {
+            //        targetOffsetSize += (CameraRight * stick.x * power) + (Vector3.up * -stick.y * power);
+            //    }
+            //}
+            //else
+            //{
+            //    if(Input.GetKey(R1))
+            //    {
+            //        CameraTargetPos += (CameraForward * -stick.y * power);
+            //    }
+            //    else
+            //    {
+            //        CameraTargetPos += (CameraRight * stick.x * power) + (Vector3.up * -stick.y * power);
+            //    }
+            //}
         }
     }
 }

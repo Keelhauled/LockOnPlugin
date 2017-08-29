@@ -296,5 +296,38 @@ namespace LockOnPlugin
                 Console.WriteLine("NearClipPlane text installed");
             }
         }
+
+        private bool running = false;
+        protected override void RightStickStuff(Vector2 stick)
+        {
+            if(stick.magnitude > 0.2f)
+            {
+                if(currentCharaOCI != null)
+                {
+                    if(!running)
+                    {
+                        running = true;
+                        currentCharaOCI.LoadAnime(1, 6, 0);
+                    }
+
+                    currentCharaOCI.animeSpeed = stick.magnitude * 3f;
+                    stick *= 0.04f;
+
+                    Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                    Vector3 lookDirection = Camera.main.transform.right * stick.x + forward * -stick.y;
+                    lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
+                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection;
+                    Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
+                    Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, 10f);
+                    currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
+                }
+            }
+            else if(running)
+            {
+                running = false;
+                currentCharaOCI.LoadAnime(0, 0, 1);
+                currentCharaOCI.animeSpeed = 1f;
+            }
+        }
     }
 }

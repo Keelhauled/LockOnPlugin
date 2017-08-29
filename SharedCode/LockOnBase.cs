@@ -536,8 +536,8 @@ namespace LockOnPlugin
                 else
                 {
                     float power = Mathf.Lerp(1f, 4f, controllerRotSpeed);
-                    float newX = Mathf.Repeat(controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y * power, 360f);
-                    float newY = Mathf.Repeat(controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x * power, 360f);
+                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * power, 360f);
+                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * power, 360f);
                     CameraAngle += new Vector3(newX, newY, 0f);
                 }
             }

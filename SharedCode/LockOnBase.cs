@@ -152,7 +152,7 @@ namespace LockOnPlugin
                             CameraFov = Mathf.Clamp(newFov, 1f, 160f);
                         }
                     }
-                    else
+                    else if(!InputFieldSelected)
                     {
                         if(Mathf.Abs(x) > 0f)
                         {

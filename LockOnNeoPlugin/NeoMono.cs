@@ -21,6 +21,14 @@ namespace LockOnPlugin
         private Studio.CameraControl.CameraData cameraReset;
         private OCIChar currentCharaOCI;
 
+        private int animMoveSetCurrent;
+        private List<List<int>> animMoveSets = new List<List<int>>
+        {
+            new List<int> { 0, 0, 1, 1, 6, 0 }, // hands on the side
+            new List<int> { 1, 3, 21, 1, 6, 1 }, // hands in front
+            new List<int> { 1, 3, 17, 1, 6, 3 }, // catwalk
+        };
+
         protected override void Start()
         {
             base.Start();
@@ -42,7 +50,8 @@ namespace LockOnPlugin
 
             manageCursorVisibility = false;
             infoMsgPosition = new Vector2(1f, 1f);
-            float nearClipPlane = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
+            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 0, true), 0, animMoveSets.Count - 1);
+            float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
             Camera.main.nearClipPlane = nearClipPlane;
             GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
             if(nearClipSlider) nearClipSlider.GetComponent<Slider>().value = nearClipPlane;
@@ -270,7 +279,7 @@ namespace LockOnPlugin
                 nearClipSlider.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
 
                 Slider nearClipSliderComponent = nearClipSlider.GetComponent<Slider>();
-                nearClipSliderComponent.maxValue = 0.060f;
+                nearClipSliderComponent.maxValue = 0.06f;
                 nearClipSliderComponent.minValue = 0.001f;
                 nearClipSliderComponent.value = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
                 nearClipSliderComponent.onValueChanged = new Slider.SliderEvent();
@@ -297,21 +306,22 @@ namespace LockOnPlugin
             }
         }
 
-        private bool running = false;
+        private bool moving = false;
         protected override void RightStickStuff(Vector2 stick)
         {
             if(stick.magnitude > 0.2f)
             {
                 if(currentCharaOCI != null)
                 {
-                    if(!running)
+                    if(!moving)
                     {
-                        running = true;
-                        currentCharaOCI.LoadAnime(1, 6, 0);
+                        moving = true;
+                        List<int> anim = animMoveSets[animMoveSetCurrent];
+                        currentCharaOCI.LoadAnime(anim[3], anim[4], anim[5]);
                     }
 
-                    currentCharaOCI.animeSpeed = stick.magnitude * 3f;
-                    stick *= 0.04f;
+                    currentCharaOCI.animeSpeed = stick.magnitude * 3f; // basing animeSpeed on the magnitude is wrong
+                    stick = stick * 0.04f;
 
                     Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                     Vector3 lookDirection = Camera.main.transform.right * stick.x + forward * -stick.y;
@@ -322,10 +332,11 @@ namespace LockOnPlugin
                     currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
                 }
             }
-            else if(running)
+            else if(moving)
             {
-                running = false;
-                currentCharaOCI.LoadAnime(0, 0, 1);
+                moving = false;
+                List<int> anim = animMoveSets[animMoveSetCurrent];
+                currentCharaOCI.LoadAnime(anim[0], anim[1], anim[2]);
                 currentCharaOCI.animeSpeed = 1f;
             }
         }

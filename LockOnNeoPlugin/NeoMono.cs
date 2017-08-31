@@ -21,6 +21,7 @@ namespace LockOnPlugin
         private Studio.CameraControl.CameraData cameraReset;
         private OCIChar currentCharaOCI;
 
+        private AnimatorOverrideController overrideController;
         private float animationSpeed;
         private bool moving = false;
         private int animMoveSetCurrent;
@@ -74,15 +75,7 @@ namespace LockOnPlugin
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
                         targetManager.UpdateAllTargets(ocichar.charInfo);
-
-                        Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
-                        Studio.Info.AnimeLoadInfo animeLoadInfoMove = GetAnimeInfo(1, 6, 0);
-                        RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
-                        RuntimeAnimatorController animeLoadInfoMoveCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoMove.bundlePath, animeLoadInfoMove.fileName);
-                        AnimatorOverrideController overrideController = new AnimatorOverrideController();
-                        overrideController.runtimeAnimatorController = ocichar.charInfo.animBody.runtimeAnimatorController;
-                        overrideController["tachi_pose_02"] = animeLoadInfoMoveCtrl.animationClips[0];
-                        ocichar.charInfo.animBody.runtimeAnimatorController = overrideController;
+                        OverrideControllerCreate(ocichar);
 
                         if(lockOnTarget)
                         {
@@ -318,25 +311,87 @@ namespace LockOnPlugin
             }
         }
 
-        protected override void RightStickStuff(Vector2 stick)
+        protected override void GamepadControls()
         {
-            if(stick.magnitude > 0.2f)
+            if(!controllerEnabled) return;
+            if(Input.GetJoystickNames().Length == 0) return;
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton0))
+            {
+                LockOn();
+            }
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton1))
+            {
+                LockOnRelease();
+            }
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton3))
+            {
+                CharaSwitch(true);
+            }
+
+            Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));
+            Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
+            KeyCode L1 = KeyCode.JoystickButton4;
+            KeyCode R1 = KeyCode.JoystickButton5;
+
+            if(swapSticks)
+            {
+                Vector2 temp = rightStick;
+                rightStick = leftStick;
+                leftStick = temp;
+                L1 = KeyCode.JoystickButton5;
+                R1 = KeyCode.JoystickButton4;
+            }
+
+            if(leftStick.magnitude > 0.2f)
+            {
+                if(Input.GetKey(R1))
+                {
+                    guiTimeFov = 1f;
+                    float newFov = CameraFov + leftStick.y;
+                    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
+                }
+                else if(Input.GetKey(L1))
+                {
+                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
+                    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
+                    CameraDir = new Vector3(0f, 0f, newDir);
+                }
+                else
+                {
+                    float power = Mathf.Lerp(1f, 4f, controllerRotSpeed);
+                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * power, 360f);
+                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * power, 360f);
+                    CameraAngle += new Vector3(newX, newY, 0f);
+                    
+                    //currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, leftStick.x * 3f, 0f);
+                }
+            }
+
+            if(rightStick.magnitude > 0.2f)
             {
                 if(currentCharaOCI != null)
                 {
                     if(!moving)
                     {
                         moving = true;
-                        List<int> anim = animMoveSets[animMoveSetCurrent];
+                        //List<int> anim = animMoveSets[animMoveSetCurrent];
                         //PlayAnimation(currentCharaOCI, anim[3], anim[4], anim[5], 0.2f);
+                        if(currentCharaOCI.charInfo.animBody.runtimeAnimatorController != overrideController)
+                        {
+                            OverrideControllerApply(currentCharaOCI);
+                        }
+
                         currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_02", 0.2f);
                     }
 
-                    currentCharaOCI.animeSpeed = stick.magnitude * animationSpeed; // basing animeSpeed on the magnitude is wrong
-                    stick = stick * 0.04f;
+                    currentCharaOCI.animeSpeed = rightStick.magnitude * animationSpeed; // basing animeSpeed on the magnitude is wrong
+                    rightStick = rightStick * 0.04f;
 
                     Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                    Vector3 lookDirection = Camera.main.transform.right * stick.x + forward * -stick.y;
+                    Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
                     lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
                     currentCharaOCI.guideObject.changeAmount.pos += lookDirection;
                     Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
@@ -347,10 +402,33 @@ namespace LockOnPlugin
             else if(moving)
             {
                 moving = false;
-                List<int> anim = animMoveSets[animMoveSetCurrent];
+                //List<int> anim = animMoveSets[animMoveSetCurrent];
                 //PlayAnimation(currentCharaOCI, anim[0], anim[1], anim[2], 0.2f);
+                if(currentCharaOCI.charInfo.animBody.runtimeAnimatorController != overrideController)
+                {
+                    OverrideControllerApply(currentCharaOCI);
+                }
+
                 currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_01", 0.2f);
                 currentCharaOCI.animeSpeed = 1f;
+            }
+
+            float dpadX = -Input.GetAxis("Oculus_GearVR_DpadY");
+            if(Math.Abs(dpadX) > 0f)
+            {
+                if(dpadXTimeHeld == 0f || dpadXTimeHeld > 0.15f)
+                {
+                    guiTimeAngle = 1f;
+                    float newAngle = CameraAngle.z - dpadX;
+                    newAngle = Mathf.Repeat(newAngle, 360f);
+                    CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
+                }
+
+                dpadXTimeHeld += Time.deltaTime;
+            }
+            else
+            {
+                dpadXTimeHeld = 0f;
             }
         }
 
@@ -395,6 +473,23 @@ namespace LockOnPlugin
             }
 
             return animeLoadInfo;
+        }
+        
+        private void OverrideControllerApply(OCIChar ocichar)
+        {
+            Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
+            RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
+            ocichar.charInfo.animBody.runtimeAnimatorController = animeLoadInfoIdleCtrl;
+            ocichar.charInfo.animBody.runtimeAnimatorController = overrideController;
+        }
+
+        private void OverrideControllerCreate(OCIChar ocichar)
+        {
+            Studio.Info.AnimeLoadInfo animeLoadInfoMove = GetAnimeInfo(1, 6, 0);
+            RuntimeAnimatorController animeLoadInfoMoveCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoMove.bundlePath, animeLoadInfoMove.fileName);
+            overrideController = new AnimatorOverrideController();
+            overrideController.runtimeAnimatorController = ocichar.charInfo.animBody.runtimeAnimatorController;
+            overrideController["tachi_pose_02"] = animeLoadInfoMoveCtrl.animationClips[0];
         }
     }
 }

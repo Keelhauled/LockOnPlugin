@@ -61,6 +61,7 @@ namespace LockOnPlugin
                 if(characters[i] == currentCharaInfo)
                 {
                     int next = i + 1 > characters.Count - 1 ? 0 : i + 1;
+                    if(!scrollDown) next = i - 1 < 0 ? characters.Count - 1 : i - 1;
                     currentCharaInfo = characters[next];
                     targetManager.UpdateAllTargets(currentCharaInfo);
                     if(lockOnTarget) LockOn(lockOnTarget.name, true);

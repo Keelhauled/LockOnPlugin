@@ -21,6 +21,8 @@ namespace LockOnPlugin
         private Studio.CameraControl.CameraData cameraReset;
         private OCIChar currentCharaOCI;
 
+        private float animationSpeed;
+        private bool moving = false;
         private int animMoveSetCurrent;
         private List<List<int>> animMoveSets = new List<List<int>>
         {
@@ -51,6 +53,7 @@ namespace LockOnPlugin
             manageCursorVisibility = false;
             infoMsgPosition = new Vector2(1f, 1f);
             animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 0, true), 0, animMoveSets.Count - 1);
+            animationSpeed = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "AnimationSpeed", 9f, true), 0f, 100f);
             float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
             Camera.main.nearClipPlane = nearClipPlane;
             GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
@@ -71,6 +74,15 @@ namespace LockOnPlugin
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
                         targetManager.UpdateAllTargets(ocichar.charInfo);
+
+                        Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
+                        Studio.Info.AnimeLoadInfo animeLoadInfoMove = GetAnimeInfo(1, 6, 0);
+                        RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
+                        RuntimeAnimatorController animeLoadInfoMoveCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoMove.bundlePath, animeLoadInfoMove.fileName);
+                        AnimatorOverrideController overrideController = new AnimatorOverrideController();
+                        overrideController.runtimeAnimatorController = ocichar.charInfo.animBody.runtimeAnimatorController;
+                        overrideController["tachi_pose_02"] = animeLoadInfoMoveCtrl.animationClips[0];
+                        ocichar.charInfo.animBody.runtimeAnimatorController = overrideController;
 
                         if(lockOnTarget)
                         {
@@ -306,7 +318,6 @@ namespace LockOnPlugin
             }
         }
 
-        private bool moving = false;
         protected override void RightStickStuff(Vector2 stick)
         {
             if(stick.magnitude > 0.2f)
@@ -317,10 +328,11 @@ namespace LockOnPlugin
                     {
                         moving = true;
                         List<int> anim = animMoveSets[animMoveSetCurrent];
-                        currentCharaOCI.LoadAnime(anim[3], anim[4], anim[5]);
+                        //PlayAnimation(currentCharaOCI, anim[3], anim[4], anim[5], 0.2f);
+                        currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_02", 0.2f);
                     }
 
-                    currentCharaOCI.animeSpeed = stick.magnitude * 3f; // basing animeSpeed on the magnitude is wrong
+                    currentCharaOCI.animeSpeed = stick.magnitude * animationSpeed; // basing animeSpeed on the magnitude is wrong
                     stick = stick * 0.04f;
 
                     Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
@@ -336,9 +348,53 @@ namespace LockOnPlugin
             {
                 moving = false;
                 List<int> anim = animMoveSets[animMoveSetCurrent];
-                currentCharaOCI.LoadAnime(anim[0], anim[1], anim[2]);
+                //PlayAnimation(currentCharaOCI, anim[0], anim[1], anim[2], 0.2f);
+                currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_01", 0.2f);
                 currentCharaOCI.animeSpeed = 1f;
             }
+        }
+
+        private void PlayAnimation(OCIChar ocichar, int group, int category, int no, float transitionTime = 0f)
+        {
+            Dictionary<int, Dictionary<int, Studio.Info.AnimeLoadInfo>> dictionary = null;
+            if(!Singleton<Studio.Info>.Instance.dicFemaleAnimeLoadInfo.TryGetValue(group, out dictionary))
+            {
+                return;
+            }
+            Dictionary<int, Studio.Info.AnimeLoadInfo> dictionary2 = null;
+            if(!dictionary.TryGetValue(category, out dictionary2))
+            {
+                return;
+            }
+            Studio.Info.AnimeLoadInfo animeLoadInfo = null;
+            if(!dictionary2.TryGetValue(no, out animeLoadInfo))
+            {
+                return;
+            }
+
+            ocichar.charInfo.LoadAnimation(animeLoadInfo.bundlePath, animeLoadInfo.fileName);
+            ocichar.charInfo.animBody.CrossFadeInFixedTime(animeLoadInfo.clip, transitionTime);
+        }        
+
+        private Studio.Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)
+        {
+            Dictionary<int, Dictionary<int, Studio.Info.AnimeLoadInfo>> dictionary = null;
+            if(!Singleton<Studio.Info>.Instance.dicFemaleAnimeLoadInfo.TryGetValue(group, out dictionary))
+            {
+                return null;
+            }
+            Dictionary<int, Studio.Info.AnimeLoadInfo> dictionary2 = null;
+            if(!dictionary.TryGetValue(category, out dictionary2))
+            {
+                return null;
+            }
+            Studio.Info.AnimeLoadInfo animeLoadInfo = null;
+            if(!dictionary2.TryGetValue(no, out animeLoadInfo))
+            {
+                return null;
+            }
+
+            return animeLoadInfo;
         }
     }
 }

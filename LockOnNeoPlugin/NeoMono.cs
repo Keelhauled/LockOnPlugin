@@ -377,13 +377,7 @@ namespace LockOnPlugin
                     if(!moving)
                     {
                         moving = true;
-                        //List<int> anim = animMoveSets[animMoveSetCurrent];
-                        //PlayAnimation(currentCharaOCI, anim[3], anim[4], anim[5], 0.2f);
-                        if(currentCharaOCI.charInfo.animBody.runtimeAnimatorController != overrideController)
-                        {
-                            OverrideControllerApply(currentCharaOCI);
-                        }
-
+                        OverrideRuntimeController(currentCharaOCI);
                         currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_02", 0.2f);
                     }
 
@@ -402,13 +396,7 @@ namespace LockOnPlugin
             else if(moving)
             {
                 moving = false;
-                //List<int> anim = animMoveSets[animMoveSetCurrent];
-                //PlayAnimation(currentCharaOCI, anim[0], anim[1], anim[2], 0.2f);
-                if(currentCharaOCI.charInfo.animBody.runtimeAnimatorController != overrideController)
-                {
-                    OverrideControllerApply(currentCharaOCI);
-                }
-
+                OverrideRuntimeController(currentCharaOCI);
                 currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_01", 0.2f);
                 currentCharaOCI.animeSpeed = 1f;
             }
@@ -431,28 +419,28 @@ namespace LockOnPlugin
                 dpadXTimeHeld = 0f;
             }
         }
-
-        private void PlayAnimation(OCIChar ocichar, int group, int category, int no, float transitionTime = 0f)
+        
+        private void OverrideRuntimeController(OCIChar ocichar)
         {
-            Dictionary<int, Dictionary<int, Studio.Info.AnimeLoadInfo>> dictionary = null;
-            if(!Singleton<Studio.Info>.Instance.dicFemaleAnimeLoadInfo.TryGetValue(group, out dictionary))
+            if(currentCharaOCI.charInfo.animBody.runtimeAnimatorController != overrideController)
             {
-                return;
+                Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
+                RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
+                ocichar.charInfo.animBody.runtimeAnimatorController = animeLoadInfoIdleCtrl;
+                ocichar.charInfo.animBody.runtimeAnimatorController = overrideController; 
             }
-            Dictionary<int, Studio.Info.AnimeLoadInfo> dictionary2 = null;
-            if(!dictionary.TryGetValue(category, out dictionary2))
-            {
-                return;
-            }
-            Studio.Info.AnimeLoadInfo animeLoadInfo = null;
-            if(!dictionary2.TryGetValue(no, out animeLoadInfo))
-            {
-                return;
-            }
+        }
 
-            ocichar.charInfo.LoadAnimation(animeLoadInfo.bundlePath, animeLoadInfo.fileName);
-            ocichar.charInfo.animBody.CrossFadeInFixedTime(animeLoadInfo.clip, transitionTime);
-        }        
+        private void OverrideControllerCreate(OCIChar ocichar)
+        {
+            Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
+            RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
+            Studio.Info.AnimeLoadInfo animeLoadInfoMove = GetAnimeInfo(1, 6, 0);
+            RuntimeAnimatorController animeLoadInfoMoveCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoMove.bundlePath, animeLoadInfoMove.fileName);
+            overrideController = new AnimatorOverrideController();
+            overrideController.runtimeAnimatorController = animeLoadInfoIdleCtrl;
+            overrideController["tachi_pose_02"] = animeLoadInfoMoveCtrl.animationClips[0];
+        }
 
         private Studio.Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)
         {
@@ -461,11 +449,13 @@ namespace LockOnPlugin
             {
                 return null;
             }
+
             Dictionary<int, Studio.Info.AnimeLoadInfo> dictionary2 = null;
             if(!dictionary.TryGetValue(category, out dictionary2))
             {
                 return null;
             }
+
             Studio.Info.AnimeLoadInfo animeLoadInfo = null;
             if(!dictionary2.TryGetValue(no, out animeLoadInfo))
             {
@@ -473,23 +463,6 @@ namespace LockOnPlugin
             }
 
             return animeLoadInfo;
-        }
-        
-        private void OverrideControllerApply(OCIChar ocichar)
-        {
-            Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
-            RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
-            ocichar.charInfo.animBody.runtimeAnimatorController = animeLoadInfoIdleCtrl;
-            ocichar.charInfo.animBody.runtimeAnimatorController = overrideController;
-        }
-
-        private void OverrideControllerCreate(OCIChar ocichar)
-        {
-            Studio.Info.AnimeLoadInfo animeLoadInfoMove = GetAnimeInfo(1, 6, 0);
-            RuntimeAnimatorController animeLoadInfoMoveCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoMove.bundlePath, animeLoadInfoMove.fileName);
-            overrideController = new AnimatorOverrideController();
-            overrideController.runtimeAnimatorController = ocichar.charInfo.animBody.runtimeAnimatorController;
-            overrideController["tachi_pose_02"] = animeLoadInfoMoveCtrl.animationClips[0];
         }
     }
 }

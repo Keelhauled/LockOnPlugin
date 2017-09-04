@@ -45,6 +45,7 @@ namespace LockOnPlugin
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
             InstallNearClipPlaneSlider();
             StartCoroutine(InstallSettingsReloadButton());
+            OverrideControllerCreate();
         }
 
         protected override void LoadSettings()
@@ -75,7 +76,6 @@ namespace LockOnPlugin
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
                         targetManager.UpdateAllTargets(ocichar.charInfo);
-                        OverrideControllerCreate(ocichar);
 
                         if(lockOnTarget)
                         {
@@ -262,7 +262,7 @@ namespace LockOnPlugin
                 {
                     LoadSettings();
                     targetManager.UpdateAllTargets(currentCharaInfo);
-                    LockOn(lockOnTarget);
+                    LockOn((currentCharaInfo is CharFemale ? FileManager.GetQuickFemaleTargetNames() : FileManager.GetQuickMaleTargetNames())[0]);
                     reduceOffset = true;
                 });
 
@@ -377,17 +377,17 @@ namespace LockOnPlugin
                     if(!moving)
                     {
                         moving = true;
-                        OverrideRuntimeController(currentCharaOCI);
+                        currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
                         currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_02", 0.2f);
                     }
 
-                    currentCharaOCI.animeSpeed = rightStick.magnitude * animationSpeed; // basing animeSpeed on the magnitude is wrong
+                    currentCharaOCI.animeSpeed = rightStick.magnitude * animationSpeed;
                     rightStick = rightStick * 0.04f;
 
                     Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                     Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
                     lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection;
+                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animationSpeed * 9.6f);
                     Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
                     Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, 10f);
                     currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
@@ -396,7 +396,7 @@ namespace LockOnPlugin
             else if(moving)
             {
                 moving = false;
-                OverrideRuntimeController(currentCharaOCI);
+                currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
                 currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_01", 0.2f);
                 currentCharaOCI.animeSpeed = 1f;
             }
@@ -419,19 +419,8 @@ namespace LockOnPlugin
                 dpadXTimeHeld = 0f;
             }
         }
-        
-        private void OverrideRuntimeController(OCIChar ocichar)
-        {
-            if(currentCharaOCI.charInfo.animBody.runtimeAnimatorController != overrideController)
-            {
-                Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
-                RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
-                ocichar.charInfo.animBody.runtimeAnimatorController = animeLoadInfoIdleCtrl;
-                ocichar.charInfo.animBody.runtimeAnimatorController = overrideController; 
-            }
-        }
 
-        private void OverrideControllerCreate(OCIChar ocichar)
+        private void OverrideControllerCreate()
         {
             Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
             RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);

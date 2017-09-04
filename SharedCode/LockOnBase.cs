@@ -9,7 +9,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public const string VERSION = "2.3.1";
+        public const string VERSION = "2.4.0";
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
@@ -232,7 +232,7 @@ namespace LockOnPlugin
                 {
                     float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, distance * trackingSpeed);
+                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, distance * trackingSpeed * Time.deltaTime * 60);
                     CameraTargetPos += targetOffsetSize - targetOffsetSizeAdded;
                     targetOffsetSizeAdded = targetOffsetSize;
                     lastTargetPos = LockOnTargetPos + targetOffsetSize; 
@@ -524,20 +524,20 @@ namespace LockOnPlugin
                 if(Input.GetKey(R1))
                 {
                     guiTimeFov = 1f;
-                    float newFov = CameraFov + leftStick.y;
+                    float newFov = CameraFov + leftStick.y * Time.deltaTime * 60f;
                     CameraFov = Mathf.Clamp(newFov, 1f, 160f);
                 }
                 else if(Input.GetKey(L1))
                 {
-                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
+                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
                     newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
                     CameraDir = new Vector3(0f, 0f, newDir);
                 }
                 else
                 {
-                    float power = Mathf.Lerp(1f, 4f, controllerRotSpeed);
-                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * power, 360f);
-                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * power, 360f);
+                    float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
+                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
+                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
                     CameraAngle += new Vector3(newX, newY, 0f);
                 }
             }
@@ -545,29 +545,29 @@ namespace LockOnPlugin
             if(rightStick.magnitude > 0.2f)
             {
                 reduceOffset = false;
-                float power = Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed);
+                float speed = (Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed)) * Time.deltaTime * 60f;
                 if(lockOnTarget)
                 {
                     if(Input.GetKey(R1))
                     {
-                        targetOffsetSize += (CameraForward * -rightStick.y * power);
+                        targetOffsetSize += (CameraForward * -rightStick.y * speed);
                     }
                     else
                     {
-                        targetOffsetSize += (CameraRight * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
+                        targetOffsetSize += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
                     }
                 }
                 else
                 {
                     if(Input.GetKey(R1))
                     {
-                        CameraTargetPos += (CameraForward * -rightStick.y * power);
+                        CameraTargetPos += (CameraForward * -rightStick.y * speed);
                     }
                     else
                     {
-                        CameraTargetPos += (CameraRight * rightStick.x * power) + (Vector3.up * -rightStick.y * power);
+                        CameraTargetPos += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
                     }
-                } 
+                }
             }
 
             float dpadX = -Input.GetAxis("Oculus_GearVR_DpadY");
@@ -576,7 +576,7 @@ namespace LockOnPlugin
                 if(dpadXTimeHeld == 0f || dpadXTimeHeld > 0.15f)
                 {
                     guiTimeAngle = 1f;
-                    float newAngle = CameraAngle.z - dpadX;
+                    float newAngle = CameraAngle.z - dpadX * Time.deltaTime * 60f;
                     newAngle = Mathf.Repeat(newAngle, 360f);
                     CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
                 }

@@ -22,6 +22,7 @@ namespace LockOnPlugin
         private OCIChar currentCharaOCI;
 
         private AnimatorOverrideController overrideController;
+        private float rotateSpeed;
         private float animationSpeed;
         private bool moving = false;
         private int animMoveSetCurrent;
@@ -56,6 +57,7 @@ namespace LockOnPlugin
             infoMsgPosition = new Vector2(1f, 1f);
             animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 0, true), 0, animMoveSets.Count - 1);
             animationSpeed = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "AnimationSpeed", 9f, true), 0f, 100f);
+            rotateSpeed = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "RotateSpeed", 1f, true), 0f, 1000f);
             float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
             Camera.main.nearClipPlane = nearClipPlane;
             GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
@@ -350,23 +352,21 @@ namespace LockOnPlugin
                 if(Input.GetKey(R1))
                 {
                     guiTimeFov = 1f;
-                    float newFov = CameraFov + leftStick.y;
+                    float newFov = CameraFov + leftStick.y * Time.deltaTime * 60f;
                     CameraFov = Mathf.Clamp(newFov, 1f, 160f);
                 }
                 else if(Input.GetKey(L1))
                 {
-                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed);
+                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
                     newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
                     CameraDir = new Vector3(0f, 0f, newDir);
                 }
                 else
                 {
-                    float power = Mathf.Lerp(1f, 4f, controllerRotSpeed);
-                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * power, 360f);
-                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * power, 360f);
+                    float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
+                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
+                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
                     CameraAngle += new Vector3(newX, newY, 0f);
-                    
-                    //currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, leftStick.x * 3f, 0f);
                 }
             }
 
@@ -389,7 +389,7 @@ namespace LockOnPlugin
                     lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
                     currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animationSpeed * 9.6f);
                     Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
-                    Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, 10f);
+                    Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * rotateSpeed);
                     currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
                 }
             }
@@ -407,7 +407,7 @@ namespace LockOnPlugin
                 if(dpadXTimeHeld == 0f || dpadXTimeHeld > 0.15f)
                 {
                     guiTimeAngle = 1f;
-                    float newAngle = CameraAngle.z - dpadX;
+                    float newAngle = CameraAngle.z - dpadX * Time.deltaTime * 60f;
                     newAngle = Mathf.Repeat(newAngle, 360f);
                     CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
                 }

@@ -22,16 +22,30 @@ namespace LockOnPlugin
         private OCIChar currentCharaOCI;
 
         private AnimatorOverrideController overrideController;
-        private float rotateSpeed;
-        private float animationSpeed;
         private bool moving = false;
         private int animMoveSetCurrent;
-        private List<List<int>> animMoveSets = new List<List<int>>
+        private List<MoveSetData> animMoveSetsStates = new List<MoveSetData>
         {
-            new List<int> { 0, 0, 1, 1, 6, 0 }, // hands on the side
-            new List<int> { 1, 3, 21, 1, 6, 1 }, // hands in front
-            new List<int> { 1, 3, 17, 1, 6, 3 }, // catwalk
+            new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f), // hands on the side
+            new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f), // hands in front
+            new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f), // catwalk
         };
+
+        private class MoveSetData
+        {
+            public string idle;
+            public string move;
+            public float animSpeed;
+            public float speedMult;
+
+            public MoveSetData(string idle, string move, float animSpeed, float speedMult)
+            {
+                this.idle = idle;
+                this.move = move;
+                this.animSpeed = animSpeed;
+                this.speedMult = speedMult;
+            }
+        }
 
         protected override void Start()
         {
@@ -55,9 +69,7 @@ namespace LockOnPlugin
 
             manageCursorVisibility = false;
             infoMsgPosition = new Vector2(1f, 1f);
-            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 0, true), 0, animMoveSets.Count - 1);
-            animationSpeed = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "AnimationSpeed", 9f, true), 0f, 100f);
-            rotateSpeed = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "RotateSpeed", 1f, true), 0f, 1000f);
+            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 1, true), 0, animMoveSetsStates.Count - 1);
             float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
             Camera.main.nearClipPlane = nearClipPlane;
             GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
@@ -317,6 +329,7 @@ namespace LockOnPlugin
         {
             if(!controllerEnabled) return;
             if(Input.GetJoystickNames().Length == 0) return;
+            bool animSwitched = false;
 
             if(Input.GetKeyDown(KeyCode.JoystickButton0))
             {
@@ -326,6 +339,14 @@ namespace LockOnPlugin
             if(Input.GetKeyDown(KeyCode.JoystickButton1))
             {
                 LockOnRelease();
+            }
+
+            if(Input.GetKeyDown(KeyCode.JoystickButton2))
+            {
+                int next = animMoveSetCurrent + 1 > animMoveSetsStates.Count - 1 ? 0 : animMoveSetCurrent + 1;
+                animMoveSetCurrent = next;
+                ModPrefs.SetInt("LockOnPlugin.Misc", "MovementAnimSet", next);
+                animSwitched = true;
             }
 
             if(Input.GetKeyDown(KeyCode.JoystickButton3))
@@ -374,30 +395,30 @@ namespace LockOnPlugin
             {
                 if(currentCharaOCI != null)
                 {
-                    if(!moving)
+                    if(!moving || animSwitched)
                     {
                         moving = true;
                         currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
-                        currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_02", 0.2f);
+                        currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSetsStates[animMoveSetCurrent].move, 0.2f);
                     }
 
-                    currentCharaOCI.animeSpeed = rightStick.magnitude * animationSpeed;
+                    currentCharaOCI.animeSpeed = rightStick.magnitude * animMoveSetsStates[animMoveSetCurrent].animSpeed;
                     rightStick = rightStick * 0.04f;
 
                     Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                     Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
                     lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animationSpeed * 9.6f);
+                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSetsStates[animMoveSetCurrent].animSpeed * animMoveSetsStates[animMoveSetCurrent].speedMult);
                     Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
-                    Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * rotateSpeed);
+                    Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * 10f);
                     currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
                 }
             }
-            else if(moving)
+            else if(moving || animSwitched)
             {
                 moving = false;
                 currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
-                currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime("tachi_pose_01", 0.2f);
+                currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSetsStates[animMoveSetCurrent].idle, 0.2f);
                 currentCharaOCI.animeSpeed = 1f;
             }
 
@@ -422,13 +443,22 @@ namespace LockOnPlugin
 
         private void OverrideControllerCreate()
         {
-            Studio.Info.AnimeLoadInfo animeLoadInfoIdle = GetAnimeInfo(0, 0, 1);
-            RuntimeAnimatorController animeLoadInfoIdleCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoIdle.bundlePath, animeLoadInfoIdle.fileName);
-            Studio.Info.AnimeLoadInfo animeLoadInfoMove = GetAnimeInfo(1, 6, 0);
-            RuntimeAnimatorController animeLoadInfoMoveCtrl = CommonLib.LoadAsset<RuntimeAnimatorController>(animeLoadInfoMove.bundlePath, animeLoadInfoMove.fileName);
+            Studio.Info.AnimeLoadInfo infoBase = GetAnimeInfo(0, 0, 1);
+            Studio.Info.AnimeLoadInfo infoWalk = GetAnimeInfo(1, 6, 0);
+            Studio.Info.AnimeLoadInfo infoGentle = GetAnimeInfo(2, 10, 0);
+            Studio.Info.AnimeLoadInfo infoActive = GetAnimeInfo(2, 17, 7);
+            RuntimeAnimatorController controllerBase = CommonLib.LoadAsset<RuntimeAnimatorController>(infoBase.bundlePath, infoBase.fileName);
+            RuntimeAnimatorController controllerWalk = CommonLib.LoadAsset<RuntimeAnimatorController>(infoWalk.bundlePath, infoWalk.fileName);
+            RuntimeAnimatorController controllerGentle = CommonLib.LoadAsset<RuntimeAnimatorController>(infoGentle.bundlePath, infoGentle.fileName);
+            RuntimeAnimatorController controllerActive = CommonLib.LoadAsset<RuntimeAnimatorController>(infoActive.bundlePath, infoActive.fileName);
+
             overrideController = new AnimatorOverrideController();
-            overrideController.runtimeAnimatorController = animeLoadInfoIdleCtrl;
-            overrideController["tachi_pose_02"] = animeLoadInfoMoveCtrl.animationClips[0];
+            overrideController.runtimeAnimatorController = controllerBase;
+            overrideController[animMoveSetsStates[0].move] = controllerWalk.animationClips[0];
+            overrideController[animMoveSetsStates[1].idle] = controllerGentle.animationClips[0];
+            overrideController[animMoveSetsStates[1].move] = controllerWalk.animationClips[1];
+            overrideController[animMoveSetsStates[2].idle] = controllerActive.animationClips[7];
+            overrideController[animMoveSetsStates[2].move] = controllerWalk.animationClips[3];
         }
 
         private Studio.Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)

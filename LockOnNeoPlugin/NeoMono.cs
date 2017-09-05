@@ -24,7 +24,7 @@ namespace LockOnPlugin
         private AnimatorOverrideController overrideController;
         private bool moving = false;
         private int animMoveSetCurrent;
-        private List<MoveSetData> animMoveSetsStates = new List<MoveSetData>
+        private List<MoveSetData> animMoveSets = new List<MoveSetData>
         {
             new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f), // hands on the side
             new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f), // hands in front
@@ -69,7 +69,7 @@ namespace LockOnPlugin
 
             manageCursorVisibility = false;
             infoMsgPosition = new Vector2(1f, 1f);
-            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 1, true), 0, animMoveSetsStates.Count - 1);
+            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 1, true), 0, animMoveSets.Count - 1);
             float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
             Camera.main.nearClipPlane = nearClipPlane;
             GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
@@ -343,7 +343,7 @@ namespace LockOnPlugin
 
             if(Input.GetKeyDown(KeyCode.JoystickButton2))
             {
-                int next = animMoveSetCurrent + 1 > animMoveSetsStates.Count - 1 ? 0 : animMoveSetCurrent + 1;
+                int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
                 animMoveSetCurrent = next;
                 ModPrefs.SetInt("LockOnPlugin.Misc", "MovementAnimSet", next);
                 animSwitched = true;
@@ -399,16 +399,16 @@ namespace LockOnPlugin
                     {
                         moving = true;
                         currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
-                        currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSetsStates[animMoveSetCurrent].move, 0.2f);
+                        currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].move, 0.2f);
                     }
 
-                    currentCharaOCI.animeSpeed = rightStick.magnitude * animMoveSetsStates[animMoveSetCurrent].animSpeed;
+                    currentCharaOCI.animeSpeed = rightStick.magnitude * animMoveSets[animMoveSetCurrent].animSpeed;
                     rightStick = rightStick * 0.04f;
 
                     Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                     Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
                     lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSetsStates[animMoveSetCurrent].animSpeed * animMoveSetsStates[animMoveSetCurrent].speedMult);
+                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSets[animMoveSetCurrent].animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
                     Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
                     Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * 10f);
                     currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
@@ -418,7 +418,7 @@ namespace LockOnPlugin
             {
                 moving = false;
                 currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
-                currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSetsStates[animMoveSetCurrent].idle, 0.2f);
+                currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].idle, 0.4f);
                 currentCharaOCI.animeSpeed = 1f;
             }
 
@@ -454,11 +454,11 @@ namespace LockOnPlugin
 
             overrideController = new AnimatorOverrideController();
             overrideController.runtimeAnimatorController = controllerBase;
-            overrideController[animMoveSetsStates[0].move] = controllerWalk.animationClips[0];
-            overrideController[animMoveSetsStates[1].idle] = controllerGentle.animationClips[0];
-            overrideController[animMoveSetsStates[1].move] = controllerWalk.animationClips[1];
-            overrideController[animMoveSetsStates[2].idle] = controllerActive.animationClips[7];
-            overrideController[animMoveSetsStates[2].move] = controllerWalk.animationClips[3];
+            overrideController[animMoveSets[0].move] = controllerWalk.animationClips[0];
+            overrideController[animMoveSets[1].idle] = controllerGentle.animationClips[0];
+            overrideController[animMoveSets[1].move] = controllerWalk.animationClips[1];
+            overrideController[animMoveSets[2].idle] = controllerActive.animationClips[7];
+            overrideController[animMoveSets[2].move] = controllerWalk.animationClips[3];
         }
 
         private Studio.Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)

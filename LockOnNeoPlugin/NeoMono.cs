@@ -29,6 +29,14 @@ namespace LockOnPlugin
             new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f), // hands on the side
             new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f), // hands in front
             new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f), // catwalk
+            new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f), // hands on the side alt
+        };
+        private Dictionary<string, MoveSetData> moveSets = new Dictionary<string, MoveSetData>
+        {
+            { "normal", new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f) },
+            { "normalalt", new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f) },
+            { "proper", new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f) },
+            { "catwalk", new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f) },
         };
 
         private class MoveSetData
@@ -400,6 +408,11 @@ namespace LockOnPlugin
                         moving = true;
                         currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
                         currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].move, 0.2f);
+                        currentCharaOCI.optionItemCtrl.LoadAnimeItem(null, "", 0f, 0f);
+                        //currentCharaOCI.ActiveKinematicMode(OICharInfo.KinematicMode.FK, false, false);
+                        //currentCharaOCI.ActiveKinematicMode(OICharInfo.KinematicMode.IK, false, false);
+                        //GameObject toggle = GameObject.Find("Toggle Function");
+                        //if(toggle) toggle.GetComponent<Toggle>().isOn = false;
                     }
 
                     currentCharaOCI.animeSpeed = rightStick.magnitude * animMoveSets[animMoveSetCurrent].animSpeed;
@@ -447,10 +460,12 @@ namespace LockOnPlugin
             Studio.Info.AnimeLoadInfo infoWalk = GetAnimeInfo(1, 6, 0);
             Studio.Info.AnimeLoadInfo infoGentle = GetAnimeInfo(2, 10, 0);
             Studio.Info.AnimeLoadInfo infoActive = GetAnimeInfo(2, 17, 7);
+            Studio.Info.AnimeLoadInfo infoEnergetic = GetAnimeInfo(2, 16, 3);
             RuntimeAnimatorController controllerBase = CommonLib.LoadAsset<RuntimeAnimatorController>(infoBase.bundlePath, infoBase.fileName);
             RuntimeAnimatorController controllerWalk = CommonLib.LoadAsset<RuntimeAnimatorController>(infoWalk.bundlePath, infoWalk.fileName);
             RuntimeAnimatorController controllerGentle = CommonLib.LoadAsset<RuntimeAnimatorController>(infoGentle.bundlePath, infoGentle.fileName);
             RuntimeAnimatorController controllerActive = CommonLib.LoadAsset<RuntimeAnimatorController>(infoActive.bundlePath, infoActive.fileName);
+            RuntimeAnimatorController controllerEnergetic = CommonLib.LoadAsset<RuntimeAnimatorController>(infoEnergetic.bundlePath, infoEnergetic.fileName);
 
             overrideController = new AnimatorOverrideController();
             overrideController.runtimeAnimatorController = controllerBase;
@@ -459,6 +474,7 @@ namespace LockOnPlugin
             overrideController[animMoveSets[1].move] = controllerWalk.animationClips[1];
             overrideController[animMoveSets[2].idle] = controllerActive.animationClips[7];
             overrideController[animMoveSets[2].move] = controllerWalk.animationClips[3];
+            overrideController[animMoveSets[3].idle] = controllerEnergetic.animationClips[5];
         }
 
         private Studio.Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)

@@ -72,6 +72,8 @@ namespace LockOnPlugin
         protected bool mouseButtonDown0 = false;
         protected bool mouseButtonDown1 = false;
 
+        private float autoZoomAmount = 0f;
+
         protected virtual void Start()
         {
             targetManager = new CameraTargetManager();
@@ -237,6 +239,54 @@ namespace LockOnPlugin
                     targetOffsetSizeAdded = targetOffsetSize;
                     lastTargetPos = LockOnTargetPos + targetOffsetSize; 
                 }
+
+                if(true)
+                {
+                    float edgeOffset = 50f;
+                    float edgeZone = 50f;
+                    int amountOnScreen = 0;
+                    int amountOnEdge = 0;
+
+                    List<GameObject> targets = targetManager.GetAllTargets();
+                    for(int i = 0; i < targets.Count; i++)
+                    {
+                        Vector3 pos = Camera.main.WorldToScreenPoint(targets[i].transform.position);
+
+                        if(PointInEdgeZone(pos, edgeOffset, edgeZone))
+                        {
+                            amountOnScreen++;
+                            amountOnEdge++;
+                        }
+                        else if(PointOnScreen(pos, edgeOffset))
+                        {
+                            amountOnScreen++;
+                        }
+                    }
+
+                    if(amountOnScreen == targets.Count && amountOnEdge > 0)
+                    {
+                        Console.WriteLine("Zoom stop");
+                    }
+                    else if(amountOnScreen == targets.Count && amountOnEdge == 0)
+                    {
+                        //CameraDir += new Vector3(0f, 0f, 0.01f);
+                        autoZoomAmount += 0.01f;
+                        Console.WriteLine("Zoom in");
+                    }
+                    else if(amountOnScreen < targets.Count)
+                    {
+                        //CameraDir -= new Vector3(0f, 0f, 0.01f);
+                        autoZoomAmount -= 0.01f;
+                        Console.WriteLine("Zoom out");
+                    }
+
+                    if(autoZoomAmount != 0f)
+                    {
+                        float zoomAmount = autoZoomAmount / 2;
+                        CameraDir += new Vector3(0f, 0f, zoomAmount);
+                        autoZoomAmount -= zoomAmount;
+                    }
+                }
             }
 
             if(lockRotation)
@@ -276,7 +326,41 @@ namespace LockOnPlugin
                 }
             }
         }
-        
+
+        private bool PointOnScreen(Vector3 pos, float edgeOffset)
+        {
+            if(pos.z > 0f)
+            {
+                if(edgeOffset < pos.x && pos.x < Screen.width - edgeOffset)
+                {
+                    if(edgeOffset < pos.y && pos.y < Screen.height - edgeOffset)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool PointInEdgeZone(Vector3 pos, float edgeOffset, float edgeZone)
+        {
+            if(pos.z > 0f)
+            {
+                if((edgeOffset < pos.x && pos.x < edgeOffset + edgeZone) || (Screen.width - edgeOffset - edgeZone < pos.x && pos.x < Screen.width - edgeOffset))
+                {
+                    return true;
+                }
+
+                if((edgeOffset < pos.y && pos.y < edgeOffset + edgeZone) || (Screen.height - edgeOffset - edgeZone < pos.y && pos.y < Screen.height - edgeOffset))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         protected virtual void OnGUI()
         {
             if(showInfoMsg && guiTimeInfo > 0f)

@@ -339,17 +339,17 @@ namespace LockOnPlugin
             if(Input.GetJoystickNames().Length == 0) return;
             bool animSwitched = false;
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton0)) // A / Cross
+            if(Input.GetKeyDown(KeyCode.JoystickButton0)) // Cross
             {
                 LockOn();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton1)) // B / Circle
+            if(Input.GetKeyDown(KeyCode.JoystickButton1)) // Circle
             {
                 LockOnRelease();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton2)) // X / Square
+            if(Input.GetKeyDown(KeyCode.JoystickButton2)) // Square
             {
                 int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
                 animMoveSetCurrent = next;
@@ -357,15 +357,15 @@ namespace LockOnPlugin
                 animSwitched = true;
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton3)) // Y / Triangle
+            if(Input.GetKeyDown(KeyCode.JoystickButton3)) // Triangle
             {
                 CharaSwitch(true);
             }
 
-            //if(Input.GetKeyDown(KeyCode.JoystickButton9)) // Right Stick
-            //{
-            //    TogglePOV();
-            //}
+            if(Input.GetKeyDown(KeyCode.JoystickButton9)) // Right Stick
+            {
+                InvokePluginMethod("TogglePOV.TogglePOVBase", "TogglePOV");
+            }
 
             Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));
             Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));

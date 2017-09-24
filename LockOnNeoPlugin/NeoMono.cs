@@ -339,17 +339,17 @@ namespace LockOnPlugin
             if(Input.GetJoystickNames().Length == 0) return;
             bool animSwitched = false;
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton0))
+            if(Input.GetKeyDown(KeyCode.JoystickButton0)) // A / Cross
             {
                 LockOn();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton1))
+            if(Input.GetKeyDown(KeyCode.JoystickButton1)) // B / Circle
             {
                 LockOnRelease();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton2))
+            if(Input.GetKeyDown(KeyCode.JoystickButton2)) // X / Square
             {
                 int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
                 animMoveSetCurrent = next;
@@ -357,10 +357,15 @@ namespace LockOnPlugin
                 animSwitched = true;
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton3))
+            if(Input.GetKeyDown(KeyCode.JoystickButton3)) // Y / Triangle
             {
                 CharaSwitch(true);
             }
+
+            //if(Input.GetKeyDown(KeyCode.JoystickButton9)) // Right Stick
+            //{
+            //    TogglePOV();
+            //}
 
             Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));
             Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
@@ -369,14 +374,16 @@ namespace LockOnPlugin
 
             if(swapSticks)
             {
-                Vector2 temp = rightStick;
+                Vector2 tempVector = rightStick;
                 rightStick = leftStick;
-                leftStick = temp;
-                L1 = KeyCode.JoystickButton5;
-                R1 = KeyCode.JoystickButton4;
+                leftStick = tempVector;
+
+                KeyCode tempCode = R1;
+                R1 = L1;
+                L1 = tempCode;
             }
 
-            if(leftStick.magnitude > 0.2f)
+            if(leftStick.magnitude > 0.2f && studio.cameraCtrl.enabled)
             {
                 if(Input.GetKey(R1))
                 {
@@ -403,7 +410,9 @@ namespace LockOnPlugin
             {
                 if(currentCharaOCI != null)
                 {
-                    if(!moving || animSwitched)
+                    bool rotatingInPov = !studio.cameraCtrl.enabled && Mathf.Abs(rightStick.y) < 0.2f;
+
+                    if((!moving || animSwitched) && !rotatingInPov)
                     {
                         moving = true;
                         currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
@@ -415,16 +424,27 @@ namespace LockOnPlugin
                         //if(toggle) toggle.GetComponent<Toggle>().isOn = false;
                     }
 
-                    currentCharaOCI.animeSpeed = rightStick.magnitude * animMoveSets[animMoveSetCurrent].animSpeed;
+                    if(!rotatingInPov) currentCharaOCI.animeSpeed = rightStick.magnitude * animMoveSets[animMoveSetCurrent].animSpeed;
                     rightStick = rightStick * 0.04f;
 
-                    Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                    Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
-                    lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                    currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSets[animMoveSetCurrent].animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
-                    Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
-                    Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * 10f);
-                    currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
+                    if(studio.cameraCtrl.enabled)
+                    {
+                        Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                        Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
+                        lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
+                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSets[animMoveSetCurrent].animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
+                        Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
+                        Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * 10f);
+                        currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
+                    }
+                    else
+                    {
+                        Vector3 forward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                        Vector3 lookDirection = forward * -rightStick.y;
+                        lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
+                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSets[animMoveSetCurrent].animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
+                        currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, rightStick.x * Time.deltaTime * 60f * 100f, 0f);
+                    }
                 }
             }
             else if(moving || animSwitched)

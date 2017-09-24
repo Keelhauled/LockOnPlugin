@@ -470,6 +470,58 @@ namespace LockOnPlugin
             return null;
         }
 
+        protected static object InvokePluginMethod(string typeName, string methodName, object[] parameters = null)
+        {
+            Type type = FindType(typeName);
+
+            if(type != null)
+            {
+                UnityEngine.Object instance = FindObjectOfType(type);
+
+                if(instance != null)
+                {
+                    MethodInfo methodInfo = type.GetMethod(methodName);
+
+                    if(methodInfo != null)
+                    {
+                        if(methodInfo.GetParameters().Length == 0)
+                        {
+                            return methodInfo.Invoke(instance, null);
+                        }
+                        else
+                        {
+                            return methodInfo.Invoke(instance, parameters);
+                        }
+                    } 
+                }
+            }
+
+            return null;
+        }
+
+        protected static Type FindType(string qualifiedTypeName)
+        {
+            Type t = Type.GetType(qualifiedTypeName);
+
+            if(t != null)
+            {
+                return t;
+            }
+            else
+            {
+                foreach(Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    t = asm.GetType(qualifiedTypeName);
+                    if(t != null)
+                    {
+                        return t;
+                    }
+                }
+
+                return null;
+            }
+        }
+
         protected static Vector3 CameraAdjustedEulerAngles(GameObject target, Transform cameraTransform)
         {
             float x = AngleSigned(target.transform.forward, Vector3.forward, cameraTransform.right);

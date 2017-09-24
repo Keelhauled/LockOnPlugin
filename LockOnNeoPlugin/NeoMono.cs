@@ -427,7 +427,8 @@ namespace LockOnPlugin
                         //if(toggle) toggle.GetComponent<Toggle>().isOn = false;
                     }
 
-                    if(!rotatingInPov) currentCharaOCI.animeSpeed = rightStick.magnitude * animMoveSets[animMoveSetCurrent].animSpeed;
+                    float animSpeed = animMoveSets[animMoveSetCurrent].animSpeed * currentCharaOCI.guideObject.changeAmount.scale.z;
+                    if(!rotatingInPov) currentCharaOCI.animeSpeed = rightStick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
                     rightStick = rightStick * 0.04f;
 
                     if(studio.cameraCtrl.enabled)
@@ -435,7 +436,7 @@ namespace LockOnPlugin
                         Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                         Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
                         lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSets[animMoveSetCurrent].animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
+                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
                         Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
                         Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * 10f);
                         currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
@@ -445,7 +446,7 @@ namespace LockOnPlugin
                         Vector3 forward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                         Vector3 lookDirection = forward * -rightStick.y;
                         lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animMoveSets[animMoveSetCurrent].animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
+                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
                         currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, rightStick.x * Time.deltaTime * 60f * 100f, 0f);
                     }
                 }

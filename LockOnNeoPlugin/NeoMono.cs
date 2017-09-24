@@ -364,7 +364,10 @@ namespace LockOnPlugin
 
             if(Input.GetKeyDown(KeyCode.JoystickButton9)) // Right Stick
             {
-                InvokePluginMethod("TogglePOV.TogglePOVBase", "TogglePOV");
+                if(FileManager.PluginInstalled("TogglePOVNeo"))
+                {
+                    InvokePluginMethod("TogglePOV.HSPluginBase", "TogglePOV");
+                }
             }
 
             Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));

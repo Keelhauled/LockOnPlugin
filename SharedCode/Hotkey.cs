@@ -3,7 +3,7 @@ using UnityEngine.Events;
 
 namespace LockOnPlugin
 {
-    public class Hotkey
+    internal class Hotkey
     {
         public static bool allowHotkeys = true;
         public static bool inputFieldSelected = false;

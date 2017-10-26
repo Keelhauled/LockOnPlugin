@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace LockOnPlugin
 {
-    public static class FileManager
+    internal static class FileManager
     {
         private static string settingsPath = Environment.CurrentDirectory + "\\Plugins\\TargetSettings\\";
         private static string quickFemaleTargetNamesPath = settingsPath + "quicktargetsfemale.txt";

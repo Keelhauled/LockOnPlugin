@@ -10,7 +10,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public const string VERSION = "2.4.0";
+        public const string VERSION = "2.4.1";
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
@@ -254,41 +254,44 @@ namespace LockOnPlugin
             {
                 showLockOnTargets = false;
             }
-            
-            if(!isLocked)
+
+            if(manageCursorVisibility)
             {
-                if(GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && Hotkey.allowHotkeys && manageCursorVisibility)
+                if(!isLocked)
                 {
-                    if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                    if(GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && Hotkey.allowHotkeys)
                     {
-                        if(Input.GetMouseButtonDown(0)) mouseButtonDown0 = true;
-                        if(Input.GetMouseButtonDown(1)) mouseButtonDown1 = true;
+                        if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                        {
+                            if(Input.GetMouseButtonDown(0)) mouseButtonDown0 = true;
+                            if(Input.GetMouseButtonDown(1)) mouseButtonDown1 = true;
 
-                        Cursor.visible = false;
-                        Cursor.lockState = CursorLockMode.Confined;
-                        
-                        isLocked = true;
-                        GetCursorPos(out lockPos);
-                    }
-                }
-            }
+                            Cursor.visible = false;
+                            Cursor.lockState = CursorLockMode.Confined;
 
-            if(isLocked)
-            {
-                if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
-                {
-                    if(Input.GetMouseButtonUp(0)) mouseButtonDown0 = false;
-                    if(Input.GetMouseButtonUp(1)) mouseButtonDown1 = false;
-
-                    if(!mouseButtonDown0 && !mouseButtonDown1)
-                    {
-                        Cursor.lockState = CursorLockMode.None;
-                        Cursor.visible = true;
-                        isLocked = false;
+                            isLocked = true;
+                            GetCursorPos(out lockPos);
+                        }
                     }
                 }
 
-                if(isLocked) SetCursorPos(lockPos.x, lockPos.y);
+                if(isLocked)
+                {
+                    if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
+                    {
+                        if(Input.GetMouseButtonUp(0)) mouseButtonDown0 = false;
+                        if(Input.GetMouseButtonUp(1)) mouseButtonDown1 = false;
+
+                        if(!mouseButtonDown0 && !mouseButtonDown1)
+                        {
+                            Cursor.lockState = CursorLockMode.None;
+                            Cursor.visible = true;
+                            isLocked = false;
+                        }
+                    }
+
+                    if(isLocked) SetCursorPos(lockPos.x, lockPos.y);
+                } 
             }
         }
         
@@ -657,14 +660,14 @@ namespace LockOnPlugin
         }
 
         [DllImport("user32.dll")]
-        public static extern bool SetCursorPos(int X, int Y);
+        protected static extern bool SetCursorPos(int X, int Y);
 
         [DllImport("user32.dll")]
         //[return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetCursorPos(out Point pos);
+        protected static extern bool GetCursorPos(out Point pos);
 
         //[StructLayout(LayoutKind.Sequential)]
-        public struct Point
+        protected struct Point
         {
             public int x;
             public int y;

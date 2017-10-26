@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using IllusionPlugin;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -71,6 +72,8 @@ namespace LockOnPlugin
         protected bool reduceOffset = false;
         protected bool mouseButtonDown0 = false;
         protected bool mouseButtonDown1 = false;
+        protected Point lockPos;
+        protected bool isLocked = false;
 
         protected virtual void Start()
         {
@@ -251,29 +254,41 @@ namespace LockOnPlugin
             {
                 showLockOnTargets = false;
             }
-
-            if(GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && Hotkey.allowHotkeys && manageCursorVisibility)
+            
+            if(!isLocked)
             {
-                if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                if(GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && Hotkey.allowHotkeys && manageCursorVisibility)
                 {
-                    if(Input.GetMouseButtonDown(0)) mouseButtonDown0 = true;
-                    if(Input.GetMouseButtonDown(1)) mouseButtonDown1 = true;
+                    if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                    {
+                        if(Input.GetMouseButtonDown(0)) mouseButtonDown0 = true;
+                        if(Input.GetMouseButtonDown(1)) mouseButtonDown1 = true;
 
-                    Cursor.visible = false;
-                    Cursor.lockState = CursorLockMode.Locked;
+                        Cursor.visible = false;
+                        Cursor.lockState = CursorLockMode.Confined;
+                        
+                        isLocked = true;
+                        GetCursorPos(out lockPos);
+                    }
                 }
             }
 
-            if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
+            if(isLocked)
             {
-                if(Input.GetMouseButtonUp(0)) mouseButtonDown0 = false;
-                if(Input.GetMouseButtonUp(1)) mouseButtonDown1 = false;
-
-                if(!mouseButtonDown1 && !mouseButtonDown0)
+                if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
                 {
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true; 
+                    if(Input.GetMouseButtonUp(0)) mouseButtonDown0 = false;
+                    if(Input.GetMouseButtonUp(1)) mouseButtonDown1 = false;
+
+                    if(!mouseButtonDown0 && !mouseButtonDown1)
+                    {
+                        Cursor.lockState = CursorLockMode.None;
+                        Cursor.visible = true;
+                        isLocked = false;
+                    }
                 }
+
+                if(isLocked) SetCursorPos(lockPos.x, lockPos.y);
             }
         }
         
@@ -638,6 +653,25 @@ namespace LockOnPlugin
             else
             {
                 dpadXTimeHeld = 0f;
+            }
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool SetCursorPos(int X, int Y);
+
+        [DllImport("user32.dll")]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetCursorPos(out Point pos);
+
+        //[StructLayout(LayoutKind.Sequential)]
+        public struct Point
+        {
+            public int x;
+            public int y;
+
+            public static implicit operator Vector2(Point point)
+            {
+                return new Vector2(point.x, point.y);
             }
         }
     }

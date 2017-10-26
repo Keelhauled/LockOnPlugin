@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace LockOnPlugin
 {
-    public class CameraTargetManager
+    internal class CameraTargetManager
     {
         private List<GameObject> allTargets = new List<GameObject>();
         private List<GameObject> allTargetsMultiple = new List<GameObject>();
@@ -168,87 +168,87 @@ namespace LockOnPlugin
             if(centerPoint.GetCenterPoint()) return centerPoint;
             return null;
         }
-    }
 
-    internal class CustomTarget
-    {
-        private string name;
-        private GameObject target;
-        private GameObject point1;
-        private GameObject point2;
-        private float midpoint;
-
-        public CustomTarget(string newName, GameObject newPoint1, GameObject newPoint2, float newMidpoint = 0.5f)
+        private class CustomTarget
         {
-            name = newName;
-            target = new GameObject(name);
+            private string name;
+            private GameObject target;
+            private GameObject point1;
+            private GameObject point2;
+            private float midpoint;
 
-            point1 = newPoint1;
-            point2 = newPoint2;
-            midpoint = newMidpoint;
-
-            UpdateTargetTransform();
-        }
-
-        public GameObject GetTarget() => target;
-
-        public void UpdateTargetTransform()
-        {
-            UpdateTargetPosition();
-            UpdateTargetAngle();
-        }
-
-        private void UpdateTargetPosition()
-        {
-            Vector3 pos1 = point1.transform.position;
-            Vector3 pos2 = point2.transform.position;
-            target.transform.position = Vector3.Lerp(pos1, pos2, midpoint);
-        }
-
-        private void UpdateTargetAngle()
-        {
-            Quaternion rot1 = point1.transform.rotation;
-            Quaternion rot2 = point2.transform.rotation;
-            target.transform.rotation = Quaternion.Slerp(rot1, rot2, 0.5f);
-        }
-    }
-
-    internal class CenterPoint
-    {
-        private Dictionary<GameObject, float> points = new Dictionary<GameObject, float>();
-        private GameObject centerPoint = null;
-
-        public CenterPoint(Dictionary<GameObject, float> newPoints)
-        {
-            if(newPoints.Count > 0)
+            public CustomTarget(string newName, GameObject newPoint1, GameObject newPoint2, float newMidpoint = 0.5f)
             {
-                centerPoint = new GameObject("CenterPoint");
-                points = newPoints;
-                UpdateCenterPointPosition();
+                name = newName;
+                target = new GameObject(name);
+
+                point1 = newPoint1;
+                point2 = newPoint2;
+                midpoint = newMidpoint;
+
+                UpdateTargetTransform();
             }
-            else
+
+            public GameObject GetTarget() => target;
+
+            public void UpdateTargetTransform()
             {
-                centerPoint = null;
+                UpdateTargetPosition();
+                UpdateTargetAngle();
+            }
+
+            private void UpdateTargetPosition()
+            {
+                Vector3 pos1 = point1.transform.position;
+                Vector3 pos2 = point2.transform.position;
+                target.transform.position = Vector3.Lerp(pos1, pos2, midpoint);
+            }
+
+            private void UpdateTargetAngle()
+            {
+                Quaternion rot1 = point1.transform.rotation;
+                Quaternion rot2 = point2.transform.rotation;
+                target.transform.rotation = Quaternion.Slerp(rot1, rot2, 0.5f);
             }
         }
 
-        public GameObject GetCenterPoint() => centerPoint;
-
-        public void UpdateCenterPointPosition()
+        private class CenterPoint
         {
-            centerPoint.transform.position = GetCenterPoint(points);
-        }
+            private Dictionary<GameObject, float> points = new Dictionary<GameObject, float>();
+            private GameObject centerPoint = null;
 
-        private Vector3 GetCenterPoint(Dictionary<GameObject, float> points)
-        {
-            Vector3 center = new Vector3();
-            float totalWeight = 0f;
-            foreach(KeyValuePair<GameObject, float> point in points)
+            public CenterPoint(Dictionary<GameObject, float> newPoints)
             {
-                center += point.Key.transform.position * point.Value;
-                totalWeight += point.Value;
+                if(newPoints.Count > 0)
+                {
+                    centerPoint = new GameObject("CenterPoint");
+                    points = newPoints;
+                    UpdateCenterPointPosition();
+                }
+                else
+                {
+                    centerPoint = null;
+                }
             }
-            return center / totalWeight;
+
+            public GameObject GetCenterPoint() => centerPoint;
+
+            public void UpdateCenterPointPosition()
+            {
+                centerPoint.transform.position = GetCenterPoint(points);
+            }
+
+            private Vector3 GetCenterPoint(Dictionary<GameObject, float> points)
+            {
+                Vector3 center = new Vector3();
+                float totalWeight = 0f;
+                foreach(KeyValuePair<GameObject, float> point in points)
+                {
+                    center += point.Key.transform.position * point.Value;
+                    totalWeight += point.Value;
+                }
+                return center / totalWeight;
+            }
         }
     }
 }

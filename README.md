@@ -29,21 +29,22 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 
 ### LockOnPlugin.Misc
 - LockedMinDistance = minimum distance from the target (any positive number)
-- LockedTrackingSpeed = how fast the camera follows the target (any positive number)
+- LockedTrackingSpeed = how fast the camera follows the target (values between 0.01 and 1.0)
 - ShowInfoMsg = whether to display messages about what the mod is doing (true/false)
 - ManageCursorVisibility = whether to hide the cursor when either mouse button is down (true/false)
 - HideCameraTarget = whether to hide the white camera target indicator thing (true/false)
 - ScrollThroughMalesToo = whether to scroll through males too with PrevCharaHotkey/NextCharaHotkey (true/false)
-- NearClipPlane = governs how close you can be to objects before clipping through them (values smaller than 0.03 may cause glitches)
+- NearClipPlane = governs how close you can be to objects before clipping through them (values smaller than 0.03 may cause glitches to far away objects)
 
 ### LockOnPlugin.Gamepad
 - ControllerEnabled = enable or disable gamepad controls completely (true/false)
-- ControllerMoveSpeed = right stick camera movement sensitivity (values between 0.0 - 1.0)
-- ControllerZoomSpeed = camera zoom sensitivity (values between 0.0 - 1.0)
-- ControllerRotSpeed = left stick camera rotation sensitivity (values between 0.0 - 1.0)
-- ControllerInvertX = Invert look direction on x axis (true/false)
-- ControllerInvertY = Invert look direction on y axis (true/false)
-- SwapSticks = Swap functionality of controller sticks (true/false)
+- ControllerMoveSpeed = right stick camera movement sensitivity (values between 0.0 and 1.0)
+- ControllerZoomSpeed = camera zoom sensitivity (values between 0.0 and 1.0)
+- ControllerRotSpeed = left stick camera rotation sensitivity (values between 0.0 and 1.0)
+- ControllerInvertX = invert look direction on x axis (true/false)
+- ControllerInvertY = invert look direction on y axis (true/false)
+- SwapSticks = swap functionality of controller sticks (true/false)
+- ControllerMovementNeo = enable or disable movement controls in neo (true/false)
 
  ### Target settings
  Target settings are located in "\HoneySelect\Plugins\TargetSettings\"

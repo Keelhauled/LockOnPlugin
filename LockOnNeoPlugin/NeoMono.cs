@@ -335,6 +335,12 @@ namespace LockOnPlugin
 
         protected override void GamepadControls()
         {
+            if(!controllerMovementNeo)
+            {
+                base.GamepadControls();
+                return;
+            }
+
             if(!controllerEnabled) return;
             if(Input.GetJoystickNames().Length == 0) return;
             bool animSwitched = false;
@@ -375,7 +381,7 @@ namespace LockOnPlugin
             KeyCode L1 = KeyCode.JoystickButton4;
             KeyCode R1 = KeyCode.JoystickButton5;
 
-            if(swapSticks)
+            if(controllerSwapSticks)
             {
                 Vector2 tempVector = rightStick;
                 rightStick = leftStick;

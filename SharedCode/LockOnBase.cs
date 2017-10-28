@@ -49,7 +49,8 @@ namespace LockOnPlugin
         protected float controllerRotSpeed;
         protected bool controllerInvertX;
         protected bool controllerInvertY;
-        protected bool swapSticks;
+        protected bool controllerSwapSticks;
+        protected bool controllerMovementNeo;
 
         protected CameraTargetManager targetManager;
         protected CharInfo currentCharaInfo;
@@ -103,7 +104,8 @@ namespace LockOnPlugin
             controllerRotSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerRotSpeed", 0.4f, true);
             controllerInvertX = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertX", "False", true).ToLower() == "true" ? true : false;
             controllerInvertY = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertY", "False", true).ToLower() == "true" ? true : false;
-            swapSticks = ModPrefs.GetString("LockOnPlugin.Gamepad", "SwapSticks", "False", true).ToLower() == "true" ? true : false;
+            controllerSwapSticks = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerSwapSticks", "True", true).ToLower() == "true" ? true : false;
+            controllerMovementNeo = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerMovementNeo", "True", true).ToLower() == "true" ? true : false;
         }
 
         protected virtual void Update()
@@ -580,7 +582,7 @@ namespace LockOnPlugin
             KeyCode L1 = KeyCode.JoystickButton4;
             KeyCode R1 = KeyCode.JoystickButton5;
 
-            if(swapSticks)
+            if(controllerSwapSticks)
             {
                 Vector2 temp = rightStick;
                 rightStick = leftStick;

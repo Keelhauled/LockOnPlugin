@@ -43,7 +43,7 @@ All hotkeys can be set to false to disable them or set to any value from [keynam
 - ControllerRotSpeed = left stick camera rotation sensitivity (values between 0.0 and 1.0)
 - ControllerInvertX = invert look direction on x axis (true/false)
 - ControllerInvertY = invert look direction on y axis (true/false)
-- SwapSticks = swap functionality of controller sticks (true/false)
+- ControllerSwapSticks = swap functionality of controller sticks (true/false)
 - ControllerMovementNeo = enable or disable movement controls in neo (true/false)
 
  ### Target settings

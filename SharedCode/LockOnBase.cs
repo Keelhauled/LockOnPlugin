@@ -237,20 +237,20 @@ namespace LockOnPlugin
                 {
                     float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, distance * trackingSpeed * Time.deltaTime * 60);
+                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, distance * trackingSpeed * Time.deltaTime * 60f);
                     CameraTargetPos += targetOffsetSize - targetOffsetSizeAdded;
                     targetOffsetSizeAdded = targetOffsetSize;
                     lastTargetPos = LockOnTargetPos + targetOffsetSize; 
                 }
             }
 
-            if(lockRotation)
-            {
-                Vector3 targetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
-                Vector3 difference = targetAngle - lastTargetAngle;
-                CameraAngle += new Vector3(-difference.x, -difference.y, -difference.z);
-                lastTargetAngle = targetAngle;
-            }
+            //if(lockRotation)
+            //{
+            //    Vector3 targetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
+            //    Vector3 difference = targetAngle - lastTargetAngle;
+            //    CameraAngle += new Vector3(-difference.x, -difference.y, -difference.z);
+            //    lastTargetAngle = targetAngle;
+            //}
 
             if(Input.GetKeyDown(KeyCode.Escape))
             {

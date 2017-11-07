@@ -64,6 +64,9 @@
       <HintPath>..\..\..\HoneySelect_64_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="XInputDotNetPure">
+      <HintPath>..\SharedCode\XInputDotNetPure.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedCode\FileManager.cs">

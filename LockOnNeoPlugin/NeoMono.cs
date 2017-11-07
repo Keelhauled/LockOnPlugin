@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Studio;
 using Manager;
+using XInputDotNetPure;
 
 namespace LockOnPlugin
 {
@@ -31,13 +32,13 @@ namespace LockOnPlugin
             new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f), // catwalk
             new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f), // hands on the side alt
         };
-        private Dictionary<string, MoveSetData> moveSets = new Dictionary<string, MoveSetData>
-        {
-            { "normal", new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f) },
-            { "normalalt", new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f) },
-            { "proper", new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f) },
-            { "catwalk", new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f) },
-        };
+        //private Dictionary<string, MoveSetData> moveSets = new Dictionary<string, MoveSetData>
+        //{
+        //    { "normal", new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f) },
+        //    { "normalalt", new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f) },
+        //    { "proper", new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f) },
+        //    { "catwalk", new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f) },
+        //};
 
         private class MoveSetData
         {
@@ -342,20 +343,22 @@ namespace LockOnPlugin
             }
 
             if(!controllerEnabled) return;
-            if(Input.GetJoystickNames().Length == 0) return;
+            gamepadStatePrev = gamepadState;
+            gamepadState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
+            if(!gamepadState.IsConnected) return;
             bool animSwitched = false;
-
-            if(Input.GetKeyDown(KeyCode.JoystickButton0)) // Cross
+            
+            if(gamepadStatePrev.Buttons.A == ButtonState.Released && gamepadState.Buttons.A == ButtonState.Pressed)
             {
                 LockOn();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton1)) // Circle
+            if(gamepadStatePrev.Buttons.B == ButtonState.Released && gamepadState.Buttons.B == ButtonState.Pressed)
             {
                 LockOnRelease();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton2)) // Square
+            if(gamepadStatePrev.Buttons.X == ButtonState.Released && gamepadState.Buttons.X == ButtonState.Pressed)
             {
                 int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
                 animMoveSetCurrent = next;
@@ -363,12 +366,12 @@ namespace LockOnPlugin
                 animSwitched = true;
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton3)) // Triangle
+            if(gamepadStatePrev.Buttons.Y == ButtonState.Released && gamepadState.Buttons.Y == ButtonState.Pressed)
             {
                 CharaSwitch(true);
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton9)) // Right Stick
+            if(gamepadStatePrev.Buttons.RightStick == ButtonState.Released && gamepadState.Buttons.RightStick == ButtonState.Pressed)
             {
                 if(FileManager.PluginInstalled("TogglePOVNeo"))
                 {
@@ -376,46 +379,25 @@ namespace LockOnPlugin
                 }
             }
 
-            Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));
-            Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
-            KeyCode L1 = KeyCode.JoystickButton4;
-            KeyCode R1 = KeyCode.JoystickButton5;
+            Vector2 leftStick = new Vector2(gamepadState.ThumbSticks.Left.X, -gamepadState.ThumbSticks.Left.Y);
+            Vector2 rightStick = new Vector2(gamepadState.ThumbSticks.Right.X, -gamepadState.ThumbSticks.Right.Y);
 
             if(controllerSwapSticks)
             {
                 Vector2 tempVector = rightStick;
                 rightStick = leftStick;
                 leftStick = tempVector;
-
-                KeyCode tempCode = R1;
-                R1 = L1;
-                L1 = tempCode;
             }
 
-            if(leftStick.magnitude > 0.2f && studio.cameraCtrl.enabled)
+            if(leftStick.magnitude > 0.1f && studio.cameraCtrl.enabled)
             {
-                if(Input.GetKey(R1))
-                {
-                    guiTimeFov = 1f;
-                    float newFov = CameraFov + leftStick.y * Time.deltaTime * 60f;
-                    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
-                }
-                else if(Input.GetKey(L1))
-                {
-                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
-                    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
-                    CameraDir = new Vector3(0f, 0f, newDir);
-                }
-                else
-                {
-                    float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
-                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
-                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
-                    CameraAngle += new Vector3(newX, newY, 0f);
-                }
+                float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
+                float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
+                float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
+                CameraAngle += new Vector3(newX, newY, 0f);
             }
 
-            if(rightStick.magnitude > 0.2f)
+            if(rightStick.magnitude > 0.1f)
             {
                 if(currentCharaOCI != null)
                 {
@@ -465,22 +447,33 @@ namespace LockOnPlugin
                 currentCharaOCI.animeSpeed = 1f;
             }
 
-            float dpadX = -Input.GetAxis("Oculus_GearVR_DpadY");
-            if(Math.Abs(dpadX) > 0f)
+            if(gamepadState.DPad.Right == ButtonState.Pressed)
             {
-                if(dpadXTimeHeld == 0f || dpadXTimeHeld > 0.15f)
-                {
-                    guiTimeAngle = 1f;
-                    float newAngle = CameraAngle.z - dpadX * Time.deltaTime * 60f;
-                    newAngle = Mathf.Repeat(newAngle, 360f);
-                    CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
-                }
-
-                dpadXTimeHeld += Time.deltaTime;
+                guiTimeAngle = 1f;
+                float newAngle = CameraAngle.z - 1f * Time.deltaTime * 60f;
+                newAngle = Mathf.Repeat(newAngle, 360f);
+                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
             }
-            else
+            else if(gamepadState.DPad.Left == ButtonState.Pressed)
             {
-                dpadXTimeHeld = 0f;
+                guiTimeAngle = 1f;
+                float newAngle = CameraAngle.z + 1f * Time.deltaTime * 60f;
+                newAngle = Mathf.Repeat(newAngle, 360f);
+                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
+            }
+            else if(gamepadState.DPad.Up == ButtonState.Pressed)
+            {
+                float newDir = CameraDir.z + 1f * CameraZoomSpeed;
+                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
+                CameraDir = new Vector3(0f, 0f, newDir);
+                reduceOffset = false;
+            }
+            else if(gamepadState.DPad.Down == ButtonState.Pressed)
+            {
+                float newDir = CameraDir.z - 1f * CameraZoomSpeed;
+                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
+                CameraDir = new Vector3(0f, 0f, newDir);
+                reduceOffset = false;
             }
         }
 

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using IllusionPlugin;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using XInputDotNetPure;
 
 namespace LockOnPlugin
 {
@@ -51,6 +52,8 @@ namespace LockOnPlugin
         protected bool controllerInvertY;
         protected bool controllerSwapSticks;
         protected bool controllerMovementNeo;
+        protected GamePadState gamepadStatePrev;
+        protected GamePadState gamepadState;
 
         protected CameraTargetManager targetManager;
         protected CharInfo currentCharaInfo;
@@ -560,104 +563,132 @@ namespace LockOnPlugin
         protected virtual void GamepadControls()
         {
             if(!controllerEnabled) return;
-            if(Input.GetJoystickNames().Length == 0) return;
-            
-            if(Input.GetKeyDown(KeyCode.JoystickButton0))
+            gamepadStatePrev = gamepadState;
+            gamepadState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
+            if(!gamepadState.IsConnected) return;
+
+            if(gamepadStatePrev.Buttons.A == ButtonState.Released && gamepadState.Buttons.A == ButtonState.Pressed)
             {
                 LockOn();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton1))
+            if(gamepadStatePrev.Buttons.B == ButtonState.Released && gamepadState.Buttons.B == ButtonState.Pressed)
             {
                 LockOnRelease();
             }
 
-            if(Input.GetKeyDown(KeyCode.JoystickButton3))
+            if(gamepadStatePrev.Buttons.Y == ButtonState.Released && gamepadState.Buttons.Y == ButtonState.Pressed)
             {
                 CharaSwitch(true);
             }
 
-            Vector2 leftStick = new Vector2(Input.GetAxis("Oculus_GearVR_LThumbstickX"), -Input.GetAxis("Oculus_GearVR_LThumbstickY"));
-            Vector2 rightStick = new Vector2(-Input.GetAxis("Oculus_GearVR_RThumbstickY"), Input.GetAxis("Oculus_GearVR_DpadX"));
-            KeyCode L1 = KeyCode.JoystickButton4;
-            KeyCode R1 = KeyCode.JoystickButton5;
+            if(gamepadStatePrev.Buttons.RightStick == ButtonState.Released && gamepadState.Buttons.RightStick == ButtonState.Pressed)
+            {
+                if(FileManager.PluginInstalled("TogglePOV"))
+                {
+                    InvokePluginMethod("TogglePOV.HSPluginBase", "TogglePOV");
+                }
+            }
+
+            Vector2 leftStick = new Vector2(gamepadState.ThumbSticks.Left.X, -gamepadState.ThumbSticks.Left.Y);
+            Vector2 rightStick = new Vector2(gamepadState.ThumbSticks.Right.X, -gamepadState.ThumbSticks.Right.Y);
 
             if(controllerSwapSticks)
             {
-                Vector2 temp = rightStick;
+                Vector2 tempVector = rightStick;
                 rightStick = leftStick;
-                leftStick = temp;
-                L1 = KeyCode.JoystickButton5;
-                R1 = KeyCode.JoystickButton4;
+                leftStick = tempVector;
             }
 
-            if(leftStick.magnitude > 0.2f)
+            if(leftStick.magnitude > 0.1f)
             {
-                if(Input.GetKey(R1))
-                {
-                    guiTimeFov = 1f;
-                    float newFov = CameraFov + leftStick.y * Time.deltaTime * 60f;
-                    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
-                }
-                else if(Input.GetKey(L1))
-                {
-                    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
-                    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
-                    CameraDir = new Vector3(0f, 0f, newDir);
-                }
-                else
-                {
+                float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
+                float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
+                float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
+                CameraAngle += new Vector3(newX, newY, 0f);
+            }
+            
+            if(rightStick.magnitude > 0.1f)
+            {
+                //if(Input.GetKey(R1))
+                //{
+                //    guiTimeFov = 1f;
+                //    float newFov = CameraFov + leftStick.y * Time.deltaTime * 60f;
+                //    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
+                //}
+                //else if(Input.GetKey(L1))
+                //{
+                //    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
+                //    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
+                //    CameraDir = new Vector3(0f, 0f, newDir);
+                //}
+                //else
+                //{
                     float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
                     float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
                     float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
                     CameraAngle += new Vector3(newX, newY, 0f);
-                }
+                //}
             }
 
-            if(rightStick.magnitude > 0.2f)
+            //if(rightStick.magnitude > 0.2f)
+            //{
+            //    reduceOffset = false;
+            //    float speed = (Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed)) * Time.deltaTime * 60f;
+            //    if(lockOnTarget)
+            //    {
+            //        if(Input.GetKey(R1))
+            //        {
+            //            targetOffsetSize += (CameraForward * -rightStick.y * speed);
+            //        }
+            //        else
+            //        {
+            //            targetOffsetSize += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if(Input.GetKey(R1))
+            //        {
+            //            CameraTargetPos += (CameraForward * -rightStick.y * speed);
+            //        }
+            //        else
+            //        {
+            //            CameraTargetPos += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
+            //        }
+            //    }
+            //}
+
+            if(gamepadState.DPad.Right == ButtonState.Pressed)
             {
+                guiTimeAngle = 1f;
+                float newAngle = CameraAngle.z + Time.deltaTime * 60f;
+                newAngle = Mathf.Repeat(newAngle, 360f);
+                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
+            }
+
+            if(gamepadState.DPad.Left == ButtonState.Pressed)
+            {
+                guiTimeAngle = 1f;
+                float newAngle = CameraAngle.z - Time.deltaTime * 60f;
+                newAngle = Mathf.Repeat(newAngle, 360f);
+                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
+            }
+
+            if(gamepadState.DPad.Up == ButtonState.Pressed)
+            {
+                float newDir = CameraDir.z + 1f * CameraZoomSpeed;
+                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
+                CameraDir = new Vector3(0f, 0f, newDir);
                 reduceOffset = false;
-                float speed = (Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed)) * Time.deltaTime * 60f;
-                if(lockOnTarget)
-                {
-                    if(Input.GetKey(R1))
-                    {
-                        targetOffsetSize += (CameraForward * -rightStick.y * speed);
-                    }
-                    else
-                    {
-                        targetOffsetSize += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
-                    }
-                }
-                else
-                {
-                    if(Input.GetKey(R1))
-                    {
-                        CameraTargetPos += (CameraForward * -rightStick.y * speed);
-                    }
-                    else
-                    {
-                        CameraTargetPos += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
-                    }
-                }
             }
 
-            float dpadX = -Input.GetAxis("Oculus_GearVR_DpadY");
-            if(Math.Abs(dpadX) > 0f)
+            if(gamepadState.DPad.Down == ButtonState.Pressed)
             {
-                if(dpadXTimeHeld == 0f || dpadXTimeHeld > 0.15f)
-                {
-                    guiTimeAngle = 1f;
-                    float newAngle = CameraAngle.z - dpadX * Time.deltaTime * 60f;
-                    newAngle = Mathf.Repeat(newAngle, 360f);
-                    CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
-                }
-
-                dpadXTimeHeld += Time.deltaTime;
-            }
-            else
-            {
-                dpadXTimeHeld = 0f;
+                float newDir = CameraDir.z - 1f * CameraZoomSpeed;
+                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
+                CameraDir = new Vector3(0f, 0f, newDir);
+                reduceOffset = false;
             }
         }
 

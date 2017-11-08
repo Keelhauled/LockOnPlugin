@@ -192,30 +192,14 @@ namespace LockOnPlugin
                     offsetKeyHeld += Time.deltaTime / 3f;
                     if(offsetKeyHeld > 1f) offsetKeyHeld = 1f;
 
-                    if(RightArrow)
-                    {
-                        targetOffsetSize += CameraRight * speed;
-                    }
-                    else if(LeftArrow)
-                    {
-                        targetOffsetSize += CameraRight * -speed;
-                    }
-                    if(UpArrow)
-                    {
-                        targetOffsetSize += CameraForward * speed;
-                    }
-                    else if(DownArrow)
-                    {
-                        targetOffsetSize += CameraForward * -speed;
-                    }
-                    if(PageUp)
-                    {
-                        targetOffsetSize += CameraUp * speed;
-                    }
-                    else if(PageDown)
-                    {
-                        targetOffsetSize += CameraUp * -speed;
-                    }
+                    if(RightArrow) targetOffsetSize += CameraRight * speed;
+                    else if(LeftArrow) targetOffsetSize += CameraRight * -speed;
+
+                    if(UpArrow) targetOffsetSize += CameraForward * speed;
+                    else if(DownArrow) targetOffsetSize += CameraForward * -speed;
+
+                    if(PageUp) targetOffsetSize += CameraUp * speed;
+                    else if(PageDown)targetOffsetSize += CameraUp * -speed;
                 }
                 else
                 {
@@ -227,7 +211,8 @@ namespace LockOnPlugin
                 {
                     if(targetOffsetSize.magnitude > 0.00001f)
                     {
-                        targetOffsetSize = Vector3.MoveTowards(targetOffsetSize, new Vector3(), targetOffsetSize.magnitude / 10); 
+                        float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
+                        targetOffsetSize = Vector3.MoveTowards(targetOffsetSize, new Vector3(), targetOffsetSize.magnitude / (1f / trackingSpeed)); 
                     }
                     else
                     {

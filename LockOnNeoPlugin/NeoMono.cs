@@ -21,6 +21,7 @@ namespace LockOnPlugin
         private Studio.CameraControl.CameraData cameraData;
         private Studio.CameraControl.CameraData cameraReset;
         private OCIChar currentCharaOCI;
+        private List<DynamicBone_Ver02> boobs;
 
         private AnimatorOverrideController overrideController;
         private bool moving = false;
@@ -99,6 +100,11 @@ namespace LockOnPlugin
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
                         targetManager.UpdateAllTargets(ocichar.charInfo);
+                        boobs = new List<DynamicBone_Ver02>
+                        {
+                            ((CharFemaleBody)ocichar.charBody).getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastL),
+                            ((CharFemaleBody)ocichar.charBody).getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastR),
+                        };
 
                         if(lockOnTarget)
                         {
@@ -389,7 +395,7 @@ namespace LockOnPlugin
                 leftStick = tempVector;
             }
 
-            if(leftStick.magnitude > 0.1f && studio.cameraCtrl.enabled)
+            if(leftStick.magnitude > 0f && camera.enabled)
             {
                 float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
                 float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
@@ -397,11 +403,11 @@ namespace LockOnPlugin
                 CameraAngle += new Vector3(newX, newY, 0f);
             }
 
-            if(rightStick.magnitude > 0.1f)
+            if(rightStick.magnitude > 0f)
             {
                 if(currentCharaOCI != null)
                 {
-                    bool rotatingInPov = !studio.cameraCtrl.enabled && Mathf.Abs(rightStick.y) < 0.2f;
+                    bool rotatingInPov = !camera.enabled && Mathf.Abs(rightStick.y) < 0.2f;
 
                     if((!moving || animSwitched) && !rotatingInPov)
                     {
@@ -419,7 +425,7 @@ namespace LockOnPlugin
                     if(!rotatingInPov) currentCharaOCI.animeSpeed = rightStick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
                     rightStick = rightStick * 0.04f;
 
-                    if(studio.cameraCtrl.enabled)
+                    if(camera.enabled)
                     {
                         Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                         Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
@@ -437,6 +443,10 @@ namespace LockOnPlugin
                         currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
                         currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, rightStick.x * Time.deltaTime * 60f * 100f, 0f);
                     }
+
+                    Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                    boobs.ForEach(x => x.Force = charaforward * rightStick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f));
+                    //boobs.ForEach(x => x.HeavyLoopMaxCount = 1);
                 }
             }
             else if(moving || animSwitched)
@@ -445,6 +455,7 @@ namespace LockOnPlugin
                 currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
                 currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].idle, 0.4f);
                 currentCharaOCI.animeSpeed = 1f;
+                boobs.ForEach(x => x.Force = new Vector3());
             }
 
             if(gamepadState.DPad.Right == ButtonState.Pressed)

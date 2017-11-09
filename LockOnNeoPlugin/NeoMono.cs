@@ -428,7 +428,8 @@ namespace LockOnPlugin
                     if(camera.enabled)
                     {
                         Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                        Vector3 lookDirection = Camera.main.transform.right * rightStick.x + forward * -rightStick.y;
+                        Vector3 right = Vector3.Scale(Camera.main.transform.right, new Vector3(1f, 0f, 1f)).normalized;
+                        Vector3 lookDirection = right * rightStick.x + forward * -rightStick.y;
                         lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
                         currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
                         Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);

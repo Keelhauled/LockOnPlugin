@@ -45,17 +45,6 @@ namespace LockOnPlugin
         protected bool scrollThroughMalesToo;
         protected bool showInfoMsg;
 
-        protected bool controllerEnabled;
-        protected float controllerMoveSpeed;
-        protected float controllerZoomSpeed;
-        protected float controllerRotSpeed;
-        protected bool controllerInvertX;
-        protected bool controllerInvertY;
-        protected bool controllerSwapSticks;
-        protected bool controllerMovementNeo;
-        protected GamePadState gamepadStatePrev;
-        protected GamePadState gamepadState;
-
         protected CameraTargetManager targetManager;
         protected CharInfo currentCharaInfo;
         protected GameObject lockOnTarget;
@@ -69,16 +58,28 @@ namespace LockOnPlugin
         protected float guiTimeFov = 0f;
         protected float guiTimeInfo = 0f;
         protected string infoMsg = "";
+
         protected Vector2 infoMsgPosition = new Vector2(0.5f, 0f);
         protected Vector3 targetOffsetSize = new Vector3();
         protected Vector3 targetOffsetSizeAdded = new Vector3();
-        protected float dpadXTimeHeld = 0f;
         protected float offsetKeyHeld = 0f;
         protected bool reduceOffset = false;
+
         protected bool mouseButtonDown0 = false;
         protected bool mouseButtonDown1 = false;
         protected WinCursor.Point lockPos;
-        protected bool isLocked = false;
+        protected bool cursorLocked = false;
+
+        protected bool controllerEnabled;
+        protected float controllerMoveSpeed;
+        protected float controllerZoomSpeed;
+        protected float controllerRotSpeed;
+        protected bool controllerInvertX;
+        protected bool controllerInvertY;
+        protected bool controllerSwapSticks;
+        protected bool controllerMovementNeo;
+        protected GamePadState gamepadStatePrev;
+        protected GamePadState gamepadState;
 
         protected bool animSwitched = false;
         protected int animMoveSetCurrent;
@@ -258,7 +259,7 @@ namespace LockOnPlugin
 
             if(manageCursorVisibility)
             {
-                if(!isLocked)
+                if(!cursorLocked)
                 {
                     if(GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && Hotkey.allowHotkeys)
                     {
@@ -270,13 +271,13 @@ namespace LockOnPlugin
                             Cursor.visible = false;
                             Cursor.lockState = CursorLockMode.Confined;
 
-                            isLocked = true;
+                            cursorLocked = true;
                             WinCursor.GetCursorPos(out lockPos);
                         }
                     }
                 }
 
-                if(isLocked)
+                if(cursorLocked)
                 {
                     if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
                     {
@@ -287,11 +288,11 @@ namespace LockOnPlugin
                         {
                             Cursor.lockState = CursorLockMode.None;
                             Cursor.visible = true;
-                            isLocked = false;
+                            cursorLocked = false;
                         }
                     }
 
-                    if(isLocked) WinCursor.SetCursorPos(lockPos.x, lockPos.y);
+                    if(cursorLocked) WinCursor.SetCursorPos(lockPos.x, lockPos.y);
                 } 
             }
         }

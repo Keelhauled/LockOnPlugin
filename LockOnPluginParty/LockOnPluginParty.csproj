@@ -81,6 +81,9 @@
     <Compile Include="..\SharedCode\TargetManager.cs">
       <Link>TargetManager.cs</Link>
     </Compile>
+    <Compile Include="..\SharedCode\Utils.cs">
+      <Link>Utils.cs</Link>
+    </Compile>
     <Compile Include="HSceneMono.cs" />
     <Compile Include="HoneySelectPatches.cs" />
     <Compile Include="MakerProperties.cs" />

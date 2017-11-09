@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Studio;
 using Manager;
-using XInputDotNetPure;
 
 namespace LockOnPlugin
 {
@@ -22,40 +21,8 @@ namespace LockOnPlugin
         private Studio.CameraControl.CameraData cameraReset;
         private OCIChar currentCharaOCI;
         private List<DynamicBone_Ver02> boobs;
-
         private AnimatorOverrideController overrideController;
         private bool moving = false;
-        private int animMoveSetCurrent;
-        private List<MoveSetData> animMoveSets = new List<MoveSetData>
-        {
-            new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f), // hands on the side
-            new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f), // hands in front
-            new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f), // catwalk
-            new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f), // hands on the side alt
-        };
-        //private Dictionary<string, MoveSetData> moveSets = new Dictionary<string, MoveSetData>
-        //{
-        //    { "normal", new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f) },
-        //    { "normalalt", new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f) },
-        //    { "proper", new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f) },
-        //    { "catwalk", new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f) },
-        //};
-
-        private class MoveSetData
-        {
-            public string idle;
-            public string move;
-            public float animSpeed;
-            public float speedMult;
-
-            public MoveSetData(string idle, string move, float animSpeed, float speedMult)
-            {
-                this.idle = idle;
-                this.move = move;
-                this.animSpeed = animSpeed;
-                this.speedMult = speedMult;
-            }
-        }
 
         protected override void Start()
         {
@@ -340,74 +307,13 @@ namespace LockOnPlugin
             }
         }
 
-        protected override void GamepadControls()
+        protected override void GamepadMovement(Vector3 stick)
         {
-            if(!controllerMovementNeo)
-            {
-                base.GamepadControls();
-                return;
-            }
-
-            if(!controllerEnabled) return;
-            gamepadStatePrev = gamepadState;
-            gamepadState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
-            if(!gamepadState.IsConnected) return;
-            bool animSwitched = false;
-            
-            if(gamepadStatePrev.Buttons.A == ButtonState.Released && gamepadState.Buttons.A == ButtonState.Pressed)
-            {
-                LockOn();
-            }
-
-            if(gamepadStatePrev.Buttons.B == ButtonState.Released && gamepadState.Buttons.B == ButtonState.Pressed)
-            {
-                LockOnRelease();
-            }
-
-            if(gamepadStatePrev.Buttons.X == ButtonState.Released && gamepadState.Buttons.X == ButtonState.Pressed)
-            {
-                int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
-                animMoveSetCurrent = next;
-                ModPrefs.SetInt("LockOnPlugin.Misc", "MovementAnimSet", next);
-                animSwitched = true;
-            }
-
-            if(gamepadStatePrev.Buttons.Y == ButtonState.Released && gamepadState.Buttons.Y == ButtonState.Pressed)
-            {
-                CharaSwitch(true);
-            }
-
-            if(gamepadStatePrev.Buttons.RightStick == ButtonState.Released && gamepadState.Buttons.RightStick == ButtonState.Pressed)
-            {
-                if(FileManager.PluginInstalled("TogglePOVNeo"))
-                {
-                    InvokePluginMethod("TogglePOV.HSPluginBase", "TogglePOV");
-                }
-            }
-
-            Vector2 leftStick = new Vector2(gamepadState.ThumbSticks.Left.X, -gamepadState.ThumbSticks.Left.Y);
-            Vector2 rightStick = new Vector2(gamepadState.ThumbSticks.Right.X, -gamepadState.ThumbSticks.Right.Y);
-
-            if(controllerSwapSticks)
-            {
-                Vector2 tempVector = rightStick;
-                rightStick = leftStick;
-                leftStick = tempVector;
-            }
-
-            if(leftStick.magnitude > 0f && camera.enabled)
-            {
-                float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
-                float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
-                float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
-                CameraAngle += new Vector3(newX, newY, 0f);
-            }
-
-            if(rightStick.magnitude > 0f)
+            if(stick.magnitude > 0f)
             {
                 if(currentCharaOCI != null)
                 {
-                    bool rotatingInPov = !camera.enabled && Mathf.Abs(rightStick.y) < 0.2f;
+                    bool rotatingInPov = !camera.enabled && Mathf.Abs(stick.y) < 0.2f;
 
                     if((!moving || animSwitched) && !rotatingInPov)
                     {
@@ -422,14 +328,14 @@ namespace LockOnPlugin
                     }
 
                     float animSpeed = animMoveSets[animMoveSetCurrent].animSpeed * currentCharaOCI.guideObject.changeAmount.scale.z;
-                    if(!rotatingInPov) currentCharaOCI.animeSpeed = rightStick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
-                    rightStick = rightStick * 0.04f;
+                    if(!rotatingInPov) currentCharaOCI.animeSpeed = stick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
+                    stick = stick * 0.04f;
 
                     if(camera.enabled)
                     {
                         Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                         Vector3 right = Vector3.Scale(Camera.main.transform.right, new Vector3(1f, 0f, 1f)).normalized;
-                        Vector3 lookDirection = right * rightStick.x + forward * -rightStick.y;
+                        Vector3 lookDirection = right * stick.x + forward * -stick.y;
                         lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
                         currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
                         Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
@@ -439,14 +345,14 @@ namespace LockOnPlugin
                     else
                     {
                         Vector3 forward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                        Vector3 lookDirection = forward * -rightStick.y;
+                        Vector3 lookDirection = forward * -stick.y;
                         lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
                         currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
-                        currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, rightStick.x * Time.deltaTime * 60f * 100f, 0f);
+                        currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, stick.x * Time.deltaTime * 60f * 100f, 0f);
                     }
 
                     Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                    boobs.ForEach(x => x.Force = charaforward * rightStick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f));
+                    boobs.ForEach(x => x.Force = charaforward * stick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f));
                     //boobs.ForEach(x => x.HeavyLoopMaxCount = 1);
                 }
             }
@@ -457,35 +363,6 @@ namespace LockOnPlugin
                 currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].idle, 0.4f);
                 currentCharaOCI.animeSpeed = 1f;
                 boobs.ForEach(x => x.Force = new Vector3());
-            }
-
-            if(gamepadState.DPad.Right == ButtonState.Pressed)
-            {
-                guiTimeAngle = 1f;
-                float newAngle = CameraAngle.z - 1f * Time.deltaTime * 60f;
-                newAngle = Mathf.Repeat(newAngle, 360f);
-                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
-            }
-            else if(gamepadState.DPad.Left == ButtonState.Pressed)
-            {
-                guiTimeAngle = 1f;
-                float newAngle = CameraAngle.z + 1f * Time.deltaTime * 60f;
-                newAngle = Mathf.Repeat(newAngle, 360f);
-                CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
-            }
-            else if(gamepadState.DPad.Up == ButtonState.Pressed)
-            {
-                float newDir = CameraDir.z + 1f * CameraZoomSpeed;
-                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
-                CameraDir = new Vector3(0f, 0f, newDir);
-                reduceOffset = false;
-            }
-            else if(gamepadState.DPad.Down == ButtonState.Pressed)
-            {
-                float newDir = CameraDir.z - 1f * CameraZoomSpeed;
-                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
-                CameraDir = new Vector3(0f, 0f, newDir);
-                reduceOffset = false;
             }
         }
 
@@ -515,22 +392,13 @@ namespace LockOnPlugin
         private Studio.Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)
         {
             Dictionary<int, Dictionary<int, Studio.Info.AnimeLoadInfo>> dictionary = null;
-            if(!Singleton<Studio.Info>.Instance.dicFemaleAnimeLoadInfo.TryGetValue(group, out dictionary))
-            {
-                return null;
-            }
+            if(!Singleton<Studio.Info>.Instance.dicFemaleAnimeLoadInfo.TryGetValue(group, out dictionary)) return null;
 
             Dictionary<int, Studio.Info.AnimeLoadInfo> dictionary2 = null;
-            if(!dictionary.TryGetValue(category, out dictionary2))
-            {
-                return null;
-            }
+            if(!dictionary.TryGetValue(category, out dictionary2)) return null;
 
             Studio.Info.AnimeLoadInfo animeLoadInfo = null;
-            if(!dictionary2.TryGetValue(no, out animeLoadInfo))
-            {
-                return null;
-            }
+            if(!dictionary2.TryGetValue(no, out animeLoadInfo)) return null;
 
             return animeLoadInfo;
         }

@@ -58,5 +58,10 @@ namespace LockOnPlugin
         {
             get { return studio.isInputNow || guideObjectManager.isOperationTarget; }
         }
+
+        protected override bool CameraEnabled
+        {
+            get { return camera.enabled; }
+        }
     }
 }

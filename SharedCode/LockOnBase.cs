@@ -25,6 +25,7 @@ namespace LockOnPlugin
         protected abstract bool CameraTargetTex { set; }
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
+        protected virtual bool CameraEnabled => true;
         protected virtual Vector3 CameraForward => CameraTransform.forward;
         protected virtual Vector3 CameraRight => CameraTransform.right;
         protected virtual Vector3 CameraUp => CameraTransform.up;
@@ -76,9 +77,19 @@ namespace LockOnPlugin
         protected bool reduceOffset = false;
         protected bool mouseButtonDown0 = false;
         protected bool mouseButtonDown1 = false;
-        protected Point lockPos;
+        protected WinCursor.Point lockPos;
         protected bool isLocked = false;
 
+        protected bool animSwitched = false;
+        protected int animMoveSetCurrent;
+        protected List<MoveSetData> animMoveSets = new List<MoveSetData>
+        {
+            new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f), // hands on the side
+            new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f), // hands in front
+            new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f), // catwalk
+            new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f), // hands on the side alt
+        };
+        
         protected virtual void Start()
         {
             targetManager = new CameraTargetManager();
@@ -166,7 +177,7 @@ namespace LockOnPlugin
                         {
                             //handle zooming manually when camera.movespeed == 0
                             float newDir = CameraDir.z - x * CameraZoomSpeed;
-                            newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
+                            newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
                             CameraDir = new Vector3(0f, 0f, newDir);
                             reduceOffset = false;
                         }
@@ -260,7 +271,7 @@ namespace LockOnPlugin
                             Cursor.lockState = CursorLockMode.Confined;
 
                             isLocked = true;
-                            GetCursorPos(out lockPos);
+                            WinCursor.GetCursorPos(out lockPos);
                         }
                     }
                 }
@@ -280,7 +291,7 @@ namespace LockOnPlugin
                         }
                     }
 
-                    if(isLocked) SetCursorPos(lockPos.x, lockPos.y);
+                    if(isLocked) WinCursor.SetCursorPos(lockPos.x, lockPos.y);
                 } 
             }
         }
@@ -551,6 +562,7 @@ namespace LockOnPlugin
             gamepadStatePrev = gamepadState;
             gamepadState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
             if(!gamepadState.IsConnected) return;
+            animSwitched = false;
 
             if(gamepadStatePrev.Buttons.A == ButtonState.Released && gamepadState.Buttons.A == ButtonState.Pressed)
             {
@@ -567,9 +579,17 @@ namespace LockOnPlugin
                 CharaSwitch(true);
             }
 
+            if(gamepadStatePrev.Buttons.X == ButtonState.Released && gamepadState.Buttons.X == ButtonState.Pressed)
+            {
+                int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
+                animMoveSetCurrent = next;
+                ModPrefs.SetInt("LockOnPlugin.Misc", "MovementAnimSet", next);
+                animSwitched = true;
+            }
+
             if(gamepadStatePrev.Buttons.RightStick == ButtonState.Released && gamepadState.Buttons.RightStick == ButtonState.Pressed)
             {
-                if(FileManager.PluginInstalled("TogglePOV"))
+                if(FileManager.PluginInstalled("TogglePOVNeo") || FileManager.PluginInstalled("TogglePOV"))
                 {
                     InvokePluginMethod("TogglePOV.HSPluginBase", "TogglePOV");
                 }
@@ -578,121 +598,145 @@ namespace LockOnPlugin
             Vector2 leftStick = new Vector2(gamepadState.ThumbSticks.Left.X, -gamepadState.ThumbSticks.Left.Y);
             Vector2 rightStick = new Vector2(gamepadState.ThumbSticks.Right.X, -gamepadState.ThumbSticks.Right.Y);
 
-            if(controllerSwapSticks)
-            {
-                Vector2 tempVector = rightStick;
-                rightStick = leftStick;
-                leftStick = tempVector;
-            }
-
-            if(leftStick.magnitude > 0.1f)
-            {
-                float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
-                float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
-                float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
-                CameraAngle += new Vector3(newX, newY, 0f);
-            }
-            
-            if(rightStick.magnitude > 0.1f)
-            {
-                //if(Input.GetKey(R1))
-                //{
-                //    guiTimeFov = 1f;
-                //    float newFov = CameraFov + leftStick.y * Time.deltaTime * 60f;
-                //    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
-                //}
-                //else if(Input.GetKey(L1))
-                //{
-                //    float newDir = CameraDir.z - leftStick.y * Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
-                //    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
-                //    CameraDir = new Vector3(0f, 0f, newDir);
-                //}
-                //else
-                //{
-                    float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
-                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? leftStick.y : -leftStick.y) * speed, 360f);
-                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? leftStick.x : -leftStick.x) * speed, 360f);
-                    CameraAngle += new Vector3(newX, newY, 0f);
-                //}
-            }
-
-            //if(rightStick.magnitude > 0.2f)
-            //{
-            //    reduceOffset = false;
-            //    float speed = (Input.GetKey(R1) ? Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) : Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed)) * Time.deltaTime * 60f;
-            //    if(lockOnTarget)
-            //    {
-            //        if(Input.GetKey(R1))
-            //        {
-            //            targetOffsetSize += (CameraForward * -rightStick.y * speed);
-            //        }
-            //        else
-            //        {
-            //            targetOffsetSize += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        if(Input.GetKey(R1))
-            //        {
-            //            CameraTargetPos += (CameraForward * -rightStick.y * speed);
-            //        }
-            //        else
-            //        {
-            //            CameraTargetPos += (CameraRight * rightStick.x * speed) + (Vector3.up * -rightStick.y * speed);
-            //        }
-            //    }
-            //}
+            GamepadMovement(leftStick);
+            GamepadCamera(rightStick);
 
             if(gamepadState.DPad.Right == ButtonState.Pressed)
             {
                 guiTimeAngle = 1f;
-                float newAngle = CameraAngle.z + Time.deltaTime * 60f;
+                float newAngle = CameraAngle.z - 1f * Time.deltaTime * 60f;
                 newAngle = Mathf.Repeat(newAngle, 360f);
                 CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
             }
-
-            if(gamepadState.DPad.Left == ButtonState.Pressed)
+            else if(gamepadState.DPad.Left == ButtonState.Pressed)
             {
                 guiTimeAngle = 1f;
-                float newAngle = CameraAngle.z - Time.deltaTime * 60f;
+                float newAngle = CameraAngle.z + 1f * Time.deltaTime * 60f;
                 newAngle = Mathf.Repeat(newAngle, 360f);
                 CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
             }
-
-            if(gamepadState.DPad.Up == ButtonState.Pressed)
+            else if(gamepadState.DPad.Up == ButtonState.Pressed)
             {
-                float newDir = CameraDir.z + 1f * CameraZoomSpeed;
-                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
-                CameraDir = new Vector3(0f, 0f, newDir);
-                reduceOffset = false;
+                if(gamepadState.Buttons.LeftShoulder == ButtonState.Pressed)
+                {
+                    guiTimeFov = 1f;
+                    float newFov = CameraFov - 1f * Time.deltaTime * 60f;
+                    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
+                }
+                else
+                {
+                    float newDir = CameraDir.z + 1f * CameraZoomSpeed;
+                    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
+                    CameraDir = new Vector3(0f, 0f, newDir);
+                    reduceOffset = false;
+                }
             }
-
-            if(gamepadState.DPad.Down == ButtonState.Pressed)
+            else if(gamepadState.DPad.Down == ButtonState.Pressed)
             {
-                float newDir = CameraDir.z - 1f * CameraZoomSpeed;
-                newDir = Mathf.Clamp(newDir, -float.MaxValue, 0f);
-                CameraDir = new Vector3(0f, 0f, newDir);
-                reduceOffset = false;
+                if(gamepadState.Buttons.LeftShoulder == ButtonState.Pressed)
+                {
+                    guiTimeFov = 1f;
+                    float newFov = CameraFov + 1f * Time.deltaTime * 60f;
+                    CameraFov = Mathf.Clamp(newFov, 1f, 160f);
+                }
+                else
+                {
+                    float newDir = CameraDir.z - 1f * CameraZoomSpeed;
+                    newDir = Mathf.Clamp(newDir, float.MinValue, 0f);
+                    CameraDir = new Vector3(0f, 0f, newDir);
+                    reduceOffset = false;
+                }
             }
         }
 
-        [DllImport("user32.dll")]
-        protected static extern bool SetCursorPos(int X, int Y);
-
-        [DllImport("user32.dll")]
-        //[return: MarshalAs(UnmanagedType.Bool)]
-        protected static extern bool GetCursorPos(out Point pos);
-
-        //[StructLayout(LayoutKind.Sequential)]
-        protected struct Point
+        protected virtual void GamepadMovement(Vector3 stick)
         {
-            public int x;
-            public int y;
-
-            public static implicit operator Vector2(Point point)
+            if(stick.magnitude > 0f)
             {
-                return new Vector2(point.x, point.y);
+                Console.WriteLine("Movement not implemented in this version");
+            }
+        }
+
+        protected virtual void GamepadCamera(Vector3 stick)
+        {
+            if(stick.magnitude > 0f && CameraEnabled)
+            {
+                bool left = gamepadState.Buttons.LeftShoulder == ButtonState.Pressed;
+                bool right = gamepadState.Buttons.RightShoulder == ButtonState.Pressed;
+
+                if(!left && !right)
+                {
+                    float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
+                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? stick.y : -stick.y) * speed, 360f);
+                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? stick.x : -stick.x) * speed, 360f);
+                    CameraAngle += new Vector3(newX, newY, 0f);
+                }
+                else if(lockOnTarget)
+                {
+                    reduceOffset = false;
+
+                    if(right)
+                    {
+                        float speed = Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
+                        targetOffsetSize += (CameraForward * -stick.y * speed);
+                    }
+                    else
+                    {
+                        float speed = Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed) * Time.deltaTime * 60f;
+                        targetOffsetSize += (CameraRight * stick.x * speed) + (Vector3.up * -stick.y * speed);
+                    }
+                }
+                else
+                {
+                    reduceOffset = false;
+
+                    if(right)
+                    {
+                        float speed = Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
+                        CameraTargetPos += (CameraForward * -stick.y * speed);
+                    }
+                    else
+                    {
+                        float speed = Mathf.Lerp(0.001f, 0.04f, controllerMoveSpeed) * Time.deltaTime * 60f;
+                        CameraTargetPos += (CameraRight * stick.x * speed) + (Vector3.up * -stick.y * speed);
+                    }
+                }
+            }
+        }
+
+        protected static class WinCursor
+        {
+            [DllImport("user32.dll")]
+            public static extern bool SetCursorPos(int X, int Y);
+
+            [DllImport("user32.dll")]
+            public static extern bool GetCursorPos(out Point pos);
+
+            public struct Point
+            {
+                public int x;
+                public int y;
+
+                public static implicit operator Vector2(Point point)
+                {
+                    return new Vector2(point.x, point.y);
+                }
+            }
+        }
+
+        protected class MoveSetData
+        {
+            public string idle;
+            public string move;
+            public float animSpeed;
+            public float speedMult;
+
+            public MoveSetData(string idle, string move, float animSpeed, float speedMult)
+            {
+                this.idle = idle;
+                this.move = move;
+                this.animSpeed = animSpeed;
+                this.speedMult = speedMult;
             }
         }
     }

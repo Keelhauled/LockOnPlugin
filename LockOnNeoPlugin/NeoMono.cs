@@ -28,8 +28,8 @@ namespace LockOnPlugin
         {
             base.Start();
 
-            cameraData = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
-            cameraReset = GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraReset", camera);
+            cameraData = Utils.GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
+            cameraReset = Utils.GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraReset", camera);
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
             studio.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
             Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
@@ -45,7 +45,7 @@ namespace LockOnPlugin
             base.LoadSettings();
 
             manageCursorVisibility = false;
-            infoMsgPosition = new Vector2(1f, 1f);
+            Guitime.pos = new Vector2(1f, 1f);
             animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 1, true), 0, animMoveSets.Count - 1);
             float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
             Camera.main.nearClipPlane = nearClipPlane;
@@ -133,8 +133,8 @@ namespace LockOnPlugin
             }
             else
             {
-                Button buttonClose = GetSecureField<Button, SceneLoadScene>("buttonClose", scene);
-                Button buttonLoad = GetSecureField<Button, SceneLoadScene>("buttonLoad", scene);
+                Button buttonClose = Utils.GetSecureField<Button, SceneLoadScene>("buttonClose", scene);
+                Button buttonLoad = Utils.GetSecureField<Button, SceneLoadScene>("buttonLoad", scene);
 
                 if(buttonClose != null && buttonLoad != null)
                 {

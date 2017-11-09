@@ -34,13 +34,13 @@ namespace LockOnPlugin
                     if(codes[i].opcode == OpCodes.Ldc_I4 && (int)codes[i].operand == 275)
                     {
                         List<CodeInstruction> newCodes = new List<CodeInstruction>()
-                    {
-                        new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Studio.CameraControl), "moveSpeed")),
-                        new CodeInstruction(OpCodes.Ldc_R4, 0f),
-                        new CodeInstruction(OpCodes.Ceq),
-                        new CodeInstruction(OpCodes.Brtrue, label),
-                    };
+                        {
+                            new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
+                            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Studio.CameraControl), "moveSpeed")),
+                            new CodeInstruction(OpCodes.Ldc_R4, 0f),
+                            new CodeInstruction(OpCodes.Ceq),
+                            new CodeInstruction(OpCodes.Brtrue, label),
+                        };
 
                         codes[i].labels = new List<Label>();
                         codes.InsertRange(i, newCodes);

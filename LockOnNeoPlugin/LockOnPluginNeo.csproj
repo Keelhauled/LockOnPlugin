@@ -82,6 +82,9 @@
     <Compile Include="..\SharedCode\TargetManager.cs">
       <Link>TargetManager.cs</Link>
     </Compile>
+    <Compile Include="..\SharedCode\Utils.cs">
+      <Link>Utils.cs</Link>
+    </Compile>
     <Compile Include="NeoMono.cs" />
     <Compile Include="LockOnPluginNeo.cs" />
     <Compile Include="StudioNeoPatches.cs" />

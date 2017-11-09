@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using IllusionPlugin;
 using UnityEngine;
@@ -11,7 +10,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public const string VERSION = "2.4.1";
+        public const string VERSION = "2.5.0";
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
@@ -49,17 +48,12 @@ namespace LockOnPlugin
         protected CharInfo currentCharaInfo;
         protected GameObject lockOnTarget;
         protected Vector3? lastTargetPos;
-        protected Vector3 lastTargetAngle;
+        //protected Vector3 lastTargetAngle;
         protected bool lockRotation = false;
         protected bool showLockOnTargets = false;
         protected float defaultCameraSpeed;
         protected float targetSize = 25f;
-        protected float guiTimeAngle = 0f;
-        protected float guiTimeFov = 0f;
-        protected float guiTimeInfo = 0f;
-        protected string infoMsg = "";
 
-        protected Vector2 infoMsgPosition = new Vector2(0.5f, 0f);
         protected Vector3 targetOffsetSize = new Vector3();
         protected Vector3 targetOffsetSizeAdded = new Vector3();
         protected float offsetKeyHeld = 0f;
@@ -77,11 +71,10 @@ namespace LockOnPlugin
         protected bool controllerInvertX;
         protected bool controllerInvertY;
         protected bool controllerSwapSticks;
-        protected bool controllerMovementNeo;
         protected GamePadState gamepadStatePrev;
         protected GamePadState gamepadState;
 
-        protected bool animSwitched = false;
+        protected bool animSwitched;
         protected int animMoveSetCurrent;
         protected List<MoveSetData> animMoveSets = new List<MoveSetData>
         {
@@ -119,8 +112,7 @@ namespace LockOnPlugin
             controllerRotSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerRotSpeed", 0.4f, true);
             controllerInvertX = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertX", "False", true).ToLower() == "true" ? true : false;
             controllerInvertY = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertY", "False", true).ToLower() == "true" ? true : false;
-            controllerSwapSticks = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerSwapSticks", "True", true).ToLower() == "true" ? true : false;
-            controllerMovementNeo = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerMovementNeo", "True", true).ToLower() == "true" ? true : false;
+            controllerSwapSticks = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerSwapSticks", "False", true).ToLower() == "true" ? true : false;
         }
 
         protected virtual void Update()
@@ -134,7 +126,7 @@ namespace LockOnPlugin
             lockOnGuiHotkey.KeyDownAction(ToggleLockOnGUI);
             prevCharaHotkey.KeyDownAction(() => CharaSwitch(false));
             nextCharaHotkey.KeyDownAction(() => CharaSwitch(true));
-            //rotationHotkey.KeyDownAction(RotationLockToggle);
+            //rotationHotkey.KeyDownAction(ToggleRotationLock);
 
             if(lockOnTarget)
             {
@@ -153,7 +145,7 @@ namespace LockOnPlugin
                     float x = Input.GetAxis("Mouse X");
                     if(Input.GetKey("left ctrl"))
                     {
-                        guiTimeAngle = 0.1f;
+                        Guitime.angle = 0.1f;
                         if(Mathf.Abs(x) > 0f)
                         {
                             //camera tilt adjustment
@@ -164,7 +156,7 @@ namespace LockOnPlugin
                     }
                     else if(Input.GetKey("left shift"))
                     {
-                        guiTimeFov = 0.1f;
+                        Guitime.fov = 0.1f;
                         if(Mathf.Abs(x) > 0f)
                         {
                             //fov adjustment
@@ -299,22 +291,22 @@ namespace LockOnPlugin
         
         protected virtual void OnGUI()
         {
-            if(showInfoMsg && guiTimeInfo > 0f)
+            if(showInfoMsg && Guitime.info > 0f)
             {
-                DebugGUI(infoMsgPosition.x, infoMsgPosition.y, 200f, 45f, infoMsg);
-                guiTimeInfo -= Time.deltaTime;
+                Utils.DebugGUI(Guitime.pos.x, Guitime.pos.y, 200f, 45f, Guitime.msg);
+                Guitime.info -= Time.deltaTime;
             }
 
-            if(guiTimeAngle > 0f)
+            if(Guitime.angle > 0f)
             {
-                DebugGUI(0.5f, 0.5f, 100f, 50f, "Camera tilt\n" + CameraAngle.z.ToString("0.0"));
-                guiTimeAngle -= Time.deltaTime;
+                Utils.DebugGUI(0.5f, 0.5f, 100f, 50f, "Camera tilt\n" + CameraAngle.z.ToString("0.0"));
+                Guitime.angle -= Time.deltaTime;
             }
 
-            if(guiTimeFov > 0f)
+            if(Guitime.fov > 0f)
             {
-                DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + CameraFov.ToString("0.0"));
-                guiTimeFov -= Time.deltaTime;
+                Utils.DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + CameraFov.ToString("0.0"));
+                Guitime.fov -= Time.deltaTime;
             }
 
             if(showLockOnTargets)
@@ -405,7 +397,7 @@ namespace LockOnPlugin
                 lockOnTarget = target;
                 if(lastTargetPos == null) lastTargetPos = LockOnTargetPos + targetOffsetSize;
                 CameraMoveSpeed = 0f;
-                CreateInfoMsg("Locked to \"" + lockOnTarget.name + "\"");
+                Guitime.InfoMsg("Locked to \"" + lockOnTarget.name + "\"");
                 return true;
             }
 
@@ -422,7 +414,7 @@ namespace LockOnPlugin
                 lastTargetPos = null;
                 lockRotation = false;
                 CameraMoveSpeed = defaultCameraSpeed;
-                CreateInfoMsg("Camera unlocked");
+                Guitime.InfoMsg("Camera unlocked");
             }
         }
 
@@ -439,123 +431,20 @@ namespace LockOnPlugin
             Console.WriteLine("Character switching not implemented in this version");
         }
 
-        protected virtual void RotationLockToggle()
-        {
-            if(lockRotation)
-            {
-                lockRotation = false;
-                CreateInfoMsg("Rotation released");
-            }
-            else
-            {
-                lockRotation = true;
-                lastTargetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
-                CreateInfoMsg("Rotation locked");
-            }
-        }
-
-        protected void CreateInfoMsg(string msg, float time = 3f)
-        {
-            infoMsg = msg;
-            guiTimeInfo = time;
-        }
-
-        protected static bool DebugGUI(float screenWidthMult, float screenHeightMult, float width, float height, string msg)
-        {
-            float xpos = Screen.width * screenWidthMult - width / 2f;
-            float ypos = Screen.height * screenHeightMult - height / 2f;
-            xpos = Mathf.Clamp(xpos, 0f, Screen.width - width);
-            ypos = Mathf.Clamp(ypos, 0f, Screen.height - height);
-            return GUI.Button(new Rect(xpos, ypos, width, height), msg);
-        }
-
-        protected static FieldType GetSecureField<FieldType, ObjectType>(string fieldName, ObjectType target = null)
-            where FieldType : class
-            where ObjectType : UnityEngine.Object
-        {
-            if(target.Equals(null))
-            {
-                target = FindObjectOfType<ObjectType>();
-            }
-
-            if(!target.Equals(null))
-            {
-                FieldInfo fieldinfo = typeof(ObjectType).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-                if(!fieldinfo.Equals(null))
-                {
-                    return fieldinfo.GetValue(target) as FieldType;
-                }
-            }
-
-            return null;
-        }
-
-        protected static object InvokePluginMethod(string typeName, string methodName, object[] parameters = null)
-        {
-            Type type = FindType(typeName);
-
-            if(type != null)
-            {
-                UnityEngine.Object instance = FindObjectOfType(type);
-
-                if(instance != null)
-                {
-                    MethodInfo methodInfo = type.GetMethod(methodName);
-
-                    if(methodInfo != null)
-                    {
-                        if(methodInfo.GetParameters().Length == 0)
-                        {
-                            return methodInfo.Invoke(instance, null);
-                        }
-                        else
-                        {
-                            return methodInfo.Invoke(instance, parameters);
-                        }
-                    } 
-                }
-            }
-
-            return null;
-        }
-
-        protected static Type FindType(string qualifiedTypeName)
-        {
-            Type t = Type.GetType(qualifiedTypeName);
-
-            if(t != null)
-            {
-                return t;
-            }
-            else
-            {
-                foreach(Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
-                {
-                    t = asm.GetType(qualifiedTypeName);
-                    if(t != null)
-                    {
-                        return t;
-                    }
-                }
-
-                return null;
-            }
-        }
-
-        protected static Vector3 CameraAdjustedEulerAngles(GameObject target, Transform cameraTransform)
-        {
-            float x = AngleSigned(target.transform.forward, Vector3.forward, cameraTransform.right);
-            float y = AngleSigned(target.transform.right, Vector3.right, cameraTransform.up);
-            float z = AngleSigned(target.transform.up, Vector3.up, cameraTransform.forward);
-            return new Vector3(x, y, z);
-        }
-
-        protected static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n)
-        {
-            return Mathf.Atan2(
-                Vector3.Dot(n, Vector3.Cross(v1, v2)),
-                Vector3.Dot(v1, v2)) * Mathf.Rad2Deg;
-        }
+        //protected virtual void ToggleRotationLock()
+        //{
+        //    if(lockRotation)
+        //    {
+        //        lockRotation = false;
+        //        CreateInfoMsg("Rotation released");
+        //    }
+        //    else
+        //    {
+        //        lockRotation = true;
+        //        //lastTargetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
+        //        CreateInfoMsg("Rotation locked");
+        //    }
+        //}
 
         protected virtual void GamepadControls()
         {
@@ -592,26 +481,20 @@ namespace LockOnPlugin
             {
                 if(FileManager.PluginInstalled("TogglePOVNeo") || FileManager.PluginInstalled("TogglePOV"))
                 {
-                    InvokePluginMethod("TogglePOV.HSPluginBase", "TogglePOV");
+                    Utils.InvokePluginMethod("TogglePOV.HSPluginBase", "TogglePOV");
                 }
             }
 
-            Vector2 leftStick = new Vector2(gamepadState.ThumbSticks.Left.X, -gamepadState.ThumbSticks.Left.Y);
-            Vector2 rightStick = new Vector2(gamepadState.ThumbSticks.Right.X, -gamepadState.ThumbSticks.Right.Y);
-
-            GamepadMovement(leftStick);
-            GamepadCamera(rightStick);
-
             if(gamepadState.DPad.Right == ButtonState.Pressed)
             {
-                guiTimeAngle = 1f;
+                Guitime.angle = 1f;
                 float newAngle = CameraAngle.z - 1f * Time.deltaTime * 60f;
                 newAngle = Mathf.Repeat(newAngle, 360f);
                 CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
             }
             else if(gamepadState.DPad.Left == ButtonState.Pressed)
             {
-                guiTimeAngle = 1f;
+                Guitime.angle = 1f;
                 float newAngle = CameraAngle.z + 1f * Time.deltaTime * 60f;
                 newAngle = Mathf.Repeat(newAngle, 360f);
                 CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
@@ -620,7 +503,7 @@ namespace LockOnPlugin
             {
                 if(gamepadState.Buttons.LeftShoulder == ButtonState.Pressed)
                 {
-                    guiTimeFov = 1f;
+                    Guitime.fov = 1f;
                     float newFov = CameraFov - 1f * Time.deltaTime * 60f;
                     CameraFov = Mathf.Clamp(newFov, 1f, 160f);
                 }
@@ -636,7 +519,7 @@ namespace LockOnPlugin
             {
                 if(gamepadState.Buttons.LeftShoulder == ButtonState.Pressed)
                 {
-                    guiTimeFov = 1f;
+                    Guitime.fov = 1f;
                     float newFov = CameraFov + 1f * Time.deltaTime * 60f;
                     CameraFov = Mathf.Clamp(newFov, 1f, 160f);
                 }
@@ -647,6 +530,20 @@ namespace LockOnPlugin
                     CameraDir = new Vector3(0f, 0f, newDir);
                     reduceOffset = false;
                 }
+            }
+
+            Vector2 leftStick = new Vector2(gamepadState.ThumbSticks.Left.X, -gamepadState.ThumbSticks.Left.Y);
+            Vector2 rightStick = new Vector2(gamepadState.ThumbSticks.Right.X, -gamepadState.ThumbSticks.Right.Y);
+
+            if(!controllerSwapSticks)
+            {
+                GamepadMovement(leftStick);
+                GamepadCamera(rightStick);
+            }
+            else
+            {
+                GamepadMovement(rightStick);
+                GamepadCamera(leftStick);
             }
         }
 
@@ -668,8 +565,8 @@ namespace LockOnPlugin
                 if(!left && !right)
                 {
                     float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
-                    float newX = Mathf.Repeat((controllerInvertX || CameraDir.z == 0f ? stick.y : -stick.y) * speed, 360f);
-                    float newY = Mathf.Repeat((controllerInvertY || CameraDir.z == 0f ? stick.x : -stick.x) * speed, 360f);
+                    float newX = Mathf.Repeat((!controllerInvertX || CameraDir.z == 0f ? stick.y : -stick.y) * speed, 360f);
+                    float newY = Mathf.Repeat((!controllerInvertY || CameraDir.z == 0f ? stick.x : -stick.x) * speed, 360f);
                     CameraAngle += new Vector3(newX, newY, 0f);
                 }
                 else if(lockOnTarget)
@@ -705,6 +602,37 @@ namespace LockOnPlugin
             }
         }
 
+        protected class MoveSetData
+        {
+            public string idle;
+            public string move;
+            public float animSpeed;
+            public float speedMult;
+
+            public MoveSetData(string idle, string move, float animSpeed, float speedMult)
+            {
+                this.idle = idle;
+                this.move = move;
+                this.animSpeed = animSpeed;
+                this.speedMult = speedMult;
+            }
+        }
+
+        protected static class Guitime
+        {
+            public static float angle = 0f;
+            public static float fov = 0f;
+            public static float info = 0f;
+            public static string msg = "";
+            public static Vector2 pos = new Vector2(0.5f, 0f);
+
+            public static void InfoMsg(string newMsg, float time = 3f)
+            {
+                msg = newMsg;
+                info = time;
+            }
+        }
+
         protected static class WinCursor
         {
             [DllImport("user32.dll")]
@@ -722,22 +650,6 @@ namespace LockOnPlugin
                 {
                     return new Vector2(point.x, point.y);
                 }
-            }
-        }
-
-        protected class MoveSetData
-        {
-            public string idle;
-            public string move;
-            public float animSpeed;
-            public float speedMult;
-
-            public MoveSetData(string idle, string move, float animSpeed, float speedMult)
-            {
-                this.idle = idle;
-                this.move = move;
-                this.animSpeed = animSpeed;
-                this.speedMult = speedMult;
             }
         }
     }

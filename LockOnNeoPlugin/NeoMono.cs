@@ -18,18 +18,15 @@ namespace LockOnPlugin
         private GuideObjectManager guideObjectManager => Singleton<GuideObjectManager>.Instance;
 
         private Studio.CameraControl.CameraData cameraData;
-        private Studio.CameraControl.CameraData cameraReset;
         private OCIChar currentCharaOCI;
         private List<DynamicBone_Ver02> boobs;
         private AnimatorOverrideController overrideController;
-        private bool moving = false;
 
         protected override void Start()
         {
             base.Start();
 
             cameraData = Utils.GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraData", camera);
-            cameraReset = Utils.GetSecureField<Studio.CameraControl.CameraData, Studio.CameraControl>("cameraReset", camera);
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
             studio.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
             Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
@@ -309,11 +306,11 @@ namespace LockOnPlugin
 
         protected override void GamepadMovement(Vector3 stick)
         {
-            if(stick.magnitude > 0f)
+            if(stick.magnitude > 0.1f)
             {
                 if(currentCharaOCI != null)
                 {
-                    bool rotatingInPov = !camera.enabled && Mathf.Abs(stick.y) < 0.2f;
+                    bool rotatingInPov = !CameraEnabled && Mathf.Abs(stick.y) < 0.2f;
 
                     if((!moving || animSwitched) && !rotatingInPov)
                     {
@@ -331,7 +328,7 @@ namespace LockOnPlugin
                     if(!rotatingInPov) currentCharaOCI.animeSpeed = stick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
                     stick = stick * 0.04f;
 
-                    if(camera.enabled)
+                    if(CameraEnabled)
                     {
                         Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                         Vector3 right = Vector3.Scale(Camera.main.transform.right, new Vector3(1f, 0f, 1f)).normalized;
@@ -352,8 +349,10 @@ namespace LockOnPlugin
                     }
 
                     Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                    boobs.ForEach(x => x.Force = charaforward * stick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f));
+                    boobs.ForEach(boob => boob.Force = charaforward * stick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f));
+                    //boobs.ForEach(boob => Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boob).ForEach(x => x.Inert = 0.5f));
                     //boobs.ForEach(x => x.HeavyLoopMaxCount = 1);
+                    //Console.WriteLine("-------------------");
                 }
             }
             else if(moving || animSwitched)
@@ -362,7 +361,7 @@ namespace LockOnPlugin
                 currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
                 currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].idle, 0.4f);
                 currentCharaOCI.animeSpeed = 1f;
-                boobs.ForEach(x => x.Force = new Vector3());
+                boobs.ForEach(boob => boob.Force = new Vector3());
             }
         }
 

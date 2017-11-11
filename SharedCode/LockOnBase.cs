@@ -74,6 +74,7 @@ namespace LockOnPlugin
         protected GamePadState gamepadStatePrev;
         protected GamePadState gamepadState;
 
+        protected bool moving = false;
         protected bool animSwitched;
         protected int animMoveSetCurrent;
         protected List<MoveSetData> animMoveSets = new List<MoveSetData>
@@ -100,7 +101,7 @@ namespace LockOnPlugin
             rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "False", true));
 
             lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0f, true));
-            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true), 0.01f, 1f);
+            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true), 0.01f, 0.4f);
             showInfoMsg = ModPrefs.GetString("LockOnPlugin.Misc", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
             manageCursorVisibility = ModPrefs.GetString("LockOnPlugin.Misc", "ManageCursorVisibility", "True", true).ToLower() == "true" ? true : false;
             CameraTargetTex = ModPrefs.GetString("LockOnPlugin.Misc", "HideCameraTarget", "True", true).ToLower() == "true" ? false : true;
@@ -227,7 +228,9 @@ namespace LockOnPlugin
 
                 if(AllowTracking)
                 {
-                    float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
+                    float trackingSpeed;
+                    if(lockOnTarget.name == CameraTargetManager.MOVEMENTPOINT_NAME) trackingSpeed = 0.3f;
+                    else trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
                     if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, distance * trackingSpeed * Time.deltaTime * 60f);
                     CameraTargetPos += targetOffsetSize - targetOffsetSizeAdded;
@@ -485,6 +488,11 @@ namespace LockOnPlugin
                 }
             }
 
+            if(gamepadStatePrev.Buttons.LeftStick == ButtonState.Released && gamepadState.Buttons.LeftStick == ButtonState.Pressed)
+            {
+                LockOn(CameraTargetManager.MOVEMENTPOINT_NAME);
+            }
+
             if(gamepadState.DPad.Right == ButtonState.Pressed)
             {
                 Guitime.angle = 1f;
@@ -535,21 +543,21 @@ namespace LockOnPlugin
             Vector2 leftStick = new Vector2(gamepadState.ThumbSticks.Left.X, -gamepadState.ThumbSticks.Left.Y);
             Vector2 rightStick = new Vector2(gamepadState.ThumbSticks.Right.X, -gamepadState.ThumbSticks.Right.Y);
 
-            if(!controllerSwapSticks)
-            {
-                GamepadMovement(leftStick);
-                GamepadCamera(rightStick);
-            }
-            else
+            if(controllerSwapSticks)
             {
                 GamepadMovement(rightStick);
                 GamepadCamera(leftStick);
+            }
+            else
+            {
+                GamepadMovement(leftStick);
+                GamepadCamera(rightStick);
             }
         }
 
         protected virtual void GamepadMovement(Vector3 stick)
         {
-            if(stick.magnitude > 0f)
+            if(stick.magnitude > 0.1f)
             {
                 Console.WriteLine("Movement not implemented in this version");
             }

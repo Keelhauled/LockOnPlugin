@@ -24,10 +24,10 @@ namespace LockOnPlugin
         protected abstract bool CameraTargetTex { set; }
         protected abstract float CameraZoomSpeed { get; }
         protected abstract Transform CameraTransform { get; }
-        protected virtual bool CameraEnabled => true;
         protected virtual Vector3 CameraForward => CameraTransform.forward;
         protected virtual Vector3 CameraRight => CameraTransform.right;
         protected virtual Vector3 CameraUp => CameraTransform.up;
+        protected virtual bool CameraEnabled => true;
         protected virtual Vector3 LockOnTargetPos => lockOnTarget.transform.position;
         protected virtual bool AllowTracking => true;
         protected virtual bool InputFieldSelected => false;

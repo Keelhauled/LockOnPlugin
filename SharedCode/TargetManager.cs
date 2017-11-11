@@ -1,4 +1,5 @@
 ﻿using IllusionUtility.GetUtility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,30 +11,17 @@ namespace LockOnPlugin
         public const string MOVEMENTPOINT_NAME = "MovementPoint";
 
         private List<GameObject> allTargets = new List<GameObject>();
-        private List<GameObject> allTargetsMultiple = new List<GameObject>();
         private List<GameObject> normalTargets = new List<GameObject>();
         private List<CustomTarget> customTargets = new List<CustomTarget>();
-        private CenterPoint centerPoint = null;
+        private CenterPoint centerPoint;
         private MovementPoint movementPoint;
 
-        public List<GameObject> GetAllTargets()
-        {
-            return allTargets;
-        }
-
-        public List<GameObject> GetAllTargetsMultiple()
-        {
-            return allTargetsMultiple;
-        }
+        public List<GameObject> GetAllTargets() => allTargets;
 
         public void UpdateCustomTargetTransforms()
         {
-            foreach(CustomTarget target in customTargets)
-            {
-                target.UpdateTargetTransform();
-            }
-
-            if(centerPoint != null && centerPoint.GetCenterPoint()) centerPoint.UpdateCenterPointPosition();
+            customTargets.ForEach(target => target.UpdateTransform());
+            if(centerPoint != null && centerPoint.GetPoint()) centerPoint.UpdatePosition();
             if(movementPoint != null && movementPoint.GetPoint()) movementPoint.UpdatePosition();
         }
 
@@ -41,21 +29,13 @@ namespace LockOnPlugin
         {
             if(character)
             {
-                string prefix = character is CharFemale ? "cf_" : "cm_";
-
-                normalTargets = UpdateNormalTargets(character, prefix);
-                customTargets = UpdateCustomTargets(character, prefix);
-                allTargets = normalTargets;
-
-                foreach(CustomTarget target in customTargets)
-                {
-                    allTargets.Add(target.GetTarget());
-                }
-
-                centerPoint = UpdateCenterPoint(character, prefix);
-                if(centerPoint != null && centerPoint.GetCenterPoint()) allTargets.Add(centerPoint.GetCenterPoint());
+                allTargets = normalTargets = UpdateNormalTargets(character);
+                customTargets = UpdateCustomTargets(character);
+                customTargets.ForEach(target => allTargets.Add(target.GetTarget()));
+                centerPoint = new CenterPoint(character);
+                if(centerPoint != null && centerPoint.GetPoint()) allTargets.Add(centerPoint.GetPoint());
                 movementPoint = new MovementPoint(character);
-                if(movementPoint != null && movementPoint.GetPoint()) allTargets.Add(movementPoint.GetPoint());
+                allTargets.Add(movementPoint.GetPoint());
             }
             else
             {
@@ -67,44 +47,10 @@ namespace LockOnPlugin
             }
         }
 
-        public void UpdateAllTargetsMultiple(List<CharInfo> characters)
-        {
-            if(characters == null)
-            {
-                this.allTargetsMultiple = null;
-                return;
-            }
-
-            List<List<GameObject>> allTargetsMultiple = new List<List<GameObject>>();
-
-            foreach(CharInfo character in characters)
-            {
-                string prefix = character is CharFemale ? "cf_" : "cm_";
-
-                List<GameObject> normalTargets = UpdateNormalTargets(character, prefix);
-                List<CustomTarget> customTargets = UpdateCustomTargets(character, prefix);
-                List<GameObject> allTargets = normalTargets;
-
-                foreach(CustomTarget target in customTargets)
-                {
-                    allTargets.Add(target.GetTarget());
-                }
-
-                allTargetsMultiple.Add(allTargets);
-            }
-
-            List<GameObject> allTargetsNew = new List<GameObject>();
-            for(int i = 0; i < allTargetsMultiple.Count; i++)
-            {
-                allTargetsNew.AddRange(allTargetsMultiple[i]);
-            }
-
-            this.allTargetsMultiple = allTargetsNew;
-        }
-
-        private List<GameObject> UpdateNormalTargets(CharInfo character, string prefix)
+        private List<GameObject> UpdateNormalTargets(CharInfo character)
         {
             List<GameObject> normalTargets = new List<GameObject>();
+            string prefix = character is CharFemale ? "cf_" : "cm_";
 
             foreach(string targetName in FileManager.GetNormalTargetNames())
             {
@@ -115,9 +61,10 @@ namespace LockOnPlugin
             return normalTargets;
         }
 
-        private List<CustomTarget> UpdateCustomTargets(CharInfo character, string prefix)
+        private List<CustomTarget> UpdateCustomTargets(CharInfo character)
         {
             List<CustomTarget> customTargets = new List<CustomTarget>();
+            string prefix = character is CharFemale ? "cf_" : "cm_";
 
             foreach(List<string> data in FileManager.GetCustomTargetNames())
             {
@@ -156,62 +103,41 @@ namespace LockOnPlugin
             return customTargets;
         }
 
-        private CenterPoint UpdateCenterPoint(CharInfo character, string prefix)
-        {
-            Dictionary<GameObject, float> points = new Dictionary<GameObject, float>();
-
-            foreach(List<string> data in FileManager.GetCenterTargetWeights())
-            {
-                GameObject point = character.chaBody.objBone.transform.FindLoop(prefix + data[0]);
-                float weight = 1f;
-                if(!float.TryParse(data[1], out weight))
-                {
-                    weight = 1f;
-                }
-                points.Add(point, weight);
-            }
-
-            CenterPoint centerPoint = new CenterPoint(points);
-            if(centerPoint.GetCenterPoint()) return centerPoint;
-            return null;
-        }
-
         private class CustomTarget
         {
-            private string name;
             private GameObject target;
             private GameObject point1;
             private GameObject point2;
             private float midpoint;
 
-            public CustomTarget(string newName, GameObject newPoint1, GameObject newPoint2, float newMidpoint = 0.5f)
+            public CustomTarget(string name, GameObject point1, GameObject point2, float midpoint = 0.5f)
             {
-                name = newName;
                 target = new GameObject(name);
-
-                point1 = newPoint1;
-                point2 = newPoint2;
-                midpoint = newMidpoint;
-
-                UpdateTargetTransform();
+                this.point1 = point1;
+                this.point2 = point2;
+                this.midpoint = midpoint;
+                UpdateTransform();
             }
 
-            public GameObject GetTarget() => target;
-
-            public void UpdateTargetTransform()
+            public GameObject GetTarget()
             {
-                UpdateTargetPosition();
-                UpdateTargetAngle();
+                return target;
             }
 
-            private void UpdateTargetPosition()
+            public void UpdateTransform()
+            {
+                UpdatePosition();
+                UpdateRotation();
+            }
+
+            private void UpdatePosition()
             {
                 Vector3 pos1 = point1.transform.position;
                 Vector3 pos2 = point2.transform.position;
                 target.transform.position = Vector3.Lerp(pos1, pos2, midpoint);
             }
 
-            private void UpdateTargetAngle()
+            private void UpdateRotation()
             {
                 Quaternion rot1 = point1.transform.rotation;
                 Quaternion rot2 = point2.transform.rotation;
@@ -222,30 +148,45 @@ namespace LockOnPlugin
         private class CenterPoint
         {
             private Dictionary<GameObject, float> points = new Dictionary<GameObject, float>();
-            private GameObject centerPoint = null;
+            private GameObject point;
 
-            public CenterPoint(Dictionary<GameObject, float> newPoints)
+            public CenterPoint(CharInfo character)
             {
-                if(newPoints.Count > 0)
+                string prefix = character is CharFemale ? "cf_" : "cm_";
+
+                foreach(List<string> data in FileManager.GetCenterTargetWeights())
                 {
-                    centerPoint = new GameObject("CenterPoint");
-                    points = newPoints;
-                    UpdateCenterPointPosition();
+                    GameObject point = character.chaBody.objBone.transform.FindLoop(prefix + data[0]);
+                    float weight = 1f;
+                    if(!float.TryParse(data[1], out weight))
+                    {
+                        weight = 1f;
+                    }
+                    points.Add(point, weight);
+                }
+
+                if(points.Count > 0)
+                {
+                    point = new GameObject("CenterPoint");
+                    UpdatePosition();
                 }
                 else
                 {
-                    centerPoint = null;
+                    point = null;
                 }
             }
 
-            public GameObject GetCenterPoint() => centerPoint;
-
-            public void UpdateCenterPointPosition()
+            public GameObject GetPoint()
             {
-                centerPoint.transform.position = GetCenterPoint(points);
+                return point;
             }
 
-            private Vector3 GetCenterPoint(Dictionary<GameObject, float> points)
+            public void UpdatePosition()
+            {
+                point.transform.position = CalculateCenterPoint(points);
+            }
+
+            private Vector3 CalculateCenterPoint(Dictionary<GameObject, float> points)
             {
                 Vector3 center = new Vector3();
                 float totalWeight = 0f;
@@ -270,14 +211,15 @@ namespace LockOnPlugin
                 UpdatePosition();
             }
 
-            public void UpdatePosition()
-            {
-                point.transform.position = character.transform.position + new Vector3{ y = 1.3f };
-            }
-
             public GameObject GetPoint()
             {
                 return point;
+            }
+
+            public void UpdatePosition()
+            {
+                point.transform.position = character.transform.position + new Vector3{ y = 1.3f };
+                Console.WriteLine("test");
             }
         }
     }

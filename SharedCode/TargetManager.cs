@@ -7,11 +7,14 @@ namespace LockOnPlugin
 {
     internal class CameraTargetManager
     {
+        public const string MOVEMENTPOINT_NAME = "MovementPoint";
+
         private List<GameObject> allTargets = new List<GameObject>();
         private List<GameObject> allTargetsMultiple = new List<GameObject>();
         private List<GameObject> normalTargets = new List<GameObject>();
         private List<CustomTarget> customTargets = new List<CustomTarget>();
         private CenterPoint centerPoint = null;
+        private MovementPoint movementPoint;
 
         public List<GameObject> GetAllTargets()
         {
@@ -31,6 +34,7 @@ namespace LockOnPlugin
             }
 
             if(centerPoint != null && centerPoint.GetCenterPoint()) centerPoint.UpdateCenterPointPosition();
+            if(movementPoint != null && movementPoint.GetPoint()) movementPoint.UpdatePosition();
         }
 
         public void UpdateAllTargets(CharInfo character)
@@ -50,6 +54,8 @@ namespace LockOnPlugin
 
                 centerPoint = UpdateCenterPoint(character, prefix);
                 if(centerPoint != null && centerPoint.GetCenterPoint()) allTargets.Add(centerPoint.GetCenterPoint());
+                movementPoint = new MovementPoint(character);
+                if(movementPoint != null && movementPoint.GetPoint()) allTargets.Add(movementPoint.GetPoint());
             }
             else
             {
@@ -57,6 +63,7 @@ namespace LockOnPlugin
                 normalTargets = new List<GameObject>();
                 customTargets = new List<CustomTarget>();
                 centerPoint = null;
+                movementPoint = null;
             }
         }
 
@@ -248,6 +255,29 @@ namespace LockOnPlugin
                     totalWeight += point.Value;
                 }
                 return center / totalWeight;
+            }
+        }
+        
+        private class MovementPoint
+        {
+            private CharInfo character;
+            private GameObject point;
+
+            public MovementPoint(CharInfo character)
+            {
+                this.character = character;
+                point = new GameObject(MOVEMENTPOINT_NAME);
+                UpdatePosition();
+            }
+
+            public void UpdatePosition()
+            {
+                point.transform.position = character.transform.position + new Vector3{ y = 1.3f };
+            }
+
+            public GameObject GetPoint()
+            {
+                return point;
             }
         }
     }

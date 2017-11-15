@@ -144,7 +144,7 @@ namespace LockOnPlugin
                 else if(Input.GetMouseButton(1))
                 {
                     float x = Input.GetAxis("Mouse X");
-                    if(Input.GetKey("left ctrl"))
+                    if(Input.GetKey(KeyCode.LeftControl))
                     {
                         Guitime.angle = 0.1f;
                         if(Mathf.Abs(x) > 0f)
@@ -155,7 +155,7 @@ namespace LockOnPlugin
                             CameraAngle = new Vector3(CameraAngle.x, CameraAngle.y, newAngle);
                         }
                     }
-                    else if(Input.GetKey("left shift"))
+                    else if(Input.GetKey(KeyCode.LeftShift))
                     {
                         Guitime.fov = 0.1f;
                         if(Mathf.Abs(x) > 0f)
@@ -185,7 +185,6 @@ namespace LockOnPlugin
                     }
                 }
                 
-                float speed = Time.deltaTime * Mathf.Lerp(0.2f, 2f, offsetKeyHeld);
                 bool RightArrow = Input.GetKey(KeyCode.RightArrow), LeftArrow = Input.GetKey(KeyCode.LeftArrow);
                 bool UpArrow = Input.GetKey(KeyCode.UpArrow), DownArrow = Input.GetKey(KeyCode.DownArrow);
                 bool PageUp = Input.GetKey(KeyCode.PageUp), PageDown = Input.GetKey(KeyCode.PageDown);
@@ -193,9 +192,9 @@ namespace LockOnPlugin
                 if(!InputFieldSelected && Hotkey.allowHotkeys && (RightArrow || LeftArrow || UpArrow || DownArrow || PageUp || PageDown))
                 {
                     reduceOffset = false;
-
                     offsetKeyHeld += Time.deltaTime / 3f;
                     if(offsetKeyHeld > 1f) offsetKeyHeld = 1f;
+                    float speed = Time.deltaTime * Mathf.Lerp(0.2f, 2f, offsetKeyHeld);
 
                     if(RightArrow) targetOffsetSize += CameraRight * speed;
                     else if(LeftArrow) targetOffsetSize += CameraRight * -speed;

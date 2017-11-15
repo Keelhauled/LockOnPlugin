@@ -1,5 +1,4 @@
 ﻿using IllusionUtility.GetUtility;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,7 +19,7 @@ namespace LockOnPlugin
 
         public void UpdateCustomTargetTransforms()
         {
-            customTargets.ForEach(target => target.UpdateTransform());
+            for(int i = 0; i < customTargets.Count; i++) customTargets[i].UpdateTransform();
             if(centerPoint != null && centerPoint.GetPoint()) centerPoint.UpdatePosition();
             if(movementPoint != null && movementPoint.GetPoint()) movementPoint.UpdatePosition();
         }
@@ -147,7 +146,7 @@ namespace LockOnPlugin
 
         private class CenterPoint
         {
-            private Dictionary<GameObject, float> points = new Dictionary<GameObject, float>();
+            private List<WeightPoint> points = new List<WeightPoint>();
             private GameObject point;
 
             public CenterPoint(CharInfo character)
@@ -162,7 +161,7 @@ namespace LockOnPlugin
                     {
                         weight = 1f;
                     }
-                    points.Add(point, weight);
+                    points.Add(new WeightPoint(point, weight));
                 }
 
                 if(points.Count > 0)
@@ -186,27 +185,43 @@ namespace LockOnPlugin
                 point.transform.position = CalculateCenterPoint(points);
             }
 
-            private Vector3 CalculateCenterPoint(Dictionary<GameObject, float> points)
+            private Vector3 CalculateCenterPoint(List<WeightPoint> points)
             {
                 Vector3 center = new Vector3();
                 float totalWeight = 0f;
-                foreach(KeyValuePair<GameObject, float> point in points)
+                for(int i = 0; i < points.Count; i++)
                 {
-                    center += point.Key.transform.position * point.Value;
-                    totalWeight += point.Value;
+                    center += points[i].point.transform.position * points[i].weight;
+                    totalWeight += points[i].weight;
                 }
+
                 return center / totalWeight;
+            }
+        }
+
+        private struct WeightPoint
+        {
+            public GameObject point;
+            public float weight;
+
+            public WeightPoint(GameObject point, float weight)
+            {
+                this.point = point;
+                this.weight = weight;
             }
         }
         
         private class MovementPoint
         {
             private CharInfo character;
+            private GameObject heightPoint;
             private GameObject point;
 
             public MovementPoint(CharInfo character)
             {
                 this.character = character;
+                string prefix = character is CharFemale ? "cf_" : "cm_";
+                heightPoint = character.chaBody.objBone.transform.FindLoop(prefix + "J_Mune00");
                 point = new GameObject(MOVEMENTPOINT_NAME);
                 UpdatePosition();
             }
@@ -218,8 +233,7 @@ namespace LockOnPlugin
 
             public void UpdatePosition()
             {
-                point.transform.position = character.transform.position + new Vector3{ y = 1.3f };
-                Console.WriteLine("test");
+                point.transform.position = character.transform.position + new Vector3{ y = heightPoint.transform.position.y };
             }
         }
     }

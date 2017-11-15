@@ -349,10 +349,12 @@ namespace LockOnPlugin
                     }
 
                     Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                    boobs.ForEach(boob => boob.Force = charaforward * stick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f));
-                    //boobs.ForEach(boob => Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boob).ForEach(x => x.Inert = 0.5f));
-                    //boobs.ForEach(x => x.HeavyLoopMaxCount = 1);
-                    //Console.WriteLine("-------------------");
+                    for(int i = 0; i < boobs.Count; i++)
+                    {
+                        boobs[i].Force = charaforward * stick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
+                        //boobs[i].HeavyLoopMaxCount = 10;
+                        //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
+                    }
                 }
             }
             else if(moving || animSwitched)
@@ -361,7 +363,7 @@ namespace LockOnPlugin
                 currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
                 currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].idle, 0.4f);
                 currentCharaOCI.animeSpeed = 1f;
-                boobs.ForEach(boob => boob.Force = new Vector3());
+                for(int i = 0; i < boobs.Count; i++) boobs[i].Force = new Vector3();
             }
         }
 

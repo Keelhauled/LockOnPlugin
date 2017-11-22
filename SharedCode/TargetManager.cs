@@ -8,6 +8,7 @@ namespace LockOnPlugin
     internal class CameraTargetManager
     {
         public const string MOVEMENTPOINT_NAME = "MovementPoint";
+        public const string CENTERPOINT_NAME = "CenterPoint";
 
         private List<GameObject> allTargets = new List<GameObject>();
         private List<GameObject> normalTargets = new List<GameObject>();
@@ -38,6 +39,13 @@ namespace LockOnPlugin
             }
             else
             {
+                GameObject.Destroy(centerPoint.GetPoint());
+                GameObject.Destroy(movementPoint.GetPoint());
+                for(int i = 0; i < customTargets.Count; i++)
+                {
+                    GameObject.Destroy(customTargets[i].GetTarget());
+                }
+
                 allTargets = new List<GameObject>();
                 normalTargets = new List<GameObject>();
                 customTargets = new List<CustomTarget>();
@@ -166,7 +174,7 @@ namespace LockOnPlugin
 
                 if(points.Count > 0)
                 {
-                    point = new GameObject("CenterPoint");
+                    point = new GameObject(CENTERPOINT_NAME);
                     UpdatePosition();
                 }
                 else
@@ -211,17 +219,20 @@ namespace LockOnPlugin
             }
         }
         
+        /// <summary>
+        /// Breast level point attached to the root position of the character
+        /// </summary>
         private class MovementPoint
         {
             private CharInfo character;
-            private GameObject heightPoint;
+            private GameObject height;
             private GameObject point;
 
             public MovementPoint(CharInfo character)
             {
                 this.character = character;
                 string prefix = character is CharFemale ? "cf_" : "cm_";
-                heightPoint = character.chaBody.objBone.transform.FindLoop(prefix + "J_Mune00");
+                height = character.chaBody.objBone.transform.FindLoop(prefix + "J_Mune00");
                 point = new GameObject(MOVEMENTPOINT_NAME);
                 UpdatePosition();
             }
@@ -233,7 +244,7 @@ namespace LockOnPlugin
 
             public void UpdatePosition()
             {
-                point.transform.position = character.transform.position + new Vector3{ y = heightPoint.transform.position.y };
+                point.transform.position = character.transform.position + new Vector3{ y = height.transform.position.y - character.transform.position.y };
             }
         }
     }

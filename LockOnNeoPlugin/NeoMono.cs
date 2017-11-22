@@ -12,10 +12,10 @@ namespace LockOnPlugin
 {
     internal partial class NeoMono : LockOnBase
     {
-        private Studio.Studio studio => Singleton<Studio.Studio>.Instance;
-        private Studio.CameraControl camera => studio.cameraCtrl;
-        private TreeNodeCtrl treeNodeCtrl => studio.treeNodeCtrl;
-        private GuideObjectManager guideObjectManager => Singleton<GuideObjectManager>.Instance;
+        private Studio.Studio studio = Singleton<Studio.Studio>.Instance;
+        private Studio.CameraControl camera = Singleton<Studio.Studio>.Instance.cameraCtrl;
+        private TreeNodeCtrl treeNodeCtrl = Singleton<Studio.Studio>.Instance.treeNodeCtrl;
+        private GuideObjectManager guideObjectManager = Singleton<GuideObjectManager>.Instance;
 
         private Studio.CameraControl.CameraData cameraData;
         private OCIChar currentCharaOCI;

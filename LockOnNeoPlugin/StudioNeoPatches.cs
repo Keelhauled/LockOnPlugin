@@ -62,9 +62,9 @@ namespace LockOnPlugin
         /// <summary>
         /// Simplify UpdateDynamicBones
         /// </summary>
-        [HarmonyPatch(typeof(DynamicBone_Ver02))]
-        [HarmonyPatch("UpdateDynamicBones")]
-        [HarmonyPatch(new Type[]{ typeof(float) })]
+        //[HarmonyPatch(typeof(DynamicBone_Ver02))]
+        //[HarmonyPatch("UpdateDynamicBones")]
+        //[HarmonyPatch(new Type[]{ typeof(float) })]
         private static class NeoPatch2
         {
             private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)

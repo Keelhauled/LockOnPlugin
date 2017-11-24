@@ -220,7 +220,7 @@ namespace LockOnPlugin
         }
         
         /// <summary>
-        /// Breast level point attached to the root position of the character
+        /// Stable lock point for movement
         /// </summary>
         private class MovementPoint
         {

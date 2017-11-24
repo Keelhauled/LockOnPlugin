@@ -10,7 +10,7 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 
 ## Installation
 1. Install Illusion Plugin Architecture (IPA)
-2. Throw the files into "HoneySelect\Plugins" folder
+2. Throw the files into the \HoneySelect\ root folder
 3. Default hotkey is N, unlock by holding the same button for a bit
 
 ## Download

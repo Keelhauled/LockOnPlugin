@@ -351,7 +351,7 @@ namespace LockOnPlugin
                     Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                     for(int i = 0; i < boobs.Count; i++)
                     {
-                        boobs[i].Force = charaforward * stick.magnitude * 0.08f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
+                        boobs[i].Force = charaforward * stick.magnitude * 0.16f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
                         //boobs[i].HeavyLoopMaxCount = 10;
                         //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
                     }

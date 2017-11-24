@@ -225,14 +225,13 @@ namespace LockOnPlugin
         private class MovementPoint
         {
             private CharInfo character;
-            private GameObject height;
             private GameObject point;
+            private float height = 1.5f;
 
             public MovementPoint(CharInfo character)
             {
                 this.character = character;
                 string prefix = character is CharFemale ? "cf_" : "cm_";
-                height = character.chaBody.objBone.transform.FindLoop(prefix + "J_Mune00");
                 point = new GameObject(MOVEMENTPOINT_NAME);
                 UpdatePosition();
             }
@@ -244,7 +243,9 @@ namespace LockOnPlugin
 
             public void UpdatePosition()
             {
-                point.transform.position = character.transform.position + new Vector3{ y = height.transform.position.y - character.transform.position.y };
+                float sliderHeight = character.chaCustom.GetShapeBodyValue(0);
+                Vector3 offset = Mathf.LerpUnclamped(0.702f, 0.860f, sliderHeight) * new Vector3 { y = height };
+                point.transform.position = character.transform.position + offset;
             }
         }
     }

@@ -73,6 +73,7 @@ namespace LockOnPlugin
         protected bool controllerSwapSticks;
         protected GamePadState gamepadStatePrev;
         protected GamePadState gamepadState;
+        protected PlayerIndex controllerIndex = PlayerIndex.One;
 
         protected bool moving = false;
         protected bool animSwitched;
@@ -109,7 +110,15 @@ namespace LockOnPlugin
 
             try
             {
-                GamePad.GetState(PlayerIndex.One);
+                for(int i = 0; i < 4; i++)
+                {
+                    if(GamePad.GetState((PlayerIndex)i).IsConnected)
+                    {
+                        controllerIndex = (PlayerIndex)i;
+                        break;
+                    }
+                }
+
                 controllerEnabled = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerEnabled", "True", true).ToLower() == "true" ? true : false;
                 controllerMoveSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerMoveSpeed", 0.3f, true);
                 controllerZoomSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerZoomSpeed", 0.2f, true);
@@ -461,7 +470,7 @@ namespace LockOnPlugin
         {
             if(!controllerEnabled) return;
             gamepadStatePrev = gamepadState;
-            gamepadState = GamePad.GetState(PlayerIndex.One, GamePadDeadZone.Circular);
+            gamepadState = GamePad.GetState(controllerIndex, GamePadDeadZone.Circular);
             if(!gamepadState.IsConnected) return;
             animSwitched = false;
 

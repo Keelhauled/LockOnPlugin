@@ -254,6 +254,7 @@ namespace LockOnPlugin
                 buttonComponent.onClick.AddListener(() =>
                 {
                     LoadSettings();
+                    targetManager.UpdateAllTargets(null);
                     targetManager.UpdateAllTargets(currentCharaInfo);
                     LockOn((currentCharaInfo is CharFemale ? FileManager.GetQuickFemaleTargetNames() : FileManager.GetQuickMaleTargetNames())[0]);
                     reduceOffset = true;

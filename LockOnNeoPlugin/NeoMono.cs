@@ -64,11 +64,17 @@ namespace LockOnPlugin
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
                         targetManager.UpdateAllTargets(ocichar.charInfo);
-                        boobs = new List<DynamicBone_Ver02>
+
+                        boobs = null;
+                        if(ocichar is OCICharFemale)
                         {
-                            ((CharFemaleBody)ocichar.charBody).getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastL),
-                            ((CharFemaleBody)ocichar.charBody).getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastR),
-                        };
+                            CharFemaleBody body = (CharFemaleBody)ocichar.charBody;
+                            boobs = new List<DynamicBone_Ver02>
+                            {
+                                body.getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastL),
+                                body.getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastR),
+                            }; 
+                        }
 
                         if(lockOnTarget)
                         {
@@ -349,12 +355,15 @@ namespace LockOnPlugin
                         currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, stick.x * Time.deltaTime * 60f * 100f, 0f);
                     }
 
-                    Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                    for(int i = 0; i < boobs.Count; i++)
+                    if(currentCharaOCI is OCICharFemale)
                     {
-                        boobs[i].Force = charaforward * stick.magnitude * 0.16f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
-                        //boobs[i].HeavyLoopMaxCount = 10;
-                        //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
+                        Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                        for(int i = 0; i < boobs.Count; i++)
+                        {
+                            boobs[i].Force = charaforward * stick.magnitude * 0.16f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
+                            //boobs[i].HeavyLoopMaxCount = 10;
+                            //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
+                        } 
                     }
                 }
             }

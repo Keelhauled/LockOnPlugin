@@ -39,8 +39,18 @@ namespace LockOnPlugin
             }
             else
             {
-                GameObject.Destroy(centerPoint.GetPoint());
-                GameObject.Destroy(movementPoint.GetPoint());
+                if(centerPoint != null)
+                {
+                    GameObject.Destroy(centerPoint.GetPoint());
+                    centerPoint = null;
+                }
+
+                if(movementPoint != null)
+                {
+                    GameObject.Destroy(movementPoint.GetPoint());
+                    movementPoint = null;
+                }
+
                 for(int i = 0; i < customTargets.Count; i++)
                 {
                     GameObject.Destroy(customTargets[i].GetTarget());
@@ -49,8 +59,6 @@ namespace LockOnPlugin
                 allTargets = new List<GameObject>();
                 normalTargets = new List<GameObject>();
                 customTargets = new List<CustomTarget>();
-                centerPoint = null;
-                movementPoint = null;
             }
         }
 

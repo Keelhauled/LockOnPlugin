@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 
 namespace LockOnPlugin
 {
     internal partial class MakerMono : LockOnBase
     {
-        private CameraControl camera => Singleton<CameraControl>.Instance;
+        private CameraControl camera = Singleton<CameraControl>.Instance;
 
         protected override float CameraMoveSpeed
         {
@@ -51,24 +50,5 @@ namespace LockOnPlugin
         {
             get { return camera.transform; }
         }
-
-        protected override bool InputFieldSelected
-        {
-            get
-            {
-                InputField[] inputFields = Singleton<CustomControl>.Instance.inputText;
-                for(int i = 0; i < inputFields.Length; i++)
-                {
-                    if(inputFields[i].isFocused)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
-
-        // Singleton<CustomControl>.Instance.cvsMainMenu.isActiveAndEnabled
     }
 }

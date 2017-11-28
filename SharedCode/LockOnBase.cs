@@ -5,6 +5,7 @@ using IllusionPlugin;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using XInputDotNetPure;
+using UnityEngine.UI;
 
 namespace LockOnPlugin
 {
@@ -30,7 +31,7 @@ namespace LockOnPlugin
         protected virtual bool CameraEnabled => true;
         protected virtual Vector3 LockOnTargetPos => lockOnTarget.transform.position;
         protected virtual bool AllowTracking => true;
-        protected virtual bool InputFieldSelected => false;
+        protected virtual bool InputFieldSelected => EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null;
 
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;

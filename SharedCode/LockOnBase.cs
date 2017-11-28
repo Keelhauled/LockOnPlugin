@@ -11,7 +11,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public const string VERSION = "2.5.0";
+        public const string VERSION = "2.5.1";
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 

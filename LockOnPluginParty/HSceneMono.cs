@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Manager;
 
 namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
-        private Character charaManager => Singleton<Character>.Instance;
+        private Character charaManager = Singleton<Character>.Instance;
         private int activeCharaCount;
 
         protected override void Start()

@@ -4,7 +4,7 @@ namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
-        private CameraControl_Ver2 camera => Singleton<CameraControl_Ver2>.Instance;
+        private CameraControl_Ver2 camera = Singleton<CameraControl_Ver2>.Instance;
 
         protected override float CameraMoveSpeed
         {
@@ -70,7 +70,5 @@ namespace LockOnPlugin
         {
             get { return camera.transBase.InverseTransformDirection(camera.transform.up); }
         }
-
-        // Singleton<HScene>.Instance.sprite.categoryToggleOption.isActiveAndEnabled
     }
 }

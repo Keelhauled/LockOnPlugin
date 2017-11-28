@@ -6,7 +6,6 @@ using IllusionPlugin;
 using UnityEngine;
 using UnityEngine.UI;
 using Studio;
-using Manager;
 
 namespace LockOnPlugin
 {
@@ -126,48 +125,10 @@ namespace LockOnPlugin
             LockOnRelease();
             showLockOnTargets = false;
 
-            // if HSStudioNEOAddon is installed everything has to be cleared here already
-            if(FileManager.PluginInstalled("HoneyStudioNEO Adddon"))
-            {
-                currentCharaOCI = null;
-                currentCharaInfo = null;
-                targetManager.UpdateAllTargets(null);
-                treeNodeCtrl.SelectSingle(null);
-            }
-            else
-            {
-                Button buttonClose = Utils.GetSecureField<Button, SceneLoadScene>("buttonClose", scene);
-                Button buttonLoad = Utils.GetSecureField<Button, SceneLoadScene>("buttonLoad", scene);
-
-                if(buttonClose != null && buttonLoad != null)
-                {
-                    buttonClose.onClick.AddListener(() =>
-                    {
-                        Hotkey.allowHotkeys = true;
-                    });
-
-                    buttonLoad.onClick.AddListener(() =>
-                    {
-                        Hotkey.allowHotkeys = true;
-                        currentCharaOCI = null;
-                        currentCharaInfo = null;
-                        targetManager.UpdateAllTargets(null);
-                        StartCoroutine(scene.NotificationLoadCoroutine());
-                        Singleton<Scene>.Instance.UnLoad();
-                    });
-
-                    Hotkey.allowHotkeys = false; 
-                }
-                else
-                {
-                    Hotkey.allowHotkeys = true;
-                    currentCharaOCI = null;
-                    currentCharaInfo = null;
-                    targetManager.UpdateAllTargets(null);
-                    treeNodeCtrl.SelectSingle(null);
-                    Console.WriteLine("SceneLoadScene buttons not found");
-                }
-            }
+            currentCharaOCI = null;
+            currentCharaInfo = null;
+            targetManager.UpdateAllTargets(null);
+            treeNodeCtrl.SelectSingle(null);
             
             yield break;
         }
@@ -363,7 +324,7 @@ namespace LockOnPlugin
                             boobs[i].Force = charaforward * stick.magnitude * 0.16f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
                             //boobs[i].HeavyLoopMaxCount = 10;
                             //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
-                        } 
+                        }
                     }
                 }
             }

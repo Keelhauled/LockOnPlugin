@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace LockOnPlugin
+﻿namespace LockOnPlugin
 {
     internal partial class MakerMono : LockOnBase
     {

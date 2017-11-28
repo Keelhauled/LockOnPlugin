@@ -36,6 +36,18 @@ namespace LockOnPlugin
             return null;
         }
 
+        public static MethodInfo GetSecureMethod<ObjectType>(string methodName)
+            where ObjectType : UnityEngine.Object
+        {
+            MethodInfo methodinfo = typeof(ObjectType).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            if(!methodinfo.Equals(null))
+            {
+                return methodinfo;
+            }
+
+            return null;
+        }
+
         public static object InvokePluginMethod(string typeName, string methodName, object[] parameters = null)
         {
             Type type = FindType(typeName);

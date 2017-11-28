@@ -6,6 +6,7 @@ using IllusionPlugin;
 using UnityEngine;
 using UnityEngine.UI;
 using Studio;
+using XInputDotNetPure;
 
 namespace LockOnPlugin
 {
@@ -272,59 +273,66 @@ namespace LockOnPlugin
             }
         }
 
-        protected override void GamepadMovement(Vector3 stick)
+        protected override void GamepadMovement(Vector2 stick)
         {
             if(stick.magnitude > 0.1f)
             {
                 if(currentCharaOCI != null)
                 {
-                    bool rotatingInPov = !CameraEnabled && Mathf.Abs(stick.y) < 0.2f;
-
-                    if((!moving || animSwitched) && !rotatingInPov)
+                    if(gamepadState.Buttons.LeftShoulder == ButtonState.Released)
                     {
-                        moving = true;
-                        currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
-                        currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].move, 0.2f);
-                        currentCharaOCI.optionItemCtrl.LoadAnimeItem(null, "", 0f, 0f);
-                        //currentCharaOCI.ActiveKinematicMode(OICharInfo.KinematicMode.FK, false, false);
-                        //currentCharaOCI.ActiveKinematicMode(OICharInfo.KinematicMode.IK, false, false);
-                        //GameObject toggle = GameObject.Find("Toggle Function");
-                        //if(toggle) toggle.GetComponent<Toggle>().isOn = false;
-                    }
+                        bool rotatingInPov = !CameraEnabled && Mathf.Abs(stick.y) < 0.2f;
 
-                    float animSpeed = animMoveSets[animMoveSetCurrent].animSpeed * currentCharaOCI.guideObject.changeAmount.scale.z;
-                    if(!rotatingInPov) currentCharaOCI.animeSpeed = stick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
-                    stick = stick * 0.04f;
+                        if((!moving || animSwitched) && !rotatingInPov)
+                        {
+                            moving = true;
+                            currentCharaOCI.charInfo.animBody.runtimeAnimatorController = overrideController;
+                            currentCharaOCI.charInfo.animBody.CrossFadeInFixedTime(animMoveSets[animMoveSetCurrent].move, 0.2f);
+                            currentCharaOCI.optionItemCtrl.LoadAnimeItem(null, "", 0f, 0f);
+                            //currentCharaOCI.ActiveKinematicMode(OICharInfo.KinematicMode.FK, false, false);
+                            //currentCharaOCI.ActiveKinematicMode(OICharInfo.KinematicMode.IK, false, false);
+                            //GameObject toggle = GameObject.Find("Toggle Function");
+                            //if(toggle) toggle.GetComponent<Toggle>().isOn = false;
+                        }
 
-                    if(CameraEnabled)
-                    {
-                        Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                        Vector3 right = Vector3.Scale(Camera.main.transform.right, new Vector3(1f, 0f, 1f)).normalized;
-                        Vector3 lookDirection = right * stick.x + forward * -stick.y;
-                        lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
-                        Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
-                        Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * 10f);
-                        currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
+                        float animSpeed = animMoveSets[animMoveSetCurrent].animSpeed * currentCharaOCI.guideObject.changeAmount.scale.z;
+                        if(!rotatingInPov) currentCharaOCI.animeSpeed = stick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
+                        stick = stick * 0.04f;
+
+                        if(CameraEnabled)
+                        {
+                            Vector3 forward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                            Vector3 right = Vector3.Scale(Camera.main.transform.right, new Vector3(1f, 0f, 1f)).normalized;
+                            Vector3 lookDirection = right * stick.x + forward * -stick.y;
+                            lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
+                            currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
+                            Quaternion lookRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
+                            Quaternion finalRotation = Quaternion.RotateTowards(Quaternion.Euler(currentCharaOCI.guideObject.changeAmount.rot), lookRotation, Time.deltaTime * 60f * 10f);
+                            currentCharaOCI.guideObject.changeAmount.rot = finalRotation.eulerAngles;
+                        }
+                        else
+                        {
+                            Vector3 forward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                            Vector3 lookDirection = forward * -stick.y;
+                            lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
+                            currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
+                            currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, stick.x * Time.deltaTime * 60f * 100f, 0f);
+                        }
+
+                        if(currentCharaOCI is OCICharFemale)
+                        {
+                            Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+                            for(int i = 0; i < boobs.Count; i++)
+                            {
+                                boobs[i].Force = charaforward * stick.magnitude * 0.16f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
+                                //boobs[i].HeavyLoopMaxCount = 10;
+                                //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
+                            }
+                        }
                     }
                     else
                     {
-                        Vector3 forward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                        Vector3 lookDirection = forward * -stick.y;
-                        lookDirection = new Vector3(lookDirection.x, 0f, lookDirection.z);
-                        currentCharaOCI.guideObject.changeAmount.pos += lookDirection * Time.deltaTime * (animSpeed * animMoveSets[animMoveSetCurrent].speedMult);
-                        currentCharaOCI.guideObject.changeAmount.rot += new Vector3(0f, stick.x * Time.deltaTime * 60f * 100f, 0f);
-                    }
-
-                    if(currentCharaOCI is OCICharFemale)
-                    {
-                        Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-                        for(int i = 0; i < boobs.Count; i++)
-                        {
-                            boobs[i].Force = charaforward * stick.magnitude * 0.16f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
-                            //boobs[i].HeavyLoopMaxCount = 10;
-                            //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
-                        }
+                        currentCharaOCI.guideObject.changeAmount.pos -= new Vector3{ y = 1f } * stick.y * Time.deltaTime;
                     }
                 }
             }

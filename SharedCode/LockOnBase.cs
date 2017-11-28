@@ -573,7 +573,7 @@ namespace LockOnPlugin
             }
         }
 
-        protected virtual void GamepadMovement(Vector3 stick)
+        protected virtual void GamepadMovement(Vector2 stick)
         {
             if(stick.magnitude > 0.1f)
             {
@@ -581,14 +581,14 @@ namespace LockOnPlugin
             }
         }
 
-        protected virtual void GamepadCamera(Vector3 stick)
+        protected virtual void GamepadCamera(Vector2 stick)
         {
             if(stick.magnitude > 0f && CameraEnabled)
             {
-                bool left = gamepadState.Buttons.LeftShoulder == ButtonState.Pressed;
-                bool right = gamepadState.Buttons.RightShoulder == ButtonState.Pressed;
+                bool L1 = gamepadState.Buttons.LeftShoulder == ButtonState.Pressed;
+                bool R1 = gamepadState.Buttons.RightShoulder == ButtonState.Pressed;
 
-                if(!left && !right)
+                if(!L1 && !R1)
                 {
                     float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
                     float newX = Mathf.Repeat((!controllerInvertX || CameraDir.z == 0f ? stick.y : -stick.y) * speed, 360f);
@@ -599,7 +599,7 @@ namespace LockOnPlugin
                 {
                     reduceOffset = false;
 
-                    if(right)
+                    if(R1)
                     {
                         float speed = Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
                         targetOffsetSize += (CameraForward * -stick.y * speed);
@@ -614,7 +614,7 @@ namespace LockOnPlugin
                 {
                     reduceOffset = false;
 
-                    if(right)
+                    if(R1)
                     {
                         float speed = Mathf.Lerp(0.01f, 0.4f, controllerZoomSpeed) * Time.deltaTime * 60f;
                         CameraTargetPos += (CameraForward * -stick.y * speed);

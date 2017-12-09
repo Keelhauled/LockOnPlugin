@@ -10,53 +10,53 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 
 ## Installation
 1. Install Illusion Plugin Architecture (IPA)
-2. Throw the files into the \HoneySelect\ root folder
+2. Throw the files into the Honey Select root folder
 3. Default hotkey is N, unlock by holding the same button for a bit
 
 ## Download
-The latest release should always be [here](../../releases)
+The latest release should always be [here](https://github.com/Keelhauled/LockOnPlugin/releases)
 
 ## Settings
-Settings are located in "HoneySelect\UserData\modprefs.ini"
+Settings are located in `\UserData\modprefs.ini`
 
-### LockOnPlugin.Hotkeys
-All hotkeys can be set to false to disable them or set to any value from [keynames.txt](keynames.txt), no modifiers
-- LockOnHotkey = lock on to targets in quicktargets.txt on the selected character (default key = N)
-- LockOnGuiHotkey = enable/disable displaying clickable targets on the selected character (default key = K)
-- PrevCharaHotkey = select previous character in the work menu (default key = false)
-- NextCharaHotkey = select next character in the work menu (default key = L)
-- ~~RotationHotkey = forces the camera to mimic the targeted parts rotation (default key = false)~~
+### Hotkeys
+All hotkeys can be set to false to disable or set to any value from [keynames.txt](keynames.txt), no modifiers
+- `LockOnHotkey` Lock to targets in quicktargets.txt on the selected character (default: N)
+- `LockOnGuiHotkey` Display clickable targets on the selected character (default: K)
+- `PrevCharaHotkey` Select previous character in the work menu (default: false)
+- `NextCharaHotkey` Select next character in the work menu (default: L)
 
-### LockOnPlugin.Misc
-- LockedMinDistance = minimum distance from the target (any positive number)
-- LockedTrackingSpeed = how fast the camera follows the target (values between 0.01 and 1.0)
-- ShowInfoMsg = whether to display messages about what the mod is doing (true/false)
-- ManageCursorVisibility = whether to hide the cursor when either mouse button is down (true/false)
-- HideCameraTarget = whether to hide the white camera target indicator thing (true/false)
-- ScrollThroughMalesToo = whether to scroll through males too with PrevCharaHotkey/NextCharaHotkey (true/false)
-- NearClipPlane = governs how close you can be to objects before clipping through them (values smaller than 0.03 may cause glitches to far away objects)
+### Misc
+- `LockedTrackingSpeed` How fast the camera follows the target (between 0.01 and 1.0)
+- `ShowInfoMsg` Display messages about what the mod is doing (true/false)
+- `ManageCursorVisibility` Hide the cursor when either mouse button is down (true/false)
+- `HideCameraTarget` Hide the white camera target indicator thing (true/false)
+- `ScrollThroughMalesToo` Scroll through males too with NextCharaHotkey (true/false)
+- `NearClipPlane` Governs how close you can be to objects before clipping through <br> (values smaller than 0.03 may cause glitches to distant objects)
 
-### LockOnPlugin.Gamepad
-- ControllerEnabled = enable or disable gamepad controls completely (true/false)
-- ControllerMoveSpeed = right stick camera movement sensitivity (values between 0.0 and 1.0)
-- ControllerZoomSpeed = camera zoom sensitivity (values between 0.0 and 1.0)
-- ControllerRotSpeed = left stick camera rotation sensitivity (values between 0.0 and 1.0)
-- ControllerInvertX = invert look direction on x axis (true/false)
-- ControllerInvertY = invert look direction on y axis (true/false)
-- ControllerSwapSticks = swap functionality of controller sticks (true/false)
-- ControllerMovementNeo = enable or disable movement controls in neo (true/false)
+### Gamepad
+- `ControllerEnabled` Enable or disable gamepad controls completely (true/false)
+- `ControllerMoveSpeed` Camera movement sensitivity (between 0.0 and 1.0)
+- `ControllerZoomSpeed` Camera zoom sensitivity (between 0.0 and 1.0)
+- `ControllerRotSpeed` Camera rotation sensitivity (between 0.0 and 1.0)
+- `ControllerInvertX` Invert look direction on x axis (true/false)
+- `ControllerInvertY` Invert look direction on y axis (true/false)
+- `ControllerSwapSticks` Swap functionality of controller sticks (true/false)
 
  ### Target settings
- Target settings are located in "\HoneySelect\Plugins\TargetSettings\"
- - quicktargetsfemale/male.txt contains targets for LockOnHotkey
- - normaltargets.txt contains targets for LockOnGuiHotkey
- - customtargets.txt contains additional custom targets that are between two normal targets for LockOnGuiHotkey
- - centertargetweights.txt contains points and weights the CenterTargets position is based on
+ Target settings are located in `\Plugins\TargetSettings\`
+ - `quicktargets(fe)male.txt` contains targets for LockOnHotkey
+ - `normaltargets.txt` contains targets for LockOnGuiHotkey
+ - `customtargets.txt` contains additional targets that are between two normal targets
+ - `centertargetweights.txt` contains points and weights the CenterTarget position is based on
 
 ## Control tips
-To adjust fov or camera tilt hold left shift/ctrl and drag with right mouse button while locked on.
+To adjust fov or camera angle hold left shift/ctrl and drag with right mouse button while locked on.
 
-The hotkeys are intended to be used with the extra mouse buttons for maximum one handed action.  
+Gamepad input requires a xinput compatible controller. (Movement only works in neo)  
+Use DS4Windows or something similar if you have a directinput controller.
+
+The hotkeys should be used with the extra mouse buttons for maximum one handed action.  
 A little autohotkey script like this can make this mod a lot more enjoyable to use.
 ```
 #IfWinActive StudioNEO ahk_class UnityWndClass

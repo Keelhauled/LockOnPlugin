@@ -17,38 +17,38 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 The latest release should always be [here](https://github.com/Keelhauled/LockOnPlugin/releases)
 
 ## Settings
-Settings are located in ```\UserData\modprefs.ini```
+Normal settings are in `\UserData\modprefs.ini`
+Target settings are in `\Plugins\TargetSettings\`
 
 ### Hotkeys
 All hotkeys can be set to false to disable or set to any value from [keynames.txt](keynames.txt), no modifiers
-- ```LockOnHotkey``` Lock to targets in quicktargets.txt on the selected character (default: N)
-- ```LockOnGuiHotkey``` Display clickable targets on the selected character (default: K)
-- ```PrevCharaHotkey``` Select previous character in the work menu (default: false)
-- ```NextCharaHotkey``` Select next character in the work menu (default: L)
+- `LockOnHotkey` Lock to targets in quicktargets.txt on the selected character (default: N)
+- `LockOnGuiHotkey` Display clickable targets on the selected character (default: K)
+- `PrevCharaHotkey` Select previous character in the work menu (default: false)
+- `NextCharaHotkey` Select next character in the work menu (default: L)
 
 ### Misc
-- ```LockedTrackingSpeed``` How fast the camera follows the target (between 0.01 and 1.0)
-- ```ShowInfoMsg``` Display messages about what the mod is doing (true/false)
-- ```ManageCursorVisibility``` Hide the cursor when either mouse button is down (true/false)
-- ```HideCameraTarget``` Hide the white camera target indicator thing (true/false)
-- ```ScrollThroughMalesToo``` Scroll through males too with NextCharaHotkey (true/false)
-- ```NearClipPlane``` Governs how close you can be to objects before clipping through <br> (values smaller than 0.03 may cause glitches to distant objects)
+- `LockedTrackingSpeed` How fast the camera follows the target (between 0.01 and 1.0)
+- `ShowInfoMsg` Display messages about what the mod is doing (true/false)
+- `ManageCursorVisibility` Hide the cursor when either mouse button is down (true/false)
+- `HideCameraTarget` Hide the white camera target indicator thing (true/false)
+- `ScrollThroughMalesToo` Scroll through males too with NextCharaHotkey (true/false)
+- `NearClipPlane` Governs how close you can be to objects before clipping through <br> (values smaller than 0.03 may cause glitches to distant objects)
 
 ### Gamepad
-- ```ControllerEnabled``` Enable or disable gamepad controls completely (true/false)
-- ```ControllerMoveSpeed``` Camera movement sensitivity (between 0.0 and 1.0)
-- ```ControllerZoomSpeed``` Camera zoom sensitivity (between 0.0 and 1.0)
-- ```ControllerRotSpeed``` Camera rotation sensitivity (between 0.0 and 1.0)
-- ```ControllerInvertX``` Invert look direction on x axis (true/false)
-- ```ControllerInvertY``` Invert look direction on y axis (true/false)
-- ```ControllerSwapSticks``` Swap functionality of controller sticks (true/false)
+- `ControllerEnabled` Enable or disable gamepad controls completely (true/false)
+- `ControllerMoveSpeed` Camera movement sensitivity (between 0.0 and 1.0)
+- `ControllerZoomSpeed` Camera zoom sensitivity (between 0.0 and 1.0)
+- `ControllerRotSpeed` Camera rotation sensitivity (between 0.0 and 1.0)
+- `ControllerInvertX` Invert look direction on x axis (true/false)
+- `ControllerInvertY` Invert look direction on y axis (true/false)
+- `ControllerSwapSticks` Swap functionality of controller sticks (true/false)
 
 ### Target settings
-Target settings are located in ```\Plugins\TargetSettings\```
-- ```quicktargets(fe)male.txt``` contains targets for LockOnHotkey
-- ```normaltargets.txt``` contains targets for LockOnGuiHotkey
-- ```customtargets.txt``` contains additional targets that are between two normal targets
-- ```centertargetweights.txt``` contains points and weights the CenterTarget position is based on
+- `quicktargets(fe)male.txt` Targets for LockOnHotkey
+- `normaltargets.txt` Targets for LockOnGuiHotkey
+- `customtargets.txt` Additional targets that are between two normal targets
+- `centertargetweights.txt` Points and weights the CenterTarget position is based on
 
 ## Control tips
 To adjust fov or camera angle hold left shift/ctrl and drag with right mouse button while locked on.

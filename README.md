@@ -11,13 +11,13 @@ The purpose of this is to allow you to really focus on the fun parts without hav
 ## Installation
 1. Install Illusion Plugin Architecture (IPA)
 2. Throw the files into the Honey Select root folder
-3. Default hotkey is N, unlock by holding the same button for a bit
+3. Default hotkey is N, unlock by holding the same button for a while
 
 ## Download
 The latest release should always be [here](https://github.com/Keelhauled/LockOnPlugin/releases)
 
 ## Settings
-Normal settings are in `\UserData\modprefs.ini`
+Normal settings are in `\UserData\modprefs.ini`  
 Target settings are in `\Plugins\TargetSettings\`
 
 ### Hotkeys

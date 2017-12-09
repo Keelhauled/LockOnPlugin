@@ -6,7 +6,7 @@
 This plugin allows you to keep the camera target on specific parts of the target character.  
 The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.  
 
-<div style='position:relative;padding-bottom:54%'><iframe src='https://gfycat.com/ifr/GranularBrilliantBuck' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0' allowfullscreen></iframe></div>
+<div style='position:relative;padding-bottom:54%'><iframe src='https://gfycat.com/ifr/GranularBrilliantBuck' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0' allowfullscreen></iframe></div><br>
 
 ## Installation
 1. Install Illusion Plugin Architecture (IPA)

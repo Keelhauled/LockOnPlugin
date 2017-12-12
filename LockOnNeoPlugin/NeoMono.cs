@@ -63,6 +63,7 @@ namespace LockOnPlugin
                     {
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
+                        targetManager.UpdateAllTargets(null);
                         targetManager.UpdateAllTargets(ocichar.charInfo);
 
                         boobs = null;

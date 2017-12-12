@@ -11,7 +11,7 @@ namespace LockOnPlugin
 {
     internal abstract class LockOnBase : MonoBehaviour
     {
-        public const string VERSION = "2.5.1";
+        public const string VERSION = "2.6.0";
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
@@ -37,8 +37,7 @@ namespace LockOnPlugin
         protected Hotkey lockOnGuiHotkey;
         protected Hotkey prevCharaHotkey;
         protected Hotkey nextCharaHotkey;
-        protected Hotkey rotationHotkey;
-        protected float lockedMinDistance;
+        //protected Hotkey rotationHotkey;
         protected float trackingSpeedNormal;
         protected float trackingSpeedRotation = 0.2f;
         protected bool manageCursorVisibility;
@@ -96,18 +95,18 @@ namespace LockOnPlugin
 
         protected virtual void LoadSettings()
         {
-            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "LockOnHotkey", "N", true), 0.4f);
-            lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "LockOnGuiHotkey", "K", true));
-            prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "PrevCharaHotkey", "False", true));
-            nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "NextCharaHotkey", "L", true));
-            rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "False", true));
+            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "N", true), 0.4f);
+            lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", "K", true));
+            prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "PrevCharaHotkey", "False", true));
+            nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "NextCharaHotkey", "L", true));
+            //rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "False", true));
 
-            lockedMinDistance = Mathf.Abs(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedMinDistance", 0f, true));
-            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "LockedTrackingSpeed", 0.1f, true), 0.01f, 0.4f);
-            showInfoMsg = ModPrefs.GetString("LockOnPlugin.Misc", "ShowInfoMsg", "False", true).ToLower() == "true" ? true : false;
-            manageCursorVisibility = ModPrefs.GetString("LockOnPlugin.Misc", "ManageCursorVisibility", "True", true).ToLower() == "true" ? true : false;
-            CameraTargetTex = ModPrefs.GetString("LockOnPlugin.Misc", "HideCameraTarget", "True", true).ToLower() == "true" ? false : true;
-            scrollThroughMalesToo = ModPrefs.GetString("LockOnPlugin.Misc", "ScrollThroughMalesToo", "False", true).ToLower() == "true" ? true : false;
+            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true), 0.01f, 0.4f);
+            showInfoMsg = ModPrefs.GetBool("LockOnPlugin", "ShowInfoMsg", false, true);
+            manageCursorVisibility = ModPrefs.GetBool("LockOnPlugin", "ManageCursorVisibility", true, true);
+            CameraTargetTex = !ModPrefs.GetBool("LockOnPlugin", "HideCameraTarget", true, true);
+            scrollThroughMalesToo = ModPrefs.GetBool("LockOnPlugin", "ScrollThroughMalesToo", false, true);
+            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin", "MovementAnimSet", 1, true), 0, animMoveSets.Count - 1);
 
             try
             {
@@ -120,13 +119,13 @@ namespace LockOnPlugin
                     }
                 }
 
-                controllerEnabled = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerEnabled", "True", true).ToLower() == "true" ? true : false;
-                controllerMoveSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerMoveSpeed", 0.3f, true);
-                controllerZoomSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerZoomSpeed", 0.2f, true);
-                controllerRotSpeed = ModPrefs.GetFloat("LockOnPlugin.Gamepad", "ControllerRotSpeed", 0.4f, true);
-                controllerInvertX = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertX", "False", true).ToLower() == "true" ? true : false;
-                controllerInvertY = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerInvertY", "False", true).ToLower() == "true" ? true : false;
-                controllerSwapSticks = ModPrefs.GetString("LockOnPlugin.Gamepad", "ControllerSwapSticks", "False", true).ToLower() == "true" ? true : false;
+                controllerEnabled = ModPrefs.GetBool("LockOnPlugin", "ControllerEnabled", true, true);
+                controllerMoveSpeed = ModPrefs.GetFloat("LockOnPlugin", "ControllerMoveSpeed", 0.3f, true);
+                controllerZoomSpeed = ModPrefs.GetFloat("LockOnPlugin", "ControllerZoomSpeed", 0.2f, true);
+                controllerRotSpeed = ModPrefs.GetFloat("LockOnPlugin", "ControllerRotSpeed", 0.4f, true);
+                controllerInvertX = ModPrefs.GetBool("LockOnPlugin", "ControllerInvertX", false, true);
+                controllerInvertY = ModPrefs.GetBool("LockOnPlugin", "ControllerInvertY", false, true);
+                controllerSwapSticks = ModPrefs.GetBool("LockOnPlugin", "ControllerSwapSticks", false, true);
             }
             catch(DllNotFoundException ex)
             {
@@ -591,8 +590,8 @@ namespace LockOnPlugin
                 if(!L1 && !R1)
                 {
                     float speed = Mathf.Lerp(1f, 4f, controllerRotSpeed) * Time.deltaTime * 60f;
-                    float newX = Mathf.Repeat((!controllerInvertX || CameraDir.z == 0f ? stick.y : -stick.y) * speed, 360f);
-                    float newY = Mathf.Repeat((!controllerInvertY || CameraDir.z == 0f ? stick.x : -stick.x) * speed, 360f);
+                    float newX = Mathf.Repeat((!controllerInvertY || CameraDir.z == 0f ? stick.y : -stick.y) * speed, 360f);
+                    float newY = Mathf.Repeat((!controllerInvertX || CameraDir.z == 0f ? stick.x : -stick.x) * speed, 360f);
                     CameraAngle += new Vector3(newX, newY, 0f);
                 }
                 else if(lockOnTarget)

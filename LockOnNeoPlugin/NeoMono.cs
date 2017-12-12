@@ -32,8 +32,8 @@ namespace LockOnPlugin
             Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
             systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
-            InstallNearClipPlaneSlider();
-            StartCoroutine(InstallSettingsReloadButton());
+            //InstallNearClipPlaneSlider();
+            //StartCoroutine(InstallSettingsReloadButton());
             OverrideControllerCreate();
         }
 
@@ -43,11 +43,11 @@ namespace LockOnPlugin
 
             manageCursorVisibility = false;
             Guitime.pos = new Vector2(1f, 1f);
-            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin.Misc", "MovementAnimSet", 1, true), 0, animMoveSets.Count - 1);
-            float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
-            Camera.main.nearClipPlane = nearClipPlane;
-            GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
-            if(nearClipSlider) nearClipSlider.GetComponent<Slider>().value = nearClipPlane;
+            Camera.main.nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
+            //float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
+            //Camera.main.nearClipPlane = nearClipPlane;
+            //GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
+            //if(nearClipSlider) nearClipSlider.GetComponent<Slider>().value = nearClipPlane;
         }
 
         private void OnSelectWork(TreeNodeObject node)
@@ -73,7 +73,7 @@ namespace LockOnPlugin
                             {
                                 body.getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastL),
                                 body.getDynamicBone(CharFemaleBody.DynamicBoneKind.BreastR),
-                            }; 
+                            };
                         }
 
                         if(lockOnTarget)

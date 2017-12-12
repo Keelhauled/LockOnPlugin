@@ -5,6 +5,7 @@ namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
+        private CameraControl_Ver2 camera = Singleton<CameraControl_Ver2>.Instance;
         private Character charaManager = Singleton<Character>.Instance;
         private int activeCharaCount;
 
@@ -12,6 +13,8 @@ namespace LockOnPlugin
         {
             base.Start();
 
+            //camera.isLimitPos = false;
+            //camera.isLimitDir = false;
             currentCharaInfo = charaManager.dictFemale[0];
             targetManager.UpdateAllTargets(currentCharaInfo);
             activeCharaCount = ActiveCharaCount<CharFemale>() + ActiveCharaCount<CharMale>();

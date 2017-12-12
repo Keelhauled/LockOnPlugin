@@ -111,6 +111,7 @@ namespace LockOnPlugin
                     }
 
                     CustomTarget target = new CustomTarget(data[0], point1, point2, midpoint);
+                    target.GetTarget().transform.SetParent(character.transform);
                     customTargets.Add(target);
                 }
             }
@@ -183,6 +184,7 @@ namespace LockOnPlugin
                 if(points.Count > 0)
                 {
                     point = new GameObject(CENTERPOINT_NAME);
+                    point.transform.SetParent(character.transform);
                     UpdatePosition();
                 }
                 else
@@ -239,8 +241,8 @@ namespace LockOnPlugin
             public MovementPoint(CharInfo character)
             {
                 this.character = character;
-                string prefix = character is CharFemale ? "cf_" : "cm_";
                 point = new GameObject(MOVEMENTPOINT_NAME);
+                point.transform.SetParent(character.transform);
                 UpdatePosition();
             }
 

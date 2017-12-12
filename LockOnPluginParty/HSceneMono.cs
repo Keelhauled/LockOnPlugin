@@ -28,6 +28,7 @@ namespace LockOnPlugin
             if(activeCharaCount != count)
             {
                 currentCharaInfo = charaManager.dictFemale[0];
+                targetManager.UpdateAllTargets(null);
                 targetManager.UpdateAllTargets(currentCharaInfo);
                 LockOnRelease();
                 activeCharaCount = count;
@@ -65,6 +66,7 @@ namespace LockOnPlugin
                     int next = i + 1 > characters.Count - 1 ? 0 : i + 1;
                     if(!scrollDown) next = i - 1 < 0 ? characters.Count - 1 : i - 1;
                     currentCharaInfo = characters[next];
+                    targetManager.UpdateAllTargets(null);
                     targetManager.UpdateAllTargets(currentCharaInfo);
                     if(lockOnTarget) LockOn(lockOnTarget.name, true);
                     return;

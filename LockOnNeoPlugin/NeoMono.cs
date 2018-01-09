@@ -1,5 +1,4 @@
-﻿using IllusionUtility.GetUtility;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using IllusionPlugin;
@@ -12,9 +11,9 @@ namespace LockOnPlugin
 {
     internal partial class NeoMono : LockOnBase
     {
-        private Studio.Studio studio = Singleton<Studio.Studio>.Instance;
-        private Studio.CameraControl camera = Singleton<Studio.Studio>.Instance.cameraCtrl;
-        private TreeNodeCtrl treeNodeCtrl = Singleton<Studio.Studio>.Instance.treeNodeCtrl;
+        private Studio.Studio studio = Studio.Studio.Instance;
+        private Studio.CameraControl camera = Studio.Studio.Instance.cameraCtrl;
+        private TreeNodeCtrl treeNodeCtrl = Studio.Studio.Instance.treeNodeCtrl;
         private GuideObjectManager guideObjectManager = Singleton<GuideObjectManager>.Instance;
 
         private Studio.CameraControl.CameraData cameraData;
@@ -32,22 +31,17 @@ namespace LockOnPlugin
             Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
             systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
-            //InstallNearClipPlaneSlider();
-            //StartCoroutine(InstallSettingsReloadButton());
             OverrideControllerCreate();
         }
 
-        protected override void LoadSettings()
+        protected override bool LoadSettings()
         {
             base.LoadSettings();
 
             manageCursorVisibility = false;
             Guitime.pos = new Vector2(1f, 1f);
             Camera.main.nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
-            //float nearClipPlane = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "NearClipPlane", Camera.main.nearClipPlane, true), 0.001f, 0.06f);
-            //Camera.main.nearClipPlane = nearClipPlane;
-            //GameObject nearClipSlider = GameObject.Find("Slider NearClipPlane");
-            //if(nearClipSlider) nearClipSlider.GetComponent<Slider>().value = nearClipPlane;
+            return true;
         }
 
         private void OnSelectWork(TreeNodeObject node)
@@ -170,6 +164,12 @@ namespace LockOnPlugin
             }
         }
 
+        protected override void ResetModState()
+        {
+            base.ResetModState();
+            currentCharaOCI = null;
+        }
+
         private List<TreeNodeObject> GetCharaNodes<CharaType>()
         {
             List<TreeNodeObject> charaNodes = new List<TreeNodeObject>();
@@ -189,89 +189,6 @@ namespace LockOnPlugin
             }
 
             return charaNodes;
-        }
-
-        private IEnumerator InstallSettingsReloadButton()
-        {
-            Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
-            if(systemMenuContent && !GameObject.Find("LockOnPluginReload"))
-            {
-                // wait for HSStudioNEOAddon specifically
-                yield return new WaitForSeconds(0.1f);
-
-                List<Transform> buttonlist = new List<Transform>();
-                List<GameObject> menuContents = new List<GameObject>();
-                systemMenuContent.FindLoopAll(menuContents);
-                foreach(GameObject item in menuContents)
-                {
-                    if(item.GetComponent<Button>())
-                    {
-                        buttonlist.Add(item.transform);
-                    }
-                }
-                Transform parentButton = buttonlist[buttonlist.Count - 1];
-
-                GameObject newButton = Instantiate(parentButton.gameObject);
-                newButton.name = "LockOnPluginReload";
-                newButton.transform.SetParent(parentButton.parent);
-                newButton.transform.Find("Text").gameObject.GetComponent<Text>().text = "LockOnPlugin rld";
-                newButton.transform.localPosition = parentButton.localPosition - new Vector3(0f, 30f, 0f);
-                newButton.transform.localScale = Vector3.one;
-
-                Button buttonComponent = newButton.GetComponent<Button>();
-                buttonComponent.onClick = new Button.ButtonClickedEvent();
-                buttonComponent.onClick.AddListener(() =>
-                {
-                    LoadSettings();
-                    targetManager.UpdateAllTargets(null);
-                    targetManager.UpdateAllTargets(currentCharaInfo);
-                    LockOn((currentCharaInfo is CharFemale ? FileManager.GetQuickFemaleTargetNames() : FileManager.GetQuickMaleTargetNames())[0]);
-                    reduceOffset = true;
-                });
-
-                Console.WriteLine("LockOnPlugin reload button installed");
-            }
-
-            yield break;
-        }
-
-        private void InstallNearClipPlaneSlider()
-        {
-            Transform sliderParentObject = studio.transform.Find("Canvas Main Menu/04_System/02_Option/Slider Camera Speed");
-            if(sliderParentObject && !GameObject.Find("Slider NearClipPlane"))
-            {
-                GameObject nearClipSlider = Instantiate(sliderParentObject.gameObject);
-                nearClipSlider.name = "Slider NearClipPlane";
-                nearClipSlider.transform.SetParent(sliderParentObject.parent);
-                nearClipSlider.transform.localPosition = new Vector3(114f, -16f, 0f);
-                nearClipSlider.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
-
-                Slider nearClipSliderComponent = nearClipSlider.GetComponent<Slider>();
-                nearClipSliderComponent.maxValue = 0.06f;
-                nearClipSliderComponent.minValue = 0.001f;
-                nearClipSliderComponent.value = ModPrefs.GetFloat("LockOnPlugin.Misc", "NearClipPlane", Camera.main.nearClipPlane, true);
-                nearClipSliderComponent.onValueChanged = new Slider.SliderEvent();
-                nearClipSliderComponent.onValueChanged.AddListener((value) =>
-                {
-                    Camera.main.nearClipPlane = value;
-                    ModPrefs.SetFloat("LockOnPlugin.Misc", "NearClipPlane", value);
-                });
-
-                Console.WriteLine("NearClipPlane slider installed");
-            }
-
-            Transform textParentObject = studio.transform.Find("Canvas Main Menu/04_System/02_Option/Text Camera Speed");
-            if(sliderParentObject && textParentObject && !GameObject.Find("Text NearClipPlane"))
-            {
-                GameObject nearClipText = Instantiate(textParentObject.gameObject);
-                nearClipText.name = "Text NearClipPlane";
-                nearClipText.transform.SetParent(sliderParentObject.parent);
-                nearClipText.transform.localPosition = new Vector3(83f, -16f, 0f);
-                nearClipText.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
-                Text nearClipTextComponent = nearClipText.GetComponent<Text>();
-                nearClipTextComponent.text = "NearClip";
-                Console.WriteLine("NearClipPlane text installed");
-            }
         }
 
         protected override void GamepadMovement(Vector2 stick)
@@ -325,8 +242,7 @@ namespace LockOnPlugin
                             Vector3 charaforward = Vector3.Scale(currentCharaInfo.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
                             for(int i = 0; i < boobs.Count; i++)
                             {
-                                boobs[i].Force = charaforward * stick.magnitude * 0.16f * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
-                                //boobs[i].HeavyLoopMaxCount = 10;
+                                boobs[i].Force = charaforward * stick.magnitude * breastCounterForce * (animMoveSets[animMoveSetCurrent].animSpeed / 2.5f);
                                 //Utils.GetSecureField<List<DynamicBone_Ver02.Particle>, DynamicBone_Ver02>("Particles", boobs[i]).ForEach(x => x.Inert = 0.5f);
                             }
                         }
@@ -349,16 +265,16 @@ namespace LockOnPlugin
 
         private void OverrideControllerCreate()
         {
-            Studio.Info.AnimeLoadInfo infoBase = GetAnimeInfo(0, 0, 1);
-            Studio.Info.AnimeLoadInfo infoWalk = GetAnimeInfo(1, 6, 0);
-            Studio.Info.AnimeLoadInfo infoGentle = GetAnimeInfo(2, 10, 0);
-            Studio.Info.AnimeLoadInfo infoActive = GetAnimeInfo(2, 17, 7);
-            Studio.Info.AnimeLoadInfo infoEnergetic = GetAnimeInfo(2, 16, 3);
-            RuntimeAnimatorController controllerBase = CommonLib.LoadAsset<RuntimeAnimatorController>(infoBase.bundlePath, infoBase.fileName);
-            RuntimeAnimatorController controllerWalk = CommonLib.LoadAsset<RuntimeAnimatorController>(infoWalk.bundlePath, infoWalk.fileName);
-            RuntimeAnimatorController controllerGentle = CommonLib.LoadAsset<RuntimeAnimatorController>(infoGentle.bundlePath, infoGentle.fileName);
-            RuntimeAnimatorController controllerActive = CommonLib.LoadAsset<RuntimeAnimatorController>(infoActive.bundlePath, infoActive.fileName);
-            RuntimeAnimatorController controllerEnergetic = CommonLib.LoadAsset<RuntimeAnimatorController>(infoEnergetic.bundlePath, infoEnergetic.fileName);
+            var infoBase = GetAnimeInfo(0, 0, 1);
+            var infoWalk = GetAnimeInfo(1, 6, 0);
+            var infoGentle = GetAnimeInfo(2, 10, 0);
+            var infoActive = GetAnimeInfo(2, 17, 7);
+            var infoEnergetic = GetAnimeInfo(2, 16, 3);
+            var controllerBase = CommonLib.LoadAsset<RuntimeAnimatorController>(infoBase.bundlePath, infoBase.fileName);
+            var controllerWalk = CommonLib.LoadAsset<RuntimeAnimatorController>(infoWalk.bundlePath, infoWalk.fileName);
+            var controllerGentle = CommonLib.LoadAsset<RuntimeAnimatorController>(infoGentle.bundlePath, infoGentle.fileName);
+            var controllerActive = CommonLib.LoadAsset<RuntimeAnimatorController>(infoActive.bundlePath, infoActive.fileName);
+            var controllerEnergetic = CommonLib.LoadAsset<RuntimeAnimatorController>(infoEnergetic.bundlePath, infoEnergetic.fileName);
 
             overrideController = new AnimatorOverrideController();
             overrideController.runtimeAnimatorController = controllerBase;
@@ -370,15 +286,15 @@ namespace LockOnPlugin
             overrideController[animMoveSets[3].idle] = controllerEnergetic.animationClips[5];
         }
 
-        private Studio.Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)
+        private Info.AnimeLoadInfo GetAnimeInfo(int group, int category, int no)
         {
-            Dictionary<int, Dictionary<int, Studio.Info.AnimeLoadInfo>> dictionary = null;
-            if(!Singleton<Studio.Info>.Instance.dicFemaleAnimeLoadInfo.TryGetValue(group, out dictionary)) return null;
+            Dictionary<int, Dictionary<int, Info.AnimeLoadInfo>> dictionary = null;
+            if(!Info.Instance.dicFemaleAnimeLoadInfo.TryGetValue(group, out dictionary)) return null;
 
-            Dictionary<int, Studio.Info.AnimeLoadInfo> dictionary2 = null;
+            Dictionary<int, Info.AnimeLoadInfo> dictionary2 = null;
             if(!dictionary.TryGetValue(category, out dictionary2)) return null;
 
-            Studio.Info.AnimeLoadInfo animeLoadInfo = null;
+            Info.AnimeLoadInfo animeLoadInfo = null;
             if(!dictionary2.TryGetValue(no, out animeLoadInfo)) return null;
 
             return animeLoadInfo;

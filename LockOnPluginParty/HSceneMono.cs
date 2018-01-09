@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using Manager;
+using System.Linq;
 
 namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
-        private CameraControl_Ver2 camera = Singleton<CameraControl_Ver2>.Instance;
-        private Character charaManager = Singleton<Character>.Instance;
+        private Manager.Character charaManager = Manager.Character.Instance;
         private int activeCharaCount;
 
         protected override void Start()
@@ -17,14 +16,14 @@ namespace LockOnPlugin
             //camera.isLimitDir = false;
             currentCharaInfo = charaManager.dictFemale[0];
             targetManager.UpdateAllTargets(currentCharaInfo);
-            activeCharaCount = ActiveCharaCount<CharFemale>() + ActiveCharaCount<CharMale>();
+            activeCharaCount = GetActiveCharaCount();
         }
 
         protected override void Update()
         {
             base.Update();
 
-            int count = ActiveCharaCount<CharFemale>() + ActiveCharaCount<CharMale>();
+            int count = GetActiveCharaCount();
             if(activeCharaCount != count)
             {
                 currentCharaInfo = charaManager.dictFemale[0];
@@ -74,20 +73,19 @@ namespace LockOnPlugin
             }
         }
 
-        private int ActiveCharaCount<Sex>() where Sex : CharInfo
+        protected override void ResetModState()
         {
-            int count = 0;
-            var characters = typeof(Sex) == typeof(CharFemale) ? charaManager.dictFemale as SortedDictionary<int, Sex> : charaManager.dictMale as SortedDictionary<int, Sex>;
-            
-            for(int i = 0; i < characters.Count; i++)
-            {
-                if(characters[i].animBody != null)
-                {
-                    count++;
-                }
-            }
+            base.ResetModState();
+            currentCharaInfo = charaManager.dictFemale[0];
+            targetManager.UpdateAllTargets(currentCharaInfo);
+            activeCharaCount = GetActiveCharaCount();
+        }
 
-            return count;
+        private int GetActiveCharaCount()
+        {
+            int females = charaManager.dictFemale.Count(x => x.Value.animBody != null);
+            int males = charaManager.dictMale.Count(x => x.Value.animBody != null);
+            return females + males;
         }
     }
 }

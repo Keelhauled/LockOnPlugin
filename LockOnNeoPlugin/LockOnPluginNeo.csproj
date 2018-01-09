@@ -43,6 +43,10 @@
       <HintPath>..\..\DLL\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="EventManager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Plugins\EventManager.dll</HintPath>
+    </Reference>
     <Reference Include="IllusionInjector">
       <HintPath>..\..\..\StudioNEO_64_Data\Managed\IllusionInjector.dll</HintPath>
       <Private>False</Private>

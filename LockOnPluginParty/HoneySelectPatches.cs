@@ -21,7 +21,7 @@ namespace LockOnPlugin
         /// </summary>
         [HarmonyPatch(typeof(CameraControl_Ver2))]
         [HarmonyPatch("InputKeyProc")]
-        internal static class HScenePatch1
+        private static class HScenePatch1
         {
             private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
             {
@@ -34,13 +34,13 @@ namespace LockOnPlugin
                     if(codes[i].opcode == OpCodes.Ldc_I4 && (int)codes[i].operand == 275)
                     {
                         List<CodeInstruction> newCodes = new List<CodeInstruction>()
-                    {
-                        new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(CameraControl_Ver2), "moveSpeed")),
-                        new CodeInstruction(OpCodes.Ldc_R4, 0f),
-                        new CodeInstruction(OpCodes.Ceq),
-                        new CodeInstruction(OpCodes.Brtrue, label),
-                    };
+                        {
+                            new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
+                            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(CameraControl_Ver2), "moveSpeed")),
+                            new CodeInstruction(OpCodes.Ldc_R4, 0f),
+                            new CodeInstruction(OpCodes.Ceq),
+                            new CodeInstruction(OpCodes.Brtrue, label),
+                        };
 
                         codes[i].labels = new List<Label>();
                         codes.InsertRange(i, newCodes);
@@ -64,7 +64,7 @@ namespace LockOnPlugin
         /// </summary>
         [HarmonyPatch(typeof(CustomControl))]
         [HarmonyPatch("Update")]
-        internal static class MakerPatch1
+        private static class MakerPatch1
         {
             private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
             {
@@ -78,10 +78,10 @@ namespace LockOnPlugin
                     if(codes[i].opcode == OpCodes.Stfld && codes[i].operand.ToString() == "System.Single yRotSpeed")
                     {
                         List<CodeInstruction> newCodes = new List<CodeInstruction>()
-                    {
-                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(LockOnBase), "lockedOn")),
-                        new CodeInstruction(OpCodes.Brtrue_S, label1),
-                    };
+                        {
+                            new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(LockOnBase), "lockedOn")),
+                            new CodeInstruction(OpCodes.Brtrue_S, label1),
+                        };
 
                         codes.InsertRange(i + 3, newCodes);
                         i += newCodes.Count + 3;
@@ -91,10 +91,10 @@ namespace LockOnPlugin
                     if(codeFound && codes[i].opcode == OpCodes.Stfld && codes[i].operand.ToString() == "System.Single moveSpeed")
                     {
                         List<CodeInstruction> newCodes = new List<CodeInstruction>()
-                    {
-                        new CodeInstruction(OpCodes.Br_S, label2),
-                        new CodeInstruction(OpCodes.Ldc_R4, 0f),
-                    };
+                        {
+                            new CodeInstruction(OpCodes.Br_S, label2),
+                            new CodeInstruction(OpCodes.Ldc_R4, 0f),
+                        };
 
                         newCodes[1].labels.Add(label1);
                         codes[i].labels.Add(label2);
@@ -111,7 +111,7 @@ namespace LockOnPlugin
         /// </summary>
         [HarmonyPatch(typeof(BaseCameraControl))]
         [HarmonyPatch("InputKeyProc")]
-        internal static class MakerPatch2
+        private static class MakerPatch2
         {
             private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
             {
@@ -124,13 +124,13 @@ namespace LockOnPlugin
                     if(codes[i].opcode == OpCodes.Ldc_I4 && (int)codes[i].operand == 275)
                     {
                         List<CodeInstruction> newCodes = new List<CodeInstruction>()
-                    {
-                        new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(CameraControl), "moveSpeed")),
-                        new CodeInstruction(OpCodes.Ldc_R4, 0f),
-                        new CodeInstruction(OpCodes.Ceq),
-                        new CodeInstruction(OpCodes.Brtrue, label),
-                    };
+                        {
+                            new CodeInstruction(OpCodes.Ldarg_0) { labels = codes[i].labels },
+                            new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(CameraControl), "moveSpeed")),
+                            new CodeInstruction(OpCodes.Ldc_R4, 0f),
+                            new CodeInstruction(OpCodes.Ceq),
+                            new CodeInstruction(OpCodes.Brtrue, label),
+                        };
 
                         codes[i].labels = new List<Label>();
                         codes.InsertRange(i, newCodes);

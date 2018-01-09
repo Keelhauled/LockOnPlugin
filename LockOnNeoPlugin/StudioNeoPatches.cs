@@ -4,6 +4,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Linq;
 using Harmony;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using UnityEngine;
 
 namespace LockOnPlugin
 {
@@ -64,36 +67,36 @@ namespace LockOnPlugin
         /// </summary>
         //[HarmonyPatch(typeof(DynamicBone_Ver02))]
         //[HarmonyPatch("UpdateDynamicBones")]
-        //[HarmonyPatch(new Type[]{ typeof(float) })]
-        private static class NeoPatch2
-        {
-            private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
-            {
-                List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
-                FieldInfo field = AccessTools.Field(typeof(DynamicBone_Ver02), "ObjectPrevPosition");
+        //[HarmonyPatch(new Type[] { typeof(float) })]
+        //private static class NeoPatch2
+        //{
+        //    private static IEnumerable<CodeInstruction> Transpiler(ILGenerator ilGenerator, IEnumerable<CodeInstruction> instructions)
+        //    {
+        //        List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+        //        FieldInfo field = AccessTools.Field(typeof(DynamicBone_Ver02), "ObjectPrevPosition");
 
-                for(int i = 0; i < codes.Count; i++)
-                {
-                    if(codes[i].opcode == OpCodes.Stfld && codes[i].operand == field)
-                    {
-                        List<CodeInstruction> newCodes = new List<CodeInstruction>()
-                        {
-                            new CodeInstruction(OpCodes.Ldarg_0),
-                            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DynamicBone_Ver02), "UpdateParticles1")),
-                            new CodeInstruction(OpCodes.Ldarg_0),
-                            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DynamicBone_Ver02), "UpdateParticles2")),
-                            new CodeInstruction(OpCodes.Ldarg_0),
-                            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DynamicBone_Ver02), "ApplyParticlesToTransforms")),
-                            new CodeInstruction(OpCodes.Ret),
-                        };
+        //        for(int i = 0; i < codes.Count; i++)
+        //        {
+        //            if(codes[i].opcode == OpCodes.Stfld && codes[i].operand == field)
+        //            {
+        //                List<CodeInstruction> newCodes = new List<CodeInstruction>()
+        //                {
+        //                    new CodeInstruction(OpCodes.Ldarg_0),
+        //                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DynamicBone_Ver02), "UpdateParticles1")),
+        //                    new CodeInstruction(OpCodes.Ldarg_0),
+        //                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DynamicBone_Ver02), "UpdateParticles2")),
+        //                    new CodeInstruction(OpCodes.Ldarg_0),
+        //                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DynamicBone_Ver02), "ApplyParticlesToTransforms")),
+        //                    new CodeInstruction(OpCodes.Ret),
+        //                };
 
-                        codes.InsertRange(i + 1, newCodes);
-                        break;
-                    }
-                }
-                
-                return codes.AsEnumerable();
-            }
-        }
+        //                codes.InsertRange(i + 1, newCodes);
+        //                break;
+        //            }
+        //        }
+
+        //        return codes.AsEnumerable();
+        //    }
+        //}
     }
 }

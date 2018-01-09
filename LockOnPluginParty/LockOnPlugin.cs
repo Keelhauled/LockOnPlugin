@@ -27,7 +27,7 @@ namespace LockOnPlugin
         public void OnLevelWasLoaded(int level)
         {
             if(level == 15 && !hsceneObject && FileManager.TargetSettingsExist())
-                hsceneObject = new GameObject().AddComponent<HSceneMono>();
+                hsceneObject = new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<HSceneMono>();
 
             else if(level == 21 && !makerObject && FileManager.TargetSettingsExist())
                 makerObject = new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<MakerMono>();

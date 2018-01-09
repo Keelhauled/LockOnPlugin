@@ -43,6 +43,8 @@ namespace LockOnPlugin
         protected bool manageCursorVisibility;
         protected bool scrollThroughMalesToo;
         protected bool showInfoMsg;
+        protected float breastCounterForce;
+        protected float lockLeashLength;
 
         protected CameraTargetManager targetManager;
         protected CharInfo currentCharaInfo;
@@ -91,15 +93,16 @@ namespace LockOnPlugin
             targetManager = new CameraTargetManager();
             defaultCameraSpeed = CameraMoveSpeed;
             LoadSettings();
+            EventManager.EventManager.StartListening("BetterSceneLoader.LoadScene", ResetModState);
         }
 
-        protected virtual void LoadSettings()
+        protected virtual bool LoadSettings()
         {
             lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "N", true), 0.4f);
             lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", "K", true));
             prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "PrevCharaHotkey", "False", true));
             nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "NextCharaHotkey", "L", true));
-            //rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin.Hotkeys", "RotationHotkey", "False", true));
+            //rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "False", true));
 
             trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true), 0.01f, 0.4f);
             showInfoMsg = ModPrefs.GetBool("LockOnPlugin", "ShowInfoMsg", false, true);
@@ -107,6 +110,8 @@ namespace LockOnPlugin
             CameraTargetTex = !ModPrefs.GetBool("LockOnPlugin", "HideCameraTarget", true, true);
             scrollThroughMalesToo = ModPrefs.GetBool("LockOnPlugin", "ScrollThroughMalesToo", false, true);
             animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin", "MovementAnimSet", 1, true), 0, animMoveSets.Count - 1);
+            breastCounterForce = ModPrefs.GetFloat("LockOnPlugin", "BreastCounterforce", 0.08f, true);
+            lockLeashLength = ModPrefs.GetFloat("LockOnPlugin", "LockLeashLength", 0f, true);
 
             try
             {
@@ -132,11 +137,12 @@ namespace LockOnPlugin
                 Console.WriteLine(ex);
                 controllerEnabled = false;
             }
+
+            return true;
         }
 
         protected virtual void Update()
         {
-            Hotkey.inputFieldSelected = InputFieldSelected;
             targetManager.UpdateCustomTargetTransforms();
             GamepadControls();
 
@@ -231,6 +237,7 @@ namespace LockOnPlugin
 
                 if(reduceOffset)
                 {
+                    // add this as a setting
                     if(targetOffsetSize.magnitude > 0.00001f)
                     {
                         float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
@@ -249,7 +256,7 @@ namespace LockOnPlugin
                     if(lockOnTarget.name == CameraTargetManager.MOVEMENTPOINT_NAME) trackingSpeed = 0.3f;
                     else trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                    if(distance > 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, distance * trackingSpeed * Time.deltaTime * 60f);
+                    if(distance > lockLeashLength + 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, (distance - lockLeashLength) * trackingSpeed * Time.deltaTime * 60f);
                     CameraTargetPos += targetOffsetSize - targetOffsetSizeAdded;
                     targetOffsetSizeAdded = targetOffsetSize;
                     lastTargetPos = LockOnTargetPos + targetOffsetSize; 
@@ -466,6 +473,14 @@ namespace LockOnPlugin
         //    }
         //}
 
+        protected virtual void ResetModState()
+        {
+            LockOnRelease();
+            showLockOnTargets = false;
+            currentCharaInfo = null;
+            targetManager.UpdateAllTargets(null);
+        }
+
         protected virtual void GamepadControls()
         {
             if(!controllerEnabled) return;
@@ -493,7 +508,7 @@ namespace LockOnPlugin
             {
                 int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
                 animMoveSetCurrent = next;
-                ModPrefs.SetInt("LockOnPlugin.Misc", "MovementAnimSet", next);
+                ModPrefs.SetInt("LockOnPlugin", "MovementAnimSet", next);
                 animSwitched = true;
             }
 

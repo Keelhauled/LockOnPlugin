@@ -93,7 +93,6 @@ namespace LockOnPlugin
             targetManager = new CameraTargetManager();
             defaultCameraSpeed = CameraMoveSpeed;
             LoadSettings();
-            EventManager.EventManager.StartListening("BetterSceneLoader.LoadScene", ResetModState);
         }
 
         protected virtual bool LoadSettings()
@@ -153,7 +152,7 @@ namespace LockOnPlugin
             nextCharaHotkey.KeyDownAction(() => CharaSwitch(true));
             //rotationHotkey.KeyDownAction(ToggleRotationLock);
 
-            if(lockOnTarget)
+            if(lockOnTarget && CameraEnabled)
             {
                 if(Input.GetMouseButton(0) && Input.GetMouseButton(1))
                 {
@@ -253,10 +252,20 @@ namespace LockOnPlugin
                 if(AllowTracking)
                 {
                     float trackingSpeed;
-                    if(lockOnTarget.name == CameraTargetManager.MOVEMENTPOINT_NAME) trackingSpeed = 0.3f;
-                    else trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
+                    float leash;
+                    if(lockOnTarget.name == CameraTargetManager.MOVEMENTPOINT_NAME)
+                    {
+                        trackingSpeed = 0.3f;
+                        leash = 0f;
+                    }
+                    else
+                    {
+                        trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
+                        leash = lockLeashLength;
+                    }
+
                     float distance = Vector3.Distance(CameraTargetPos, lastTargetPos.Value);
-                    if(distance > lockLeashLength + 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, (distance - lockLeashLength) * trackingSpeed * Time.deltaTime * 60f);
+                    if(distance > leash + 0.00001f) CameraTargetPos = Vector3.MoveTowards(CameraTargetPos, LockOnTargetPos + targetOffsetSize, (distance - leash) * trackingSpeed * Time.deltaTime * 60f);
                     CameraTargetPos += targetOffsetSize - targetOffsetSizeAdded;
                     targetOffsetSizeAdded = targetOffsetSize;
                     lastTargetPos = LockOnTargetPos + targetOffsetSize; 

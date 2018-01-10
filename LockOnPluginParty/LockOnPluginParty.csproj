@@ -45,6 +45,7 @@
     <Reference Include="EventManager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Plugins\EventManager.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="IllusionInjector">
       <HintPath>..\..\..\HoneySelect_64_Data\Managed\IllusionInjector.dll</HintPath>
@@ -73,6 +74,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\LockOnNeoPlugin\NeoMono.cs">
+      <Link>NeoMono.cs</Link>
+    </Compile>
+    <Compile Include="..\LockOnNeoPlugin\NeoProperties.cs">
+      <Link>NeoProperties.cs</Link>
+    </Compile>
+    <Compile Include="..\LockOnNeoPlugin\StudioNeoPatches.cs">
+      <Link>StudioNeoPatches.cs</Link>
+    </Compile>
     <Compile Include="..\SharedCode\FileManager.cs">
       <Link>FileManager.cs</Link>
     </Compile>

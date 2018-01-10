@@ -13,14 +13,20 @@ namespace LockOnPlugin
         {
             "HoneySelect_32",
             "HoneySelect_64",
+            "StudioNEO_32",
+            "StudioNEO_64",
         };
 
         private HSceneMono hsceneObject;
         private MakerMono makerObject;
+        private NeoMono neoObject;
 
         public void OnApplicationStart()
         {
             try { HoneySelectPatches.Init(); }
+            catch(Exception ex) { Console.WriteLine(ex); }
+
+            try { StudioNeoPatches.Init(); }
             catch(Exception ex) { Console.WriteLine(ex); }
         }
 
@@ -31,6 +37,9 @@ namespace LockOnPlugin
 
             else if(level == 21 && !makerObject && FileManager.TargetSettingsExist())
                 makerObject = new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<MakerMono>();
+
+            if(level == 3 && !neoObject && FileManager.TargetSettingsExist())
+                neoObject = new GameObject(LockOnBase.NAME_NEO).AddComponent<NeoMono>();
         }
 
         public void OnUpdate(){}

@@ -32,6 +32,7 @@ namespace LockOnPlugin
             systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
             OverrideControllerCreate();
+            EventManager.EventManager.StartListening("BetterSceneLoader.LoadScene", ResetModState);
         }
 
         protected override bool LoadSettings()

@@ -1,24 +1,24 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace LockOnPlugin
 {
     internal class Hotkey
     {
         public static bool allowHotkeys = true;
-        public static bool inputFieldSelected = false;
 
-        private string key = "";
+        private KeyCode key = KeyCode.None;
         private float procTime = 0f;
         private float timeHeld = 0f;
         private bool released = true;
         private bool enabled = true;
 
-        public Hotkey(string newKey, float newProcTime = 0f)
+        public Hotkey(KeyCode newKey, float newProcTime = 0f)
         {
-            key = newKey.ToLower();
-
-            if(key.Length < 1 || key == "false")
+            key = newKey;
+            if(key == KeyCode.None)
                 enabled = false;
 
             if(newProcTime > 0f)
@@ -70,7 +70,7 @@ namespace LockOnPlugin
 
         private bool GetModifiers()
         {
-            return Input.GetKey("left shift") || Input.GetKey("left alt") || Input.GetKey("left ctrl");
+            return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.LeftControl);
         }
 
         private bool ResetIfShould()
@@ -87,7 +87,7 @@ namespace LockOnPlugin
                 shouldReset = true;
             }
             
-            if(inputFieldSelected)
+            if(EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null)
             {
                 shouldReset = true;
             }

@@ -271,6 +271,7 @@ namespace LockOnPlugin
             var infoGentle = GetAnimeInfo(2, 10, 0);
             var infoActive = GetAnimeInfo(2, 17, 7);
             var infoEnergetic = GetAnimeInfo(2, 16, 3);
+
             var controllerBase = CommonLib.LoadAsset<RuntimeAnimatorController>(infoBase.bundlePath, infoBase.fileName);
             var controllerWalk = CommonLib.LoadAsset<RuntimeAnimatorController>(infoWalk.bundlePath, infoWalk.fileName);
             var controllerGentle = CommonLib.LoadAsset<RuntimeAnimatorController>(infoGentle.bundlePath, infoGentle.fileName);
@@ -279,9 +280,9 @@ namespace LockOnPlugin
 
             overrideController = new AnimatorOverrideController();
             overrideController.runtimeAnimatorController = controllerBase;
-            overrideController[animMoveSets[0].move] = controllerWalk.animationClips[0];
-            overrideController[animMoveSets[1].idle] = controllerGentle.animationClips[0];
-            overrideController[animMoveSets[1].move] = controllerWalk.animationClips[1];
+            overrideController[animMoveSets[1].move] = controllerWalk.animationClips[0];
+            overrideController[animMoveSets[0].idle] = controllerGentle.animationClips[0];
+            overrideController[animMoveSets[0].move] = controllerWalk.animationClips[1];
             overrideController[animMoveSets[2].idle] = controllerActive.animationClips[7];
             overrideController[animMoveSets[2].move] = controllerWalk.animationClips[3];
             overrideController[animMoveSets[3].idle] = controllerEnergetic.animationClips[5];

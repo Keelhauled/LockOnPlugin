@@ -82,11 +82,11 @@ namespace LockOnPlugin
 
         protected bool moving = false;
         protected bool animSwitched;
-        protected int animMoveSetCurrent;
+        protected int animMoveSetCurrent = 0;
         protected List<MoveSetData> animMoveSets = new List<MoveSetData>
         {
-            new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f), // hands on the side
             new MoveSetData("tachi_pose_03", "tachi_pose_04", 2.5f, 10.3f), // hands in front
+            new MoveSetData("tachi_pose_01", "tachi_pose_02", 5f, 9.6f), // hands on the side
             new MoveSetData("tachi_pose_05", "tachi_pose_06", 2.5f, 11.1f), // catwalk
             new MoveSetData("tachi_pose_07", "tachi_pose_02", 5f, 9.6f), // hands on the side alt
         };
@@ -101,11 +101,10 @@ namespace LockOnPlugin
         protected virtual bool LoadSettings()
         {
             trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true), 0.01f, 0.4f);
-            showInfoMsg = ModPrefs.GetBool("LockOnPlugin", "ShowInfoMsg", false, true);
+            showInfoMsg = ModPrefs.GetBool("LockOnPlugin", "ShowInfoMsg", true, true);
             manageCursorVisibility = ModPrefs.GetBool("LockOnPlugin", "ManageCursorVisibility", true, true);
             CameraTargetTex = !ModPrefs.GetBool("LockOnPlugin", "HideCameraTarget", true, true);
-            scrollThroughMalesToo = ModPrefs.GetBool("LockOnPlugin", "ScrollThroughMalesToo", false, true);
-            animMoveSetCurrent = Mathf.Clamp(ModPrefs.GetInt("LockOnPlugin", "MovementAnimSet", 1, true), 0, animMoveSets.Count - 1);
+            scrollThroughMalesToo = ModPrefs.GetBool("LockOnPlugin", "ScrollThroughMalesToo", true, true);
             breastCounterForce = ModPrefs.GetFloat("LockOnPlugin", "BreastCounterforce", 0.08f, true);
             lockLeashLength = ModPrefs.GetFloat("LockOnPlugin", "LockLeashLength", 0f, true);
 
@@ -512,16 +511,12 @@ namespace LockOnPlugin
             {
                 int next = animMoveSetCurrent + 1 > animMoveSets.Count - 1 ? 0 : animMoveSetCurrent + 1;
                 animMoveSetCurrent = next;
-                ModPrefs.SetInt("LockOnPlugin", "MovementAnimSet", next);
                 animSwitched = true;
             }
 
             if(gamepadStatePrev.Buttons.RightStick == ButtonState.Released && gamepadState.Buttons.RightStick == ButtonState.Pressed)
             {
-                if(FileManager.PluginInstalled("TogglePOVNeo") || FileManager.PluginInstalled("TogglePOV"))
-                {
-                    Utils.InvokePluginMethod("TogglePOV.HSPluginBase", "TogglePOV");
-                }
+                Utils.InvokePluginMethod("TogglePOV.BaseMono", "TogglePOV");
             }
 
             if(gamepadStatePrev.Buttons.LeftStick == ButtonState.Released && gamepadState.Buttons.LeftStick == ButtonState.Pressed)

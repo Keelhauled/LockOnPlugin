@@ -33,11 +33,15 @@ namespace LockOnPlugin
         protected virtual bool AllowTracking => true;
         protected virtual bool InputFieldSelected => EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null;
 
+        protected KeyCode lockOnKey = KeyCode.N;
+        protected KeyCode lockOnGuiKey = KeyCode.None;
+        protected KeyCode prevCharaKey = KeyCode.None;
+        protected KeyCode nextCharaKey = KeyCode.L;
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;
         protected Hotkey prevCharaHotkey;
         protected Hotkey nextCharaHotkey;
-        //protected Hotkey rotationHotkey;
+
         protected float trackingSpeedNormal;
         protected float trackingSpeedRotation = 0.2f;
         protected bool manageCursorVisibility;
@@ -50,7 +54,6 @@ namespace LockOnPlugin
         protected CharInfo currentCharaInfo;
         protected GameObject lockOnTarget;
         protected Vector3? lastTargetPos;
-        //protected Vector3 lastTargetAngle;
         protected bool lockRotation = false;
         protected bool showLockOnTargets = false;
         protected float defaultCameraSpeed;
@@ -97,12 +100,6 @@ namespace LockOnPlugin
 
         protected virtual bool LoadSettings()
         {
-            lockOnHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", "N", true), 0.4f);
-            lockOnGuiHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", "K", true));
-            prevCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "PrevCharaHotkey", "False", true));
-            nextCharaHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "NextCharaHotkey", "L", true));
-            //rotationHotkey = new Hotkey(ModPrefs.GetString("LockOnPlugin", "RotationHotkey", "False", true));
-
             trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true), 0.01f, 0.4f);
             showInfoMsg = ModPrefs.GetBool("LockOnPlugin", "ShowInfoMsg", false, true);
             manageCursorVisibility = ModPrefs.GetBool("LockOnPlugin", "ManageCursorVisibility", true, true);
@@ -137,6 +134,28 @@ namespace LockOnPlugin
                 controllerEnabled = false;
             }
 
+            try
+            {
+                string key1 = ModPrefs.GetString("LockOnPlugin", "LockOnHotkey", lockOnKey.ToString(), true);
+                lockOnKey = (KeyCode)Enum.Parse(typeof(KeyCode), key1, true);
+                string key2 = ModPrefs.GetString("LockOnPlugin", "LockOnGuiHotkey", lockOnGuiKey.ToString(), true);
+                lockOnGuiKey = (KeyCode)Enum.Parse(typeof(KeyCode), key2, true);
+                string key3 = ModPrefs.GetString("LockOnPlugin", "PrevCharaHotkey", prevCharaKey.ToString(), true);
+                prevCharaKey = (KeyCode)Enum.Parse(typeof(KeyCode), key3, true);
+                string key4 = ModPrefs.GetString("LockOnPlugin", "NextCharaHotkey", nextCharaKey.ToString(), true);
+                nextCharaKey = (KeyCode)Enum.Parse(typeof(KeyCode), key4, true);
+
+                lockOnHotkey = new Hotkey(lockOnKey, 0.4f);
+                lockOnGuiHotkey = new Hotkey(lockOnGuiKey);
+                prevCharaHotkey = new Hotkey(prevCharaKey);
+                nextCharaHotkey = new Hotkey(nextCharaKey);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+
             return true;
         }
 
@@ -150,7 +169,6 @@ namespace LockOnPlugin
             lockOnGuiHotkey.KeyDownAction(ToggleLockOnGUI);
             prevCharaHotkey.KeyDownAction(() => CharaSwitch(false));
             nextCharaHotkey.KeyDownAction(() => CharaSwitch(true));
-            //rotationHotkey.KeyDownAction(ToggleRotationLock);
 
             if(lockOnTarget && CameraEnabled)
             {
@@ -271,14 +289,6 @@ namespace LockOnPlugin
                     lastTargetPos = LockOnTargetPos + targetOffsetSize; 
                 }
             }
-
-            //if(lockRotation)
-            //{
-            //    Vector3 targetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
-            //    Vector3 difference = targetAngle - lastTargetAngle;
-            //    CameraAngle += new Vector3(-difference.x, -difference.y, -difference.z);
-            //    lastTargetAngle = targetAngle;
-            //}
 
             if(Input.GetKeyDown(KeyCode.Escape))
             {
@@ -466,21 +476,6 @@ namespace LockOnPlugin
         {
             Console.WriteLine("Character switching not implemented in this version");
         }
-
-        //protected virtual void ToggleRotationLock()
-        //{
-        //    if(lockRotation)
-        //    {
-        //        lockRotation = false;
-        //        CreateInfoMsg("Rotation released");
-        //    }
-        //    else
-        //    {
-        //        lockRotation = true;
-        //        //lastTargetAngle = CameraAdjustedEulerAngles(lockOnTarget, CameraTransform);
-        //        CreateInfoMsg("Rotation locked");
-        //    }
-        //}
 
         protected virtual void ResetModState()
         {

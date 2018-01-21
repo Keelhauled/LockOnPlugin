@@ -1,6 +1,7 @@
 ﻿using System;
 using IllusionPlugin;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace LockOnPlugin
 {
@@ -17,29 +18,53 @@ namespace LockOnPlugin
             "StudioNEO_64",
         };
 
-        private HSceneMono hsceneObject;
-        private MakerMono makerObject;
-        private NeoMono neoObject;
-
         public void OnApplicationStart()
         {
-            try { HoneySelectPatches.Init(); }
-            catch(Exception ex) { Console.WriteLine(ex); }
-
-            try { StudioNeoPatches.Init(); }
-            catch(Exception ex) { Console.WriteLine(ex); }
+            try
+            {
+                HoneySelectPatches.Init();
+                StudioNeoPatches.Init();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         public void OnLevelWasLoaded(int level)
         {
-            if(level == 15 && !hsceneObject && FileManager.TargetSettingsExist())
-                hsceneObject = new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<HSceneMono>();
+            StartMod();
+        }
 
-            else if(level == 21 && !makerObject && FileManager.TargetSettingsExist())
-                makerObject = new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<MakerMono>();
+        public static void StartMod()
+        {
+            switch(SceneManager.GetActiveScene().name)
+            {
+                case "Studio":
+                {
+                    new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<NeoMono>();
+                    break;
+                }
 
-            if(level == 3 && !neoObject && FileManager.TargetSettingsExist())
-                neoObject = new GameObject(LockOnBase.NAME_NEO).AddComponent<NeoMono>();
+                case "HScene":
+                {
+                    new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<HSceneMono>();
+                    break;
+                }
+
+                case "CustomScene":
+                {
+                    new GameObject(LockOnBase.NAME_HSCENEMAKER).AddComponent<MakerMono>();
+                    break;
+                }
+            }
+        }
+
+        public static void Bootstrap()
+        {
+            var gameobject = GameObject.Find(LockOnBase.NAME_HSCENEMAKER);
+            if(gameobject != null) GameObject.DestroyImmediate(gameobject);
+            StartMod();
         }
 
         public void OnUpdate(){}

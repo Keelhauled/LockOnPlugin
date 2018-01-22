@@ -32,7 +32,6 @@ namespace LockOnPlugin
             systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
             systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
             OverrideControllerCreate();
-            EventManager.EventManager.StartListening("BetterSceneLoader.LoadScene", ResetModState);
         }
 
         protected override bool LoadSettings()
@@ -126,8 +125,6 @@ namespace LockOnPlugin
             currentCharaInfo = null;
             targetManager.UpdateAllTargets(null);
             treeNodeCtrl.SelectSingle(null);
-            
-            yield break;
         }
 
         protected override bool LockOn()
@@ -169,6 +166,7 @@ namespace LockOnPlugin
         {
             base.ResetModState();
             currentCharaOCI = null;
+            treeNodeCtrl.SelectSingle(null);
         }
 
         private List<TreeNodeObject> GetCharaNodes<CharaType>()
@@ -214,8 +212,12 @@ namespace LockOnPlugin
                             //if(toggle) toggle.GetComponent<Toggle>().isOn = false;
                         }
 
+                        float refer = 0.6f;
+                        float scale = 0.53f;
+                        float heightMult = Mathf.LerpUnclamped(scale / refer, 1f, currentCharaInfo.chaCustom.GetShapeBodyValue(0) / refer);
+                        
                         float animSpeed = animMoveSets[animMoveSetCurrent].animSpeed * currentCharaOCI.guideObject.changeAmount.scale.z;
-                        if(!rotatingInPov) currentCharaOCI.animeSpeed = stick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z;
+                        if(!rotatingInPov) currentCharaOCI.animeSpeed = stick.magnitude * animSpeed / currentCharaOCI.guideObject.changeAmount.scale.z / heightMult;
                         stick = stick * 0.04f;
 
                         if(CameraEnabled)

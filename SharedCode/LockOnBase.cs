@@ -43,7 +43,7 @@ namespace LockOnPlugin
         protected Hotkey nextCharaHotkey;
 
         protected float trackingSpeedNormal;
-        protected float trackingSpeedRotation = 0.2f;
+        protected float trackingSpeedMax = 0.3f;
         protected bool manageCursorVisibility;
         protected bool scrollThroughMalesToo;
         protected bool showInfoMsg;
@@ -54,7 +54,6 @@ namespace LockOnPlugin
         protected CharInfo currentCharaInfo;
         protected GameObject lockOnTarget;
         protected Vector3? lastTargetPos;
-        protected bool lockRotation = false;
         protected bool showLockOnTargets = false;
         protected float defaultCameraSpeed;
         protected float targetSize = 25f;
@@ -98,14 +97,19 @@ namespace LockOnPlugin
             LoadSettings();
         }
 
+        protected virtual void OnDestroy()
+        {
+            ResetModState();
+        }
+
         protected virtual bool LoadSettings()
         {
-            trackingSpeedNormal = Mathf.Clamp(ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true), 0.01f, 0.4f);
+            trackingSpeedNormal = ModPrefs.GetFloat("LockOnPlugin", "LockedTrackingSpeed", 0.1f, true);
             showInfoMsg = ModPrefs.GetBool("LockOnPlugin", "ShowInfoMsg", true, true);
             manageCursorVisibility = ModPrefs.GetBool("LockOnPlugin", "ManageCursorVisibility", true, true);
             CameraTargetTex = !ModPrefs.GetBool("LockOnPlugin", "HideCameraTarget", true, true);
             scrollThroughMalesToo = ModPrefs.GetBool("LockOnPlugin", "ScrollThroughMalesToo", true, true);
-            breastCounterForce = ModPrefs.GetFloat("LockOnPlugin", "BreastCounterforce", 0.08f, true);
+            breastCounterForce = ModPrefs.GetFloat("LockOnPlugin", "BreastCounterforce", 0.07f, true);
             lockLeashLength = ModPrefs.GetFloat("LockOnPlugin", "LockLeashLength", 0f, true);
 
             try
@@ -160,6 +164,12 @@ namespace LockOnPlugin
 
         protected virtual void Update()
         {
+            if(!currentCharaInfo && lockedOn)
+            {
+                Console.WriteLine("[{0}] Reset mod state", NAME_HSCENEMAKER);
+                ResetModState();
+            }
+
             targetManager.UpdateCustomTargetTransforms();
             GamepadControls();
 
@@ -256,7 +266,7 @@ namespace LockOnPlugin
                     // add this as a setting
                     if(targetOffsetSize.magnitude > 0.00001f)
                     {
-                        float trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
+                        float trackingSpeed = lockOnTarget.name == CameraTargetManager.MOVEMENTPOINT_NAME ? trackingSpeedMax : trackingSpeedNormal;
                         targetOffsetSize = Vector3.MoveTowards(targetOffsetSize, new Vector3(), targetOffsetSize.magnitude / (1f / trackingSpeed)); 
                     }
                     else
@@ -272,12 +282,12 @@ namespace LockOnPlugin
                     float leash;
                     if(lockOnTarget.name == CameraTargetManager.MOVEMENTPOINT_NAME)
                     {
-                        trackingSpeed = 0.3f;
+                        trackingSpeed = trackingSpeedMax;
                         leash = 0f;
                     }
                     else
                     {
-                        trackingSpeed = (lockRotation && trackingSpeedNormal < trackingSpeedRotation) ? trackingSpeedRotation : trackingSpeedNormal;
+                        trackingSpeed = trackingSpeedNormal;
                         leash = lockLeashLength;
                     }
 
@@ -300,10 +310,13 @@ namespace LockOnPlugin
                 {
                     if(GUIUtility.hotControl == 0 && !EventSystem.current.IsPointerOverGameObject() && Hotkey.allowHotkeys)
                     {
-                        if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                        bool mouseDown0 = Input.GetMouseButtonDown(0);
+                        bool mouseDown1 = Input.GetMouseButtonDown(1);
+
+                        if(mouseDown0 || mouseDown1)
                         {
-                            if(Input.GetMouseButtonDown(0)) mouseButtonDown0 = true;
-                            if(Input.GetMouseButtonDown(1)) mouseButtonDown1 = true;
+                            if(mouseDown0) mouseButtonDown0 = true;
+                            if(mouseDown1) mouseButtonDown1 = true;
 
                             Cursor.visible = false;
                             Cursor.lockState = CursorLockMode.Confined;
@@ -316,10 +329,13 @@ namespace LockOnPlugin
 
                 if(cursorLocked)
                 {
-                    if((mouseButtonDown0 || mouseButtonDown1) && (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)))
+                    bool mouseUp0 = Input.GetMouseButtonUp(0);
+                    bool mouseUp1 = Input.GetMouseButtonUp(1);
+
+                    if((mouseButtonDown0 || mouseButtonDown1) && (mouseUp0 || mouseUp1))
                     {
-                        if(Input.GetMouseButtonUp(0)) mouseButtonDown0 = false;
-                        if(Input.GetMouseButtonUp(1)) mouseButtonDown1 = false;
+                        if(mouseUp0) mouseButtonDown0 = false;
+                        if(mouseUp1) mouseButtonDown1 = false;
 
                         if(!mouseButtonDown0 && !mouseButtonDown1)
                         {
@@ -330,7 +346,7 @@ namespace LockOnPlugin
                     }
 
                     if(cursorLocked) WinCursor.SetCursorPos(lockPos.x, lockPos.y);
-                } 
+                }
             }
         }
         
@@ -457,7 +473,6 @@ namespace LockOnPlugin
                 reduceOffset = true;
                 lockOnTarget = null;
                 lastTargetPos = null;
-                lockRotation = false;
                 CameraMoveSpeed = defaultCameraSpeed;
                 Guitime.InfoMsg("Camera unlocked");
             }
@@ -478,7 +493,13 @@ namespace LockOnPlugin
 
         protected virtual void ResetModState()
         {
-            LockOnRelease();
+            lockedOn = false;
+            reduceOffset = true;
+            lockOnTarget = null;
+            lastTargetPos = null;
+            CameraMoveSpeed = defaultCameraSpeed;
+            Guitime.InfoMsg("Camera unlocked");
+
             showLockOnTargets = false;
             currentCharaInfo = null;
             targetManager.UpdateAllTargets(null);

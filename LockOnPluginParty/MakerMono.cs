@@ -5,16 +5,13 @@
         protected override void Start()
         {
             base.Start();
-
             currentCharaInfo = Singleton<CustomControl>.Instance.chainfo;
-            targetManager.UpdateAllTargets(currentCharaInfo);
         }
 
         protected override void ResetModState()
         {
             base.ResetModState();
             currentCharaInfo = Singleton<CustomControl>.Instance.chainfo;
-            targetManager.UpdateAllTargets(currentCharaInfo);
         }
     }
 }

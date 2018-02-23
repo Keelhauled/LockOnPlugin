@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using IllusionPlugin;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
+        private CameraControl_Ver2 camera = Singleton<CameraControl_Ver2>.Instance;
         private Manager.Character charaManager = Manager.Character.Instance;
         private int activeCharaCount;
 
@@ -12,10 +14,13 @@ namespace LockOnPlugin
         {
             base.Start();
 
-            //camera.isLimitPos = false;
-            //camera.isLimitDir = false;
+            if(unlockHSceneCam)
+            {
+                camera.isLimitPos = false;
+                camera.isLimitDir = false; 
+            }
+
             currentCharaInfo = charaManager.dictFemale[0];
-            targetManager.UpdateAllTargets(currentCharaInfo);
             activeCharaCount = GetActiveCharaCount();
         }
 
@@ -27,8 +32,6 @@ namespace LockOnPlugin
             if(activeCharaCount != count)
             {
                 currentCharaInfo = charaManager.dictFemale[0];
-                targetManager.UpdateAllTargets(null);
-                targetManager.UpdateAllTargets(currentCharaInfo);
                 LockOnRelease();
                 activeCharaCount = count;
             }
@@ -65,9 +68,7 @@ namespace LockOnPlugin
                     int next = i + 1 > characters.Count - 1 ? 0 : i + 1;
                     if(!scrollDown) next = i - 1 < 0 ? characters.Count - 1 : i - 1;
                     currentCharaInfo = characters[next];
-                    targetManager.UpdateAllTargets(null);
-                    targetManager.UpdateAllTargets(currentCharaInfo);
-                    if(lockOnTarget) LockOn(lockOnTarget.name, true);
+                    if(autoSwitchLock && lockOnTarget) LockOn(lockOnTarget.name, true);
                     return;
                 }
             }
@@ -77,7 +78,6 @@ namespace LockOnPlugin
         {
             base.ResetModState();
             currentCharaInfo = charaManager.dictFemale[0];
-            targetManager.UpdateAllTargets(currentCharaInfo);
             activeCharaCount = GetActiveCharaCount();
         }
 

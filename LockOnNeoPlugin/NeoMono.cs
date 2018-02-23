@@ -29,8 +29,8 @@ namespace LockOnPlugin
             treeNodeCtrl.onSelect += new Action<TreeNodeObject>(OnSelectWork);
             studio.onDelete += new Action<ObjectCtrlInfo>(OnDeleteWork);
             Transform systemMenuContent = studio.transform.Find("Canvas Main Menu/04_System/Viewport/Content");
-            systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => StartCoroutine(OnSceneMenuOpen()));
-            systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => showLockOnTargets = false);
+            systemMenuContent.Find("Load").GetComponent<Button>().onClick.AddListener(() => ResetModState());
+            systemMenuContent.Find("End").GetComponent<Button>().onClick.AddListener(() => HideLockOnTargets());
             OverrideControllerCreate();
         }
 
@@ -57,8 +57,7 @@ namespace LockOnPlugin
                     {
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
-                        targetManager.UpdateAllTargets(null);
-                        targetManager.UpdateAllTargets(ocichar.charInfo);
+                        shouldResetLock = true;
 
                         boobs = null;
                         if(ocichar is OCICharFemale)
@@ -71,9 +70,13 @@ namespace LockOnPlugin
                             };
                         }
 
-                        if(lockOnTarget)
+                        if(autoSwitchLock && lockOnTarget)
                         {
-                            if(!LockOn(lockOnTarget.name, true, false))
+                            if(LockOn(lockOnTarget.name, true, false))
+                            {
+                                shouldResetLock = false;
+                            }
+                            else
                             {
                                 LockOnRelease();
                             }
@@ -84,47 +87,22 @@ namespace LockOnPlugin
                         currentCharaOCI = ocichar;
                         currentCharaInfo = ocichar.charInfo;
                     }
-                    
+
                     return;
                 }
             }
-
-            LockOnRelease();
-            showLockOnTargets = false;
-
+            
             currentCharaOCI = null;
             currentCharaInfo = null;
-            targetManager.UpdateAllTargets(null);
         }
 
         private void OnDeleteWork(ObjectCtrlInfo info)
         {
             if(info.kind == 0)
             {
-                LockOnRelease();
-                showLockOnTargets = false;
-
                 currentCharaOCI = null;
                 currentCharaInfo = null;
-                targetManager.UpdateAllTargets(null);
             }
-        }
-
-        private IEnumerator OnSceneMenuOpen()
-        {
-            SceneLoadScene scene;
-            while((scene = FindObjectOfType<SceneLoadScene>()) == null)
-            {
-                yield return new WaitForSeconds(0.1f);
-            }
-
-            LockOnRelease();
-            showLockOnTargets = false;
-
-            currentCharaOCI = null;
-            currentCharaInfo = null;
-            targetManager.UpdateAllTargets(null);
-            treeNodeCtrl.SelectSingle(null);
         }
 
         protected override bool LockOn()

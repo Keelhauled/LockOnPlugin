@@ -5,16 +5,59 @@ using UnityEngine;
 
 namespace LockOnPlugin
 {
-    internal class CameraTargetManager
+    internal class CameraTargetManager : MonoBehaviour
     {
         public const string MOVEMENTPOINT_NAME = "MovementPoint";
         public const string CENTERPOINT_NAME = "CenterPoint";
+
+        static float targetSize = 25f;
+        public bool showLockOnTargets = false;
+        public CharInfo chara;
 
         private List<GameObject> allTargets = new List<GameObject>();
         private List<GameObject> normalTargets = new List<GameObject>();
         private List<CustomTarget> customTargets = new List<CustomTarget>();
         private CenterPoint centerPoint;
         private MovementPoint movementPoint;
+
+        public static CameraTargetManager GetTargetManager(CharInfo chara)
+        {
+            var targetManager = chara.gameObject.GetComponent<CameraTargetManager>();
+            if(!targetManager)
+            {
+                targetManager = chara.gameObject.AddComponent<CameraTargetManager>();
+                targetManager.UpdateAllTargets(chara);
+                targetManager.chara = chara;
+            }
+
+            return targetManager;
+        }
+
+        void Update()
+        {
+            //if(showLockOnTargets || allTargets.Contains(LockOnBase.instance.lockOnTarget))
+            //{
+                UpdateCustomTargetTransforms();
+            //}
+        }
+
+        protected virtual void OnGUI()
+        {
+            if(showLockOnTargets)
+            {
+                List<GameObject> targets = GetAllTargets();
+                for(int i = 0; i < targets.Count; i++)
+                {
+                    Vector3 pos = Camera.main.WorldToScreenPoint(targets[i].transform.position);
+                    if(pos.z > 0f && GUI.Button(new Rect(pos.x - targetSize / 2f, Screen.height - pos.y - targetSize / 2f, targetSize, targetSize), "L"))
+                    {
+                        //CameraTargetPos += targetOffsetSize;
+                        //targetOffsetSize = new Vector3();
+                        LockOnBase.instance.LockOn(targets[i]);
+                    }
+                }
+            }
+        }
 
         public List<GameObject> GetAllTargets() => allTargets;
 

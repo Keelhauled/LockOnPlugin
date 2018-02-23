@@ -15,6 +15,7 @@ namespace LockOnPlugin
         public const string NAME_HSCENEMAKER = "LockOnPlugin";
         public const string NAME_NEO = "LockOnPluginNeo";
 
+        public static LockOnBase instance;
         public static bool lockedOn = false;
 
         protected abstract float CameraMoveSpeed { get; set; }
@@ -49,14 +50,13 @@ namespace LockOnPlugin
         protected bool showInfoMsg;
         protected float breastCounterForce;
         protected float lockLeashLength;
+        protected bool autoSwitchLock;
+        protected bool unlockHSceneCam;
 
-        protected CameraTargetManager targetManager;
         protected CharInfo currentCharaInfo;
-        protected GameObject lockOnTarget;
+        public GameObject lockOnTarget;
         protected Vector3? lastTargetPos;
-        protected bool showLockOnTargets = false;
         protected float defaultCameraSpeed;
-        protected float targetSize = 25f;
 
         protected Vector3 targetOffsetSize = new Vector3();
         protected Vector3 targetOffsetSizeAdded = new Vector3();
@@ -67,6 +67,7 @@ namespace LockOnPlugin
         protected bool mouseButtonDown1 = false;
         protected WinCursor.Point lockPos;
         protected bool cursorLocked = false;
+        protected bool shouldResetLock = false;
 
         protected bool controllerEnabled;
         protected float controllerMoveSpeed;
@@ -92,7 +93,7 @@ namespace LockOnPlugin
         
         protected virtual void Start()
         {
-            targetManager = new CameraTargetManager();
+            instance = this;
             defaultCameraSpeed = CameraMoveSpeed;
             LoadSettings();
         }
@@ -111,6 +112,8 @@ namespace LockOnPlugin
             scrollThroughMalesToo = ModPrefs.GetBool("LockOnPlugin", "ScrollThroughMalesToo", true, true);
             breastCounterForce = ModPrefs.GetFloat("LockOnPlugin", "BreastCounterforce", 0.07f, true);
             lockLeashLength = ModPrefs.GetFloat("LockOnPlugin", "LockLeashLength", 0f, true);
+            autoSwitchLock = ModPrefs.GetBool("LockOnPlugin", "AutoSwitchLock", false, true);
+            unlockHSceneCam = ModPrefs.GetBool("LockOnPlugin", "UnlockHSceneCam", true, true);
 
             try
             {
@@ -164,15 +167,13 @@ namespace LockOnPlugin
 
         protected virtual void Update()
         {
-            if(!currentCharaInfo && lockedOn)
+            if(!lockOnTarget && lockedOn)
             {
                 Console.WriteLine("[{0}] Reset mod state", NAME_HSCENEMAKER);
                 ResetModState();
             }
 
-            targetManager.UpdateCustomTargetTransforms();
             GamepadControls();
-
             lockOnHotkey.KeyHoldAction(LockOnRelease);
             lockOnHotkey.KeyUpAction(() => LockOn());
             lockOnGuiHotkey.KeyDownAction(ToggleLockOnGUI);
@@ -301,7 +302,7 @@ namespace LockOnPlugin
 
             if(Input.GetKeyDown(KeyCode.Escape))
             {
-                showLockOnTargets = false;
+                HideLockOnTargets();
             }
 
             if(manageCursorVisibility)
@@ -369,27 +370,20 @@ namespace LockOnPlugin
                 Utils.DebugGUI(0.5f, 0.5f, 100f, 50f, "Field of view\n" + CameraFov.ToString("0.0"));
                 Guitime.fov -= Time.deltaTime;
             }
-
-            if(showLockOnTargets)
-            {
-                List<GameObject> targets = targetManager.GetAllTargets();
-                for(int i = 0; i < targets.Count; i++)
-                {
-                    Vector3 pos = Camera.main.WorldToScreenPoint(targets[i].transform.position);
-                    if(pos.z > 0f && GUI.Button(new Rect(pos.x - targetSize / 2f, Screen.height - pos.y - targetSize / 2f, targetSize, targetSize), "L"))
-                    {
-                        CameraTargetPos += targetOffsetSize;
-                        targetOffsetSize = new Vector3();
-                        LockOn(targets[i]);
-                    }
-                }
-            }
         }
 
         protected virtual bool LockOn()
         {
             if(currentCharaInfo)
             {
+                List<string> targetList = currentCharaInfo is CharFemale ? FileManager.GetQuickFemaleTargetNames() : FileManager.GetQuickMaleTargetNames();
+
+                if(shouldResetLock)
+                {
+                    shouldResetLock = false;
+                    return LockOn(targetList[0]);
+                }
+
                 if(reduceOffset == true)
                 {
                     CameraTargetPos += targetOffsetSize;
@@ -400,8 +394,6 @@ namespace LockOnPlugin
                     reduceOffset = true;
                     return true;
                 }
-
-                List<string> targetList = currentCharaInfo is CharFemale ? FileManager.GetQuickFemaleTargetNames() : FileManager.GetQuickMaleTargetNames();
                 
                 if(!lockOnTarget)
                 {
@@ -427,7 +419,7 @@ namespace LockOnPlugin
 
         protected virtual bool LockOn(string targetName, bool lockOnAnyway = false, bool resetOffset = true)
         {
-            foreach(GameObject target in targetManager.GetAllTargets())
+            foreach(GameObject target in CameraTargetManager.GetTargetManager(currentCharaInfo).GetAllTargets())
             {
                 if(target.name.Substring(3) == targetName.Substring(3))
                 {
@@ -449,7 +441,7 @@ namespace LockOnPlugin
             return false;
         }
 
-        protected virtual bool LockOn(GameObject target, bool resetOffset = true)
+        public virtual bool LockOn(GameObject target, bool resetOffset = true)
         {
             if(target)
             {
@@ -482,7 +474,16 @@ namespace LockOnPlugin
         {
             if(currentCharaInfo)
             {
-                showLockOnTargets = !showLockOnTargets;
+                var targetManager = CameraTargetManager.GetTargetManager(currentCharaInfo);
+                targetManager.showLockOnTargets = !targetManager.showLockOnTargets;
+            }
+        }
+
+        protected void HideLockOnTargets()
+        {
+            foreach(var targetManager in FindObjectsOfType<CameraTargetManager>())
+            {
+                targetManager.showLockOnTargets = false;
             }
         }
 
@@ -493,16 +494,14 @@ namespace LockOnPlugin
 
         protected virtual void ResetModState()
         {
+            HideLockOnTargets();
             lockedOn = false;
             reduceOffset = true;
             lockOnTarget = null;
             lastTargetPos = null;
             CameraMoveSpeed = defaultCameraSpeed;
             Guitime.InfoMsg("Camera unlocked");
-
-            showLockOnTargets = false;
             currentCharaInfo = null;
-            targetManager.UpdateAllTargets(null);
         }
 
         protected virtual void GamepadControls()

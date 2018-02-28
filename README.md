@@ -11,9 +11,10 @@ If you've found a bug or think something could be improved with any of my mods p
 <div style='position:relative;padding-bottom:54%'><iframe src='https://gfycat.com/ifr/GranularBrilliantBuck' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0' allowfullscreen></iframe></div><br>
 
 ## Installation
-1. Install Illusion Plugin Architecture (IPA)
-2. Throw the files into the Honey Select root folder
-3. Default hotkey is N, unlock by holding the same button for a while
+1. Install Illusion Plugin Architecture (IPA).
+2. Throw the files into the Honey Select root folder.
+3. Default hotkey is N, unlock by holding the same button for a while.  
+4. Download ModSettingsMenu and ModMenuManager to change LockOnPlugin settings easily in game. *(Optional)* - [Download link](https://github.com/Keelhauled/HSPlugins#readme)
 
 ## Download
 The latest release should always be [here](https://github.com/Keelhauled/LockOnPlugin/releases)

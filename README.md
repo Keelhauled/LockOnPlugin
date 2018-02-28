@@ -6,6 +6,8 @@
 This plugin allows you to keep the camera target on specific parts of the target character.  
 The purpose of this is to allow you to really focus on the fun parts without having to manage the camera.  
 
+If you've found a bug or think something could be improved with any of my mods please make a github issue or a hongfire comment about it or message me on the Honey Play discord.
+
 <div style='position:relative;padding-bottom:54%'><iframe src='https://gfycat.com/ifr/GranularBrilliantBuck' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0' allowfullscreen></iframe></div><br>
 
 ## Installation

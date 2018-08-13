@@ -144,7 +144,7 @@ namespace LockOnPlugin
         {
             base.ResetModState();
             currentCharaOCI = null;
-            treeNodeCtrl.SelectSingle(null);
+            treeNodeCtrl?.SelectSingle(null);
         }
 
         private List<TreeNodeObject> GetCharaNodes<CharaType>()

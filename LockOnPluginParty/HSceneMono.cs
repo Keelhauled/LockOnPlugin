@@ -1,13 +1,14 @@
 ﻿using IllusionPlugin;
 using System.Collections.Generic;
 using System.Linq;
+using Manager;
 
 namespace LockOnPlugin
 {
     internal partial class HSceneMono : LockOnBase
     {
         private CameraControl_Ver2 camera = Singleton<CameraControl_Ver2>.Instance;
-        private Manager.Character charaManager = Manager.Character.Instance;
+        private Character charaManager = Character.Instance;
         private int activeCharaCount;
 
         protected override void Start()

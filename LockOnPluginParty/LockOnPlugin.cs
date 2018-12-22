@@ -7,10 +7,10 @@ namespace LockOnPlugin
 {
     public class LockOnPlugin : IEnhancedPlugin
     {
-        public string Name => LockOnBase.NAME_HSCENEMAKER;
-        public string Version => LockOnBase.VERSION;
+        public string Name { get; } = LockOnBase.NAME_HSCENEMAKER;
+        public string Version { get; } = LockOnBase.VERSION;
 
-        public string[] Filter => new string[]
+        public string[] Filter { get; } = new string[]
         {
             "HoneySelect_32",
             "HoneySelect_64",

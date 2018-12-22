@@ -34,10 +34,10 @@ namespace LockOnPlugin
         protected virtual bool AllowTracking => true;
         protected virtual bool InputFieldSelected => EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() != null;
 
-        protected KeyCode lockOnKey = KeyCode.N;
+        protected KeyCode lockOnKey = KeyCode.Mouse4;
         protected KeyCode lockOnGuiKey = KeyCode.None;
         protected KeyCode prevCharaKey = KeyCode.None;
-        protected KeyCode nextCharaKey = KeyCode.L;
+        protected KeyCode nextCharaKey = KeyCode.None;
         protected Hotkey lockOnHotkey;
         protected Hotkey lockOnGuiHotkey;
         protected Hotkey prevCharaHotkey;
